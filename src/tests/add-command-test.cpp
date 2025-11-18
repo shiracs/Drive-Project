@@ -3,6 +3,7 @@
 #include "../h-files/add-command.h"
 #include <iostream>
 #include <cstdio>
+#include <fstream>
 
 // test for inccorect use of the add command
 TEST(AddCommandTest, IncorrectUsage) {
@@ -39,7 +40,6 @@ TEST(AddCommandTest, AddCreatesFile) {
     std::remove(filename.c_str());
 }
 
-##ask the crew
 // test if already existing file with this name do not add anther file with the same name
 TEST(AddCommandTest, AddExistingFile) {
     std::string filename = "test_existing_file.txt";
@@ -47,14 +47,14 @@ TEST(AddCommandTest, AddExistingFile) {
 
     // create the file first
     // call the add function and verify it returns true for successful creation
-    ASSERT_TRUE(add(filename, text)) << "Add function failed to create file: " << filename << "the first time.";
+    EXPECT_TRUE(add(filename, text)) << "Add function failed to create file: " << filename << "the first time.";
 
     // verify the file was created
     std::ifstream infile(filename);
-    ASSERT_TRUE(infile.is_open()) << "File 1 was not created: " << filename;
+    EXPECT_TRUE(infile.is_open()) << "File 1 was not created: " << filename;
 
     // call the add function again - should fail to create a new file
-    ASSERT_FALSE(add(filename, text)) << "Add function should fail for existing file: " << filename;
+    EXPECT_FALSE(add(filename, text)) << "Add function should fail for existing file: " << filename;
 
     // clean up
     std::remove(filename.c_str());
@@ -67,14 +67,14 @@ TEST(AddCommandTest, BasicAdd) {
     std::string expected_content = "3A";
 
     // Call the add function
-    ASSERT_TRUE(add(filename, text)) << "Add function failed to create file: " << filename;
+    EXPECT_TRUE(add(filename, text)) << "Add function failed to create file: " << filename;
 
     // Verify the content of the file
     std::ifstream infile(filename);
-    ASSERT_TRUE(infile.is_open()) << "File was not created: " << filename;  
+    EXPECT_TRUE(infile.is_open()) << "File was not created: " << filename;  
     std::string file_content;
     std::getline(infile, file_content);
-    ASSERT_EQ(file_content, expected_content) << "File content does not match expected RLE compression.";           
+    EXPECT_EQ(file_content, expected_content) << "File content does not match expected RLE compression.";           
     infile.close();
 
     // Clean up

@@ -3,17 +3,18 @@
 #include "get-command.h"
 #include <iostream>
 #include <cstdio>
+#include <fstream>
 
 // test for inccorect use of the get command
 TEST(GetCommandTest, IncorrectUsage) {
     std::string filename = ""; // empty filename
 
     // call the get function and verify it returns an empty string for incorrect usage
-    ASSERT_EQ(get(filename), "") << "Get function should return empty string for empty filename.";
+    EXPECT_EQ(get(filename), "") << "Get function should return empty string for empty filename.";
 
     filename = "non_existent_file.txt"; // non-existent file
     std::remove(filename.c_str()); // ensure the file does not exist
-    ASSERT_EQ(get(filename), "") << "Get function should return empty string for non-existent file.";
+    EXPECT_EQ(get(filename), "") << "Get function should return empty string for non-existent file.";
 }
 
 // test if getting content from an existing file works correctly
@@ -31,7 +32,7 @@ TEST(GetCommandTest, GetExistingFile) {
 
 
     // call the get function and verify it returns the correct content
-    ASSERT_EQ(get(filename), expected_content) << "Get function returned incorrect content for file: " << filename;
+    EXPECT_EQ(get(filename), expected_content) << "Get function returned incorrect content for file: " << filename;
 
     // clean up
     std::remove(filename.c_str());
