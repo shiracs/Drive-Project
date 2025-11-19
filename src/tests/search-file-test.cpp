@@ -21,10 +21,11 @@ TEST(SearchFileTest, NoSuchContent) {
 
 // test for searching existing content in files
 TEST(SearchFileTest, ExistingContent) {
-    std::string filename1 = "example1.txt"; // example filename
-    std::string filename2 = "example2.txt"; // example filename
+    std::string filename1 = "example1.txt";
+    std::string filename2 = "example2.txt";
     std::string text = "3A";
 
+    //make two files with the same content
     {
     std::ofstream outfile1(filename1);
     outfile1 << text;
@@ -40,18 +41,15 @@ TEST(SearchFileTest, ExistingContent) {
     // search for content that exists in the files
     std::vector<std::string> result = search("AAA");
     
-    // clean up in case of early failure
+    // check that both files are found
     if (result.size() != 2) {
-    std::remove(filename1.c_str());
-    std::remove(filename2.c_str());
+        std::remove(filename1.c_str());
+        std::remove(filename2.c_str());
+        FAIL() << "Expected 2 results, got " << result.size();
     }
-
-    // verify both files are found
-    EXPECT_EQ(result.size(), 2);
-    if (result.size() == 2) {
-        EXPECT_EQ(result[0], filename1);
-        EXPECT_EQ(result[1], filename2);
-    }
+    
+    EXPECT_EQ(result[0], filename1);
+    EXPECT_EQ(result[1], filename2);
 
     // clean up
     std::remove(filename1.c_str());
