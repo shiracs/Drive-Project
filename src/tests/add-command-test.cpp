@@ -1,6 +1,6 @@
 //test the commend add [file name] [text] 
 #include <gtest/gtest.h>
-#include "../h-files/add-command.h"
+#include "../interfaces/add-command.h"
 #include <iostream>
 #include <cstdio>
 #include <fstream>
