@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-// Forward declarations to keep compile time low
 class IOHandler;
 class Storage;
 class Compressor;

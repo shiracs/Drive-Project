@@ -2,12 +2,9 @@
 #include <iostream>
 #include <sstream>
 
-// Include the concrete implementations
 #include "services/CliHandler.h"
 #include "services/FileStorage.h"
 #include "services/RleCompressor.h"
-
-// Include the commands
 #include "commands/AddCommand.h"
 #include "commands/GetCommand.h"
 #include "commands/SearchCommand.h"
