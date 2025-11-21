@@ -14,15 +14,15 @@ class Command;
 
 class System {
 private:
-    // The services
+    // The system needs these services: IOHandler object, Storage object, Compressor object
     std::shared_ptr<IOHandler> io;
     std::shared_ptr<Storage> storage;
     std::shared_ptr<Compressor> compressor;
 
-    // The command registry
+    // The system has a map of commands it can execute
     std::map<std::string, std::shared_ptr<Command>> commandMap;
 
-    // Helper to parse input
+    // Helper to parse the input
     std::vector<std::string> parseInput(const std::string& input);
 
 public:

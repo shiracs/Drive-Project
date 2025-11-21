@@ -3,14 +3,14 @@
 #include <string>
 
 int main() {
-    // 1. Configuration
+    // 1. Check the environment variable for storage path. default is "./my_storage"
     const char* envVar = std::getenv("DRIVE_PATH");
     std::string path = envVar ? envVar : "./my_storage";
 
-    // 2. Bootstrap
+    // Create a System object
     System app(path);
 
-    // 3. Run
+    // Run
     app.run();
 
     return 0;

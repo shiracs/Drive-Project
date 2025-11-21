@@ -10,6 +10,7 @@
 
 class Command {
 protected:
+    // The commands in this project need access to a storage obj, a compressor obj and an io obj.
     std::shared_ptr<Storage> storage;
     std::shared_ptr<Compressor> compressor;
     std::shared_ptr<IOHandler> io;
