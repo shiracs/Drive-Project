@@ -35,7 +35,7 @@ protected:
         cmd = std::make_shared<AddCommand>(storage, compressor, io);
     }
 
-    // This function has the exact simple signature the tests expect.
+    // This function has the exact simple signature the tests expect
     bool add(std::string filename, std::string text) {
         // 1. Mimic failure conditions specific to the tests
         if (filename.empty() || text.empty()) return false;
