@@ -16,8 +16,8 @@
 namespace fs = std::filesystem;
 
 
-/* --- TEST FIXTURE ---
-A Fixture is a class that holds common objects used by many tests.
+/* Fixture for AddCommand tests
+the Fixture is a class that holds common objects used by many tests.
 Instead of creating 'storage', 'compressor', and 'io' inside every single test,
 we define them here once. */
 
@@ -55,9 +55,9 @@ protected:
     }
 };
 
-// --- THE TESTS ---
+// THE TESTS
 // Note: We use TEST_F (F = Fixture). 
-// This tells C++: "Let this test use the variables and functions inside AddCommandTest". 
+// This lets the tests use the variables and functions inside AddCommandTest. 
 
 // test for inccorect use of the add command
 TEST_F(AddCommandTest, IncorrectUsage) {
