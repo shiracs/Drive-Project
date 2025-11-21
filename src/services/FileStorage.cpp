@@ -13,6 +13,10 @@ FileStorage::FileStorage(const std::string& path) : directoryPath(path) {
 
 // Saves text to a file
 void FileStorage::saveFile(const std::string& fileName, const std::string& content) {
+    // If file already exists, do nothing
+    if (fs::exists(directoryPath / fileName)) {
+        return;
+    }
     std::ofstream fileStream(directoryPath / fileName);
         if (fileStream) {
         fileStream << content;
