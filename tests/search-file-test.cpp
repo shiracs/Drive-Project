@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <fstream>
-#include "../h-files/search-file.h"
+#include "../interfaces/search-file.h"
 
 // test for searching nonexisting content in files
 TEST(SearchFileTest, NoSuchContent) {

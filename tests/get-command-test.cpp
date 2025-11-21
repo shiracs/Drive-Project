@@ -1,6 +1,6 @@
 //test the command add [file name] [text] 
 #include <gtest/gtest.h>
-#include "get-command.h"
+#include "../interfaces/get-command.h"
 #include <iostream>
 #include <cstdio>
 #include <fstream>
