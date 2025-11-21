@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 /* Capturing IO for tests
 This IO Handler collects every output into a list
 so we can check it in our tests. */
-class CapturingIO : public IOHandler {
+class SearchCaptureIO : public IOHandler {
 public:
     std::vector<std::string> collectedOutputs;
 
@@ -35,19 +35,19 @@ class SearchFileTest : public ::testing::Test {
 protected:
     std::shared_ptr<FileStorage> storage;
     std::shared_ptr<RleCompressor> compressor;
-    std::shared_ptr<CapturingIO> io;
+    std::shared_ptr<SearchCaptureIO> io;
     std::shared_ptr<SearchCommand> cmd;
 
     void SetUp() override {
         // Use a distinct folder for search tests to avoid clutter
-        storage = std::make_shared<FileStorage>("./search_test_env");
+        storage = std::make_shared<FileStorage>("./search_test");
         compressor = std::make_shared<RleCompressor>();
-        io = std::make_shared<CapturingIO>();
+        io = std::make_shared<SearchCaptureIO>();
         cmd = std::make_shared<SearchCommand>(storage, compressor, io);
     }
 
     void TearDown() override {
-        if (fs::exists("./search_test_env")) fs::remove_all("./search_test_env");
+        if (fs::exists("./search_test")) fs::remove_all("./search_test");
     }
 
     // This function has the exact simple signature the tests expect.
@@ -64,7 +64,7 @@ protected:
 
     // Helper to manually create files in the test directory
     void create_file(std::string filename, std::string content) {
-        std::ofstream outfile("./search_test_env/" + filename);
+        std::ofstream outfile("./search_test/" + filename);
         outfile << content;    
         outfile.close();
     }
@@ -72,7 +72,7 @@ protected:
 
 // THE TESTS
 // Note: We use TEST_F (F = Fixture). 
-// This lets the tests use the variables and functions inside AddCommandTest
+// This lets the tests use the variables and functions inside SearchCommandTest
 
 // test for searching nonexisting content in files
 TEST_F(SearchFileTest, NoSuchContent) {

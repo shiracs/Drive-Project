@@ -14,7 +14,7 @@
 /* Capturing IO for tests
 Instead of printing to the console, this class SAVES the output
  so we can check it in our tests */
-class CapturingIO : public IOHandler {
+class GetCaptureIO : public IOHandler {
 public:
     std::string lastOutput = ""; 
 
@@ -32,13 +32,13 @@ class GetCommandTest : public ::testing::Test {
 protected:
     std::shared_ptr<FileStorage> storage;
     std::shared_ptr<RleCompressor> compressor;
-    std::shared_ptr<CapturingIO> io;
+    std::shared_ptr<GetCaptureIO> io;
     std::shared_ptr<GetCommand> cmd;
 
     void SetUp() override {
         storage = std::make_shared<FileStorage>(".");
         compressor = std::make_shared<RleCompressor>();
-        io = std::make_shared<CapturingIO>();
+        io = std::make_shared<GetCaptureIO>();
         cmd = std::make_shared<GetCommand>(storage, compressor, io);
     }
 
@@ -59,7 +59,7 @@ protected:
 
 // THE TESTS
 // Note: We use TEST_F (F = Fixture). 
-// This lets the tests use the variables and functions inside AddCommandTest
+// This lets the tests use the variables and functions inside GetCommandTest
 
 // test for inccorect use of the get command
 TEST_F(GetCommandTest, IncorrectUsage) {
