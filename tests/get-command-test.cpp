@@ -10,11 +10,10 @@
 #include "../src/commands/GetCommand.h"
 #include "../src/services/FileStorage.h"
 #include "../src/services/RleCompressor.h"
-#include "../src/services/CliHandler.h"
 
-// --- Capturing IO for tests ---
-// Instead of printing to the console, this class SAVES the output
-// so we can check it in our tests.
+/* Capturing IO for tests
+Instead of printing to the console, this class SAVES the output
+ so we can check it in our tests */
 class CapturingIO : public IOHandler {
 public:
     std::string lastOutput = ""; 
@@ -28,12 +27,12 @@ public:
     }
 };
 
-// --- THE FIXTURE ---
+// Fixture for get command tests
 class GetCommandTest : public ::testing::Test {
 protected:
     std::shared_ptr<FileStorage> storage;
     std::shared_ptr<RleCompressor> compressor;
-    std::shared_ptr<CapturingIO> io; // Note: We use the CapturingIO here
+    std::shared_ptr<CapturingIO> io;
     std::shared_ptr<GetCommand> cmd;
 
     void SetUp() override {
@@ -58,7 +57,9 @@ protected:
     }
 };
 
-// --- THE TESTS ---
+// THE TESTS
+// Note: We use TEST_F (F = Fixture). 
+// This lets the tests use the variables and functions inside AddCommandTest
 
 // test for inccorect use of the get command
 TEST_F(GetCommandTest, IncorrectUsage) {
