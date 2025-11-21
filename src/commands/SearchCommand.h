@@ -5,10 +5,8 @@
 
 class SearchCommand : public Command {
 public:
-    // Inherit the constructor
+    // Inherit the constructor from the Command class
     using Command::Command;
-
-    // Declaration only
     void execute(const std::vector<std::string>& args) override;
 };
 

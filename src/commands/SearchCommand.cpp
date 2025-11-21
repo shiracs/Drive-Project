@@ -6,7 +6,7 @@ void SearchCommand::execute(const std::vector<std::string> &args)
     if (args.size() < 2)
         return;
 
-    try{
+    try {
         std::string query = args[1];
 
         // Get list of all files in storage
@@ -27,8 +27,7 @@ void SearchCommand::execute(const std::vector<std::string> &args)
             }
         }
     }
-    catch (...)
-    {
+    catch (...) {
         // Silent failure
     }
 }
