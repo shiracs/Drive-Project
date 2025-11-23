@@ -1,5 +1,6 @@
 #include "FileStorage.h"
 #include <fstream>
+#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -48,5 +49,7 @@ std::vector<std::string> FileStorage::listAllFiles() {
             }
         }
     }
+    // Sort the list to have a consistent order
+    std::sort(fileList.begin(), fileList.end());
     return fileList;
 }

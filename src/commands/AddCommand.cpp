@@ -1,61 +1,38 @@
-// #include "AddCommand.h"
-
-// void AddCommand::execute(const std::vector<std::string>& args) {
-//     // Check that we have all the needed args - otherwise, ignore command
-//     if (args.size() < 3) return; 
-
-//     try {
-//         std::string fileName = args[1];
-//         std::string content = args[2];
-
-//         // Compress the content
-//         std::string compressedData = compressor->compress(content);
-//         // Save it as fileName
-//         storage->saveFile(fileName, compressedData);
-//     } catch (...) {
-//         // Silent failure
-//     }
-// }
-
 #include "AddCommand.h"
 
 void AddCommand::execute(const std::vector<std::string>& args) {
-    // המבנה של args:
     // args[0] = "add"
-    // args[1] = כל שאר השורה (שם קובץ + טקסט אם יש)
-    
+    // args[1] = "[filename] [text...]"
     if (args.size() < 2) return; 
 
     std::string params = args[1];
 
-    // --- בדיקת תקינות (רווח כפול) ---
-    // אם המחרוזת מתחילה ברווח, זה אומר שהמשתמש הקליד "add  filename" (שני רווחים).
-    // לפי ההנחיה, זה לא תקין וצריך להתעלם.
+    // if the params start with a space, it means the user typed "add  filename" (two spaces) - invalid.
     if (params.empty() || params[0] == ' ') return;
 
     std::string fileName;
     std::string content;
 
-    // מחפשים את הרווח הראשון שמפריד בין שם הקובץ לטקסט
+    // look for the first space that separates the filename from the text
     size_t spacePos = params.find(' ');
     
     if (spacePos == std::string::npos) {
-        // --- מקרה 1: אין רווחים נוספים (add filename) ---
-        // זה אומר שכל מה שיש ב-params זה רק שם הקובץ.
-        // לפי התיקון שלך: זה תקין, ויוצרים קובץ ריק.
+        // case 1: no additional spaces (user typed "add filename")
+        // this means that all there is in params is just the file name - that's valid, we create an empty file.
         fileName = params;
         content = ""; 
     } else {
-        // --- מקרה 2: יש תוכן (add filename content...) ---
-        // לוקחים את המילה עד הרווח בתור שם הקובץ
+        //case 2: there is content (add filename content...)
+        // we take the word up to the first space we found as the file name
         fileName = params.substr(0, spacePos);
-        // כל מה שאחרי הרווח הראשון נחשב כתוכן (כולל רווחים נוספים אם יש)
+        // we take everything after the first space as the content
         content = params.substr(spacePos + 1);
     }
 
     try {
-        // ה-Compressor שבנינו יודע לקבל מחרוזת ריקה ולהחזיר מחרוזת ריקה, אז זה בטוח.
+        // Compress the content
         std::string compressedData = compressor->compress(content);
+        // Save it as fileName
         storage->saveFile(fileName, compressedData);
     } catch (...) {
         // Silent failure

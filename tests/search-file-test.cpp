@@ -4,7 +4,7 @@
 #include <memory>
 #include <filesystem>
 #include <algorithm> 
-
+#include <sstream>
 
 #include "../src/commands/SearchCommand.h"
 #include "../src/services/FileStorage.h"
@@ -56,8 +56,23 @@ protected:
         cmd->execute({"search", query});
 
         // Return the collected list
+        // Now the output is one single line ("file1 file2").
+        // We need to split it back into a vector so the tests pass.
+        std::vector<std::string> result;
+
+        if (!io->collectedOutputs.empty()) {
+            std::string rawLine = io->collectedOutputs[0];
+            std::stringstream ss(rawLine);
+            std::string segment;
+            
+            while(std::getline(ss, segment, ' ')) {
+                if (!segment.empty()) {
+                    result.push_back(segment);
+                }
+            }
+        }
+
         // We SORT it because file systems don't guarantee order (file1 vs file2), and we want the test to be stable.
-        std::vector<std::string> result = io->collectedOutputs;
         std::sort(result.begin(), result.end());
         return result;
     }

@@ -45,7 +45,7 @@ protected:
 
         try {
             // Run the actual code with all the needed services
-            cmd->execute({"add", filename, text});
+            cmd->execute({"add", filename + " " + text});
             
             // Return true if file was created successfully
             return fs::exists(filename);
