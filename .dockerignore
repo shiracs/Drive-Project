@@ -1,0 +1,6 @@
+build/
+.vscode/
+.git/
+my_storage/
+search_test/
+search_test_env/

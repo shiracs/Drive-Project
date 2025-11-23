@@ -36,7 +36,7 @@ FetchContent_Declare(
   URL https://github.com/google/googletest/archive/refs/heads/main.zip
 )
 
-# prevents some linking issues on Windows, just to be safe
+# prevents some linking issues on Windows
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Actually downloads and builds GTest now
