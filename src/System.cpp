@@ -46,17 +46,22 @@ void System::run() {
 }
 
 // parseInput gets an inputline and returns it "split" to the different arguments of the command
-std::vector<std::string> System::parseInput(const std::string &input) {
-    // Turns string "[command] [file] [txt]" into a stream of words
-    std::stringstream stream(input);
-    std::string segment;
+std::vector<std::string> System::parseInput(const std::string& input) {
     std::vector<std::string> args;
+    
+    // we find the first space
+    size_t firstSpace = input.find(' ');
 
-    // Split the sentence into array of words
-    while (std::getline(stream, segment, ' ')) {
-        if (!segment.empty()) {
-            args.push_back(segment);
-        }
+    if (firstSpace == std::string::npos) {
+        // if there are no spaces at all (e.g., just the word "add"), return only it
+        args.push_back(input);
+    } else {
+        // 1: the first word is the command
+        args.push_back(input.substr(0, firstSpace));
+
+        // 2: the rest of the line is the second argument (including spaces!)
+        args.push_back(input.substr(firstSpace + 1));
     }
+    
     return args;
 }
