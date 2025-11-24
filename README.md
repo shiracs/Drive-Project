@@ -20,3 +20,9 @@ To run the tests separately (as required by the assignment):
 ```bash
 docker run --rm drive-project ./run_tests
 ```
+
+## 📸 Execution Example
+
+Below is a screenshot demonstrating the application workflow, including adding files, RLE compression/decompression, and searching.
+
+![Execution Demo](execution_demo.png)
