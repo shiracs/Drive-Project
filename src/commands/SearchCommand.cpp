@@ -5,6 +5,7 @@ void SearchCommand::execute(const std::vector<std::string>& args) {
     if (args.size() < 2) return;
     
     std::string query = args[1];
+    if (query.empty()) return;
     std::string resultLine = "";
     bool firstMatch = true;
 
