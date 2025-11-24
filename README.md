@@ -12,7 +12,9 @@ docker build -t drive-project .
 ### 2. Run the main application
 To run the main program interactively:
 ```bash
-docker run -it --rm drive-project
+docker run -it --rm \
+  -v $(pwd)/my_storage:/usr/src/app/my_storage \
+  drive-project
 ```
 
 ### 3. Run the Unit Tests
