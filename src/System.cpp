@@ -18,7 +18,7 @@ System::System(const std::string &storagePath) {
     // Register the Commands this system can execute
     commandMap["add"] = std::make_shared<AddCommand>(storage, compressor, io);
     commandMap["get"] = std::make_shared<GetCommand>(storage, compressor, io);
-     commandMap["search"] = std::make_shared<SearchCommand>(storage, compressor, io);
+    commandMap["search"] = std::make_shared<SearchCommand>(storage, compressor, io);
 }
 
 void System::run() {
@@ -34,6 +34,9 @@ void System::run() {
         // Get the command name
         std::string commandName = args[0];
 
+        //exit condition
+        if (commandName == "exit") break;
+        
         // Check if command exists in our map
         if (commandMap.count(commandName)) {
             try {
