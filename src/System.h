@@ -26,6 +26,11 @@ private:
 
 public:
     System(const std::string& storagePath);
+
+    // Constructor for Tests
+    // This allows us to inject a "fake keyboard" (Mock IO) for the tests
+    System(std::shared_ptr<IOHandler> io, std::shared_ptr<Storage> storage, std::shared_ptr<Compressor> compressor); 
+    
     void run();
 };
 
