@@ -58,7 +58,7 @@ void System::run() {
     }
 }
 
-// Parsing function (already updated for spaces support)
+// parseInput gets an inputline and returns it "split" to the different arguments of the command
 std::vector<std::string> System::parseInput(const std::string& input) {
     std::vector<std::string> args;
     
