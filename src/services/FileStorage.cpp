@@ -54,7 +54,7 @@ std::vector<std::string> FileStorage::listAllFiles() {
     return fileList;
 }
 
-bool FileStorage::remove(const std::string& fileName) {
+bool FileStorage::deleteFile(const std::string& fileName) {
     // need to implement in the future
     return false;
 }
