@@ -8,6 +8,7 @@
 #include "commands/AddCommand.h"
 #include "commands/GetCommand.h"
 #include "commands/SearchCommand.h"
+#include "commands/DeleteCommand.h"
 
 System::System(const std::string &storagePath) {
     // Initialize Services

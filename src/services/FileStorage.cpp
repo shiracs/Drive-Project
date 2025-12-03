@@ -53,3 +53,8 @@ std::vector<std::string> FileStorage::listAllFiles() {
     std::sort(fileList.begin(), fileList.end());
     return fileList;
 }
+
+bool FileStorage::deleteFile(const std::string& fileName) {
+    // need to implement in the future
+    return false;
+}
