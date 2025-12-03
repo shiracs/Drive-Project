@@ -1,6 +1,7 @@
 #include "System.h"
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #include "services/CliHandler.h"
 #include "services/FileStorage.h"
@@ -79,5 +80,16 @@ std::vector<std::string> System::parseInput(const std::string& input) {
         args.push_back(input.substr(firstSpace + 1));
     }
     
+    // Convert the command to lower case for case-insensitive matching
+    args[0] = toLower(args[0]);
+
     return args;
+}
+
+// case sensitivity helper - convert the command to lower case
+std::string System::toLower(const std::string& str) {
+    std::string lowerStr = str;
+    std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
+    return lowerStr;
 }
