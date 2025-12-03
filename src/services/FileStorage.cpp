@@ -55,6 +55,9 @@ std::vector<std::string> FileStorage::listAllFiles() {
 }
 
 bool FileStorage::deleteFile(const std::string& fileName) {
-    // need to implement in the future
-    return false;
+    // Construct the full file path
+    fs::path filePath = directoryPath / fileName;
+    
+    // if the file does not exist- return false, else delete and return true
+    return fs::remove(filePath);
 }
