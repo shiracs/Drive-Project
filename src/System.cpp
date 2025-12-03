@@ -20,6 +20,7 @@ System::System(const std::string &storagePath) {
     commandMap["add"] = std::make_shared<AddCommand>(storage, compressor, io);
     commandMap["get"] = std::make_shared<GetCommand>(storage, compressor, io);
     commandMap["search"] = std::make_shared<SearchCommand>(storage, compressor, io);
+    commandMap["delete"] = std::make_shared<DeleteCommand>(storage, compressor, io);
 }
 
 // constructor for tests
@@ -30,6 +31,7 @@ System::System(std::shared_ptr<IOHandler> _io, std::shared_ptr<Storage> _s, std:
     commandMap["add"] = std::make_shared<AddCommand>(storage, compressor, io);
     commandMap["get"] = std::make_shared<GetCommand>(storage, compressor, io);
     commandMap["search"] = std::make_shared<SearchCommand>(storage, compressor, io);
+    commandMap["delete"] = std::make_shared<DeleteCommand>(storage, compressor, io);
 }
 
 void System::run() {
