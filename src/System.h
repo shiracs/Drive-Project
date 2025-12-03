@@ -24,6 +24,9 @@ private:
     // Helper to parse the input
     std::vector<std::string> parseInput(const std::string& input);
 
+    // Helper to convert string to lower case
+    std::string toLower(const std::string& str);
+
 public:
     System(const std::string& storagePath);
 
