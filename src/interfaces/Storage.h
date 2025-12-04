@@ -11,6 +11,7 @@ public:
     virtual std::string readFile(const std::string& fileName) = 0;
     virtual std::vector<std::string> listAllFiles() = 0;
     virtual bool deleteFile(const std::string& fileName) = 0;
+    virtual bool fileExists(const std::string& fileName) = 0;
 };
 
 #endif

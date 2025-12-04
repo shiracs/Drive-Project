@@ -58,6 +58,11 @@ void System::run() {
             } catch (...) {
                 // Ignore errors for now
             }
+        } else {
+            std::string response = handleInvalidCommand(commandName);
+            if (!response.empty()) {
+                io->output(response);
+            }
         }
     }
 }
@@ -92,4 +97,14 @@ std::string System::toLower(const std::string& str) {
     std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(),
                    [](unsigned char c){ return std::tolower(c); });
     return lowerStr;
+}
+
+// handle invalid command
+std::string System::handleInvalidCommand(const std::string& commandName) {
+    // look for the command in the map
+    if (commandMap.count(commandName)) {
+        return "";
+    } else {
+        return "400 Bad Request";
+    } 
 }

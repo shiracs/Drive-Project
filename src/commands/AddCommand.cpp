@@ -1,15 +1,21 @@
 #include "AddCommand.h"
 
 void AddCommand::execute(const std::vector<std::string>& args) {
-    // args[0] = "add"
-    // args[1] = "[filename] [text...]"
-    if (args.size() < 2) return; 
+    // // args[0] = "add"
+    // // args[1] = "[filename] [text...]"
+    // if (args.size() < 2) return; 
+
+    // std::string params = args[1];
+
+    // // if the params start with a space, it means the user typed "add  filename" (two spaces) - invalid.
+    // if (params.empty() || params[0] == ' ') return;
+
+    if (!isValidInput(args)) {
+        io->output("404 Not Found");
+        return;
+    }
 
     std::string params = args[1];
-
-    // if the params start with a space, it means the user typed "add  filename" (two spaces) - invalid.
-    if (params.empty() || params[0] == ' ') return;
-
     std::string fileName;
     std::string content;
 
@@ -37,4 +43,22 @@ void AddCommand::execute(const std::vector<std::string>& args) {
     } catch (...) {
         // Silent failure
     }
+}
+
+bool AddCommand::isValidInput(const std::vector<std::string>& args) const {
+    // must have at least 2 arguments: "add" and filename
+    if (args.size() < 2) return false;
+
+    std::string params = args[1];
+
+    // if the params start with a space, it means the user typed "add  filename" (two spaces) - invalid.
+    if (params.empty() || params[0] == ' ') return false;
+
+    // TODO: enable this check after implementing file overwrite handling
+    // // chcck if already exists
+    // // Extract the file name
+    // std::string fileName = args[1].substr(0, args[1].find(' '));
+    // if (storage->fileExists(fileName)) return false;
+
+    return true;
 }

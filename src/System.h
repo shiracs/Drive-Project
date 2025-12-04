@@ -27,6 +27,9 @@ private:
     // Helper to convert string to lower case
     std::string toLower(const std::string& str);
 
+    // handle invalid command
+    std::string handleInvalidCommand(const std::string& commandName);
+
 public:
     System(const std::string& storagePath);
 
