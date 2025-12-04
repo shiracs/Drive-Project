@@ -1,4 +1,3 @@
-# We need version 3.14 or later to use FetchContent below
 cmake_minimum_required(VERSION 3.14)
 
 # The name of our project
@@ -7,25 +6,32 @@ project(DriveProject)
 # Using C++17 because I used the <filesystem> library in my code
 set(CMAKE_CXX_STANDARD 17)
 
-# -----Core Logic Setup-----
+# -----Core Logic Setup (Server Library)-----
 
 # Gathering all the source files (Logic, Services, Commands).
-file(GLOB_RECURSE SOURCES 
-    "src/System.cpp"
-    "src/services/*.cpp" 
-    "src/commands/*.cpp"
+# Note: Paths updated to reflect the new structure (src/server/)
+file(GLOB_RECURSE SERVER_SOURCES 
+    "src/server/System.cpp"
+    "src/server/services/*.cpp" 
+    "src/server/commands/*.cpp"
 )
 
 # Creating a shared library from the sources.
-# this allows me to link this code to both the main app and the tests.
-add_library(core_logic ${SOURCES})
+# this allows me to link this code to both the main app (server) and the tests.
+add_library(core_logic ${SERVER_SOURCES})
 
-# -----Main Application-----
+# -----Server Application-----
 
-# Creating the executable for the main app.
-add_executable(my_drive src/main.cpp)
-# This links main.cpp with the core logic library.
-target_link_libraries(my_drive core_logic)
+# Creating the executable for the server app.
+add_executable(server_app src/server/main.cpp)
+# This links server.cpp with the core logic library and pthread (for threading).
+target_link_libraries(server_app core_logic pthread)
+
+# -----Client Application-----
+
+# Creating the executable for the client app.
+add_executable(client_app src/client/main.cpp)
+# Client is standalone, does not need core logic library.
 
 # -----Google Test Setup-----
 
@@ -55,4 +61,5 @@ add_executable(run_tests ${TEST_SOURCES})
 # Link the test runner to:
 # 1. core_logic
 # 2. GTest::gtest_main (Google's library, which includes its own main function)
-target_link_libraries(run_tests core_logic GTest::gtest_main)
+# 3. pthread
+target_link_libraries(run_tests core_logic GTest::gtest_main pthread)

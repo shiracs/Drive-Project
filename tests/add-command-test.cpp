@@ -8,10 +8,10 @@
 #include <filesystem>
 
 // Your project files
-#include "../src/commands/AddCommand.h"
-#include "../src/services/FileStorage.h"
-#include "../src/services/RleCompressor.h"
-#include "../src/services/CliHandler.h"
+#include "../src/server/commands/AddCommand.h"
+#include "../src/server/services/FileStorage.h"
+#include "../src/server/services/RleCompressor.h"
+#include "../src/server/services/CliHandler.h"
 
 namespace fs = std::filesystem;
 
@@ -45,7 +45,7 @@ protected:
 
         try {
             // Run the actual code with all the needed services
-            cmd->execute({"add", filename + " " + text});
+            cmd->execute({"post", filename + " " + text});
             
             // Return true if file was created successfully
             return fs::exists(filename);

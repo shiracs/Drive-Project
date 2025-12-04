@@ -1,0 +1,31 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    image: drive-server
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount storage locally so files persist even if container stops
+      - ./my_storage_data:/usr/src/app/my_storage
+    networks:
+      - drive-network
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    image: drive-client
+    # Connect to 'server' hostname on port 8080
+    command: ./client_app server 8080
+    stdin_open: true # Allows interactive input
+    tty: true        # Allows interactive input
+    depends_on:
+      - server
+    networks:
+      - drive-network
+
+networks:
+  drive-network:
+    driver: bridge

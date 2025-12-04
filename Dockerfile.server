@@ -1,0 +1,28 @@
+# Use GCC image as base
+FROM gcc:latest
+
+# Install CMake
+RUN apt-get update && apt-get install -y cmake
+
+# Create project directory
+WORKDIR /usr/src/app
+
+# Copy the entire project
+COPY . .
+
+# Build the project
+RUN mkdir build
+WORKDIR /usr/src/app/build
+RUN cmake .. && make server_app
+
+# Set environment variable for storage
+ENV STORAGE_PATH="/usr/src/app/my_storage"
+
+# Create the storage directory
+RUN mkdir -p /usr/src/app/my_storage
+
+# Expose the port (matches the one in docker-compose)
+EXPOSE 8080
+
+# Run the server on port 8080 by default
+CMD ["./server_app", "8080"]

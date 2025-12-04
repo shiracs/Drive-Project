@@ -1,0 +1,19 @@
+# Use GCC image as base
+FROM gcc:latest
+
+# Install CMake
+RUN apt-get update && apt-get install -y cmake
+
+# Create project directory
+WORKDIR /usr/src/app
+
+# Copy the entire project
+COPY . .
+
+# Build the project
+RUN mkdir build
+WORKDIR /usr/src/app/build
+RUN cmake .. && make client_app
+
+# Default command (will be overridden)
+CMD ["./client_app", "127.0.0.1", "8080"]
