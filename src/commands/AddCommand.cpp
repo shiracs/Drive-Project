@@ -54,11 +54,11 @@ bool AddCommand::isValidInput(const std::vector<std::string>& args) const {
     // if the params start with a space, it means the user typed "add  filename" (two spaces) - invalid.
     if (params.empty() || params[0] == ' ') return false;
 
-    // TODO: enable this check after implementing file overwrite handling
-    // // chcck if already exists
-    // // Extract the file name
-    // std::string fileName = args[1].substr(0, args[1].find(' '));
-    // if (storage->fileExists(fileName)) return false;
+
+    // check if already exists
+    // Extract the file name
+    std::string fileName = args[1].substr(0, args[1].find(' '));
+    if (storage->fileExists(fileName)) return false;
 
     return true;
 }

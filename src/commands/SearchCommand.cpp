@@ -54,6 +54,7 @@ bool SearchCommand::isValidInput(const std::vector<std::string>& args) const {
 
     // TODO:
     // search for spaces only in the query?
+    // as much as i no it is allowed to have spaces in the query,
 
     return true;
 }
