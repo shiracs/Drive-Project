@@ -4,11 +4,12 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <netdb.h> 
+#include <netdb.h>
+#include <memory> 
+#include "CliHandler.h"
 
-// Helper function to read exactly one line from the socket
-// This prevents reading "too much" or "too little" data
-std::string readLine(int sock) {
+// helper function to read a line from the socket
+std::string readSocketLine(int sock) {
     std::string line = "";
     char c;
     while (true) {
@@ -21,7 +22,6 @@ std::string readLine(int sock) {
         }
         line += c;
     }
-    // Remove '\r' if server sent CRLF
     if (!line.empty() && line.back() == '\r') {
         line.pop_back();
     }
@@ -33,13 +33,14 @@ int main(int argc, char* argv[]) {
         std::cout << "Usage: client_app <ip/hostname> <port>" << std::endl;
         return 1;
     }
-
+    std::unique_ptr<IOHandler> ui = std::make_unique<CliHandler>();
     std::string host = argv[1];
     int port = std::atoi(argv[2]);
 
+    // create socket connection
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
-        std::cerr << "Socket creation error" << std::endl;
+        ui->output("Error: Socket creation error");
         return 1;
     }
 
@@ -48,49 +49,44 @@ int main(int argc, char* argv[]) {
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
 
-    // Resolve hostname
     struct hostent* server = gethostbyname(host.c_str());
     if (server == NULL) {
-        std::cerr << "Error: No such host: " << host << std::endl;
+        ui->output("Error: No such host: " + host);
         return 1;
     }
 
     std::memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
 
     if (connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
-        std::cerr << "Connection Failed" << std::endl;
+        ui->output("Error: Connection Failed");
         return 1;
     }
 
-    // --- Main Client Loop ---
     while (true) {
-        std::string command;
-        if (!std::getline(std::cin, command)) break; // EOF
+        std::string command = ui->input();
+        
+        if (command.empty() && std::cin.eof()) break; 
 
-        // Send command to server
         command += "\n";
         send(sock, command.c_str(), command.size(), 0);
 
         try {
-            // 1. Always read the first line (Status Code)
-            std::string statusLine = readLine(sock);
-            std::cout << statusLine << std::endl;
+            // Read response
+            std::string statusLine = readSocketLine(sock);
+            
+            // output the response
+            ui->output(statusLine);
 
-            // 2. Check if we need to read more lines
-            // According to protocol, "200 OK" is followed by an empty line and then content.
-            // All other codes (201, 404, 400) are single-line.
             if (statusLine == "200 OK") {
-                // Read the empty line
-                std::string emptyLine = readLine(sock);
-                std::cout << emptyLine << std::endl; // Should be empty
+                std::string emptyLine = readSocketLine(sock);
+                ui->output(emptyLine);
 
-                // Read the content line
-                std::string contentLine = readLine(sock);
-                std::cout << contentLine << std::endl;
+                std::string contentLine = readSocketLine(sock);
+                ui->output(contentLine);
             }
 
         } catch (const std::runtime_error& e) {
-            break; // Exit loop if server disconnects
+            break; 
         }
     }
 

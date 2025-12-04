@@ -30,7 +30,10 @@ target_link_libraries(server_app core_logic pthread)
 # -----Client Application-----
 
 # Creating the executable for the client app.
-add_executable(client_app src/client/main.cpp)
+add_executable(client_app 
+    src/client/main.cpp 
+    src/client/CliHandler.cpp
+)
 # Client is standalone, does not need core logic library.
 
 # -----Google Test Setup-----

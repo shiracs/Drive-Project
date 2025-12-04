@@ -1,7 +1,7 @@
 #ifndef CLIHANDLER_H
 #define CLIHANDLER_H
 
-#include "../interfaces/IOHandler.h"
+#include "./IOHandler.h"
 
 class CliHandler : public IOHandler {
 public:
