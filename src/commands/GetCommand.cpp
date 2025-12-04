@@ -13,6 +13,8 @@ void GetCommand::execute(const std::vector<std::string>& args) {
         std::string compressedContent = storage->readFile(fileName);
         // Decompress it
         std::string originalText = compressor->decompress(compressedContent);
+        // Send OK response
+        io->output("200 OK\n\n");
         // Print it to the io
         io->output(originalText);
     } catch (...) {}
