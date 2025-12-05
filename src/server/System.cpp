@@ -24,14 +24,17 @@ System::System(std::shared_ptr<IOHandler> _io, std::shared_ptr<Storage> _s, std:
 void System::run() {
     // The Application Loop
     while (true) {
+        // Get line from io
         std::string inputLine = io->input();
         if (inputLine.empty()) continue; // Client disconnected or empty line
 
         std::vector<std::string> args = parseInput(inputLine);
         if (args.empty()) continue;
 
+        // Get the command name
         std::string commandName = args[0];
 
+        //exit condition
         if (commandName == "exit") break;
         
         // Check if command exists in our map

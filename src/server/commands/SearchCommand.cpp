@@ -34,8 +34,7 @@ void SearchCommand::execute(const std::vector<std::string>& args) {
             } catch (...) {}
         }
         
-        // CRITICAL FIX: Always send "200 OK", even if results are empty.
-        // Send as one single string to match Client expectations.
+        // send: "200 OK" + 2 empty lines + content
         std::string response = "200 OK\n\n" + resultLine;
         io->output(response);
 

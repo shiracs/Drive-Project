@@ -6,9 +6,9 @@
 #include <algorithm> 
 #include <sstream>
 
-#include "../src/server/commands/SearchCommand.h"
-#include "../src/server/services/FileStorage.h"
-#include "../src/server/services/RleCompressor.h"
+#include "../src/server/interfaces/SearchCommand.h"
+#include "../src/server/interfaces/FileStorage.h"
+#include "../src/server/interfaces/RleCompressor.h"
 
 namespace fs = std::filesystem;
 

@@ -9,7 +9,6 @@ set(CMAKE_CXX_STANDARD 17)
 # -----Core Logic Setup (Server Library)-----
 
 # Gathering all the source files (Logic, Services, Commands).
-# Note: Paths updated to reflect the new structure (src/server/)
 file(GLOB_RECURSE SERVER_SOURCES 
     "src/server/System.cpp"
     "src/server/services/*.cpp" 

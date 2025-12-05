@@ -15,5 +15,13 @@ RUN mkdir build
 WORKDIR /usr/src/app/build
 RUN cmake .. && make client_app
 
-# Default command (will be overridden)
+# NETWORK EXPLANATION:
+# By default, this client tries to connect to "127.0.0.1" (localhost).
+# This allows you to run it manually on your own computer.
+# BUT, when running from the docker-comspose, we override this command!
+# We tell the client to connect to the hostname "server" instead.
+# How it works:
+# It gives the server container the nickname "server".
+# So when our client asks to connect to "server", Docker automatically
+# finds the internal IP address and connects them.
 CMD ["./client_app", "127.0.0.1", "8080"]

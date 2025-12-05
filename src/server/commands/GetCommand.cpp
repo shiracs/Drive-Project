@@ -19,8 +19,7 @@ void GetCommand::execute(const std::vector<std::string>& args) {
         std::string compressedContent = storage->readFile(fileName);
         std::string originalText = compressor->decompress(compressedContent);
         
-        // CRITICAL FIX: Send everything in ONE string.
-        // Protocol: "200 OK" + newline + empty line + content
+        // send: "200 OK" + newline + empty line + content
         // SocketIOHandler adds the final newline automatically.
         std::string response = "200 OK\n\n" + originalText;
         

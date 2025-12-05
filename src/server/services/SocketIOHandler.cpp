@@ -9,6 +9,7 @@ SocketIOHandler::~SocketIOHandler() {
     close(clientSocket);
 }
 
+// Reads input from the client through the socket
 std::string SocketIOHandler::input() {
     std::string message = "";
     char c;
@@ -31,6 +32,7 @@ std::string SocketIOHandler::input() {
     return message;
 }
 
+// Sends output to the client through the socket
 void SocketIOHandler::output(const std::string& message) {
     // Append newline as required by the protocol
     std::string response = message + "\n";

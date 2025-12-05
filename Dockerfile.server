@@ -21,8 +21,9 @@ ENV STORAGE_PATH="/usr/src/app/my_storage"
 # Create the storage directory
 RUN mkdir -p /usr/src/app/my_storage
 
-# Expose the port (matches the one in docker-compose)
+# PORT EXPLANATION:
+# We tell Docker that this container listens on port 8080.
 EXPOSE 8080
 
-# Run the server on port 8080 by default
+# That's why in the CMD line below, we pass "8080" as an argument.
 CMD ["./server_app", "8080"]

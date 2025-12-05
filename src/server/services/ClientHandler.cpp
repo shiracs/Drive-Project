@@ -1,8 +1,6 @@
-#include "../interfaces/ClientHandler.h"
 #include <thread>
 #include <iostream>
-
-// Include necessary implementations
+#include "../interfaces/ClientHandler.h"
 #include "../interfaces/System.h"
 #include "../interfaces/SocketIOHandler.h"
 
@@ -12,6 +10,8 @@ void ClientHandler::handle(int clientSocket, std::shared_ptr<Storage> storage, s
     std::thread t([clientSocket, storage, compressor]() {
         try {
             auto io = std::make_shared<SocketIOHandler>(clientSocket);
+            // Create and run the system for this client
+            // Each client gets its own System instance, that uses the shared Storage and Compressor instances.
             System app(io, storage, compressor);
             app.run();
         } catch (...) {
