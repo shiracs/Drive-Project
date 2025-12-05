@@ -43,6 +43,18 @@ services:
     networks:
       - drive-network
 
+  client-python:
+      build:
+        context: .
+        dockerfile: Dockerfile.pythonClient
+      command: ["server", "8080"] 
+      depends_on:
+        - server
+      stdin_open: true 
+      tty: true
+      networks:
+        - drive-network      
+
 networks:
   drive-network:
     driver: bridge
