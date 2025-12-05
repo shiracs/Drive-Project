@@ -20,18 +20,34 @@ void SearchCommand::execute(const std::vector<std::string>& args) {
         auto allFiles = storage->listAllFiles();
         
         for (const auto& fileName : allFiles) {
-            try {
-                std::string compressed = storage->readFile(fileName);
-                std::string decompressed = compressor->decompress(compressed);
-                
-                if (decompressed.find(query) != std::string::npos) {
-                    if (!firstMatch) {
-                        resultLine += " ";
+            bool matchFound = false;
+
+            // Check if query exists in the filename 
+            if (fileName.find(query) != std::string::npos) {
+                matchFound = true;
+            } 
+            else {
+                // Check if query exists in the content
+                try {
+                    std::string compressed = storage->readFile(fileName);
+                    std::string decompressed = compressor->decompress(compressed);
+                    
+                    if (decompressed.find(query) != std::string::npos) {
+                        matchFound = true;
                     }
-                    resultLine += fileName;
-                    firstMatch = false;
+                } catch (...) {
+                    // Ignore read errors for individual files
                 }
-            } catch (...) {}
+            }
+
+            // Add to results if matched
+            if (matchFound) {
+                if (!firstMatch) {
+                    resultLine += " ";
+                }
+                resultLine += fileName;
+                firstMatch = false;
+            }
         }
         
         // send: "200 OK" + 2 empty lines + content
