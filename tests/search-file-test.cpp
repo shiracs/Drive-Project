@@ -137,3 +137,19 @@ TEST_F(SearchFileTest, ExistingContent) {
     EXPECT_EQ(result[0], filename1);
     EXPECT_EQ(result[1], filename2);
 }
+
+// Test for searching by filename
+TEST_F(SearchFileTest, SearchByFilename) {
+    std::string filename = "target_filename.txt";
+    std::string content = "A1#"; 
+
+    // Create a file where the content doesn't match, but the filename does
+    create_file(filename, content);
+
+    // Search for a substring of the filename
+    std::vector<std::string> result = search("target");
+    
+    // Expect to find the file
+    ASSERT_EQ(result.size(), 1) << "Should find file when query matches filename";
+    EXPECT_EQ(result[0], filename);
+}
