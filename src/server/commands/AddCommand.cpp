@@ -1,7 +1,7 @@
-#include "AddCommand.h"
+#include "../interfaces/AddCommand.h"
 
 void AddCommand::execute(const std::vector<std::string>& args) {
-    // args[0] = "add"
+    // args[0] = "post"
     // args[1] = "[filename] [text...]"
     if (args.size() < 2) return; 
 
@@ -34,6 +34,11 @@ void AddCommand::execute(const std::vector<std::string>& args) {
         std::string compressedData = compressor->compress(content);
         // Save it as fileName
         storage->saveFile(fileName, compressedData);
+
+        // Required for Client-Server to prevent hanging. 
+        // Matches Ex2 requirement: "201 Created"
+        io->output("201 Created");
+
     } catch (...) {
         // Silent failure
     }

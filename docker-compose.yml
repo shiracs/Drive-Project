@@ -1,0 +1,48 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    image: drive-server
+    
+    # PORT MAPPING EXPLANATION:
+    # "8080:8080" means:
+    # Map port 8080 on my computer to port 8080 inside the container.
+    # This allows us to access the server from outside if needed.
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount storage locally so files persist even if container stops
+      - ./my_storage_data:/usr/src/app/my_storage
+    networks:
+      - drive-network
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    image: drive-client
+    
+    # COMMAND OVERRIDE EXPLANATION:
+    # We override the default CMD command from Dockerfile.client.
+    # Instead of connecting to "127.0.0.1", we tell it to connect to "server".
+    # "server" is the name of the service defined above (lines 4-5).
+    command: ./client_app server 8080
+    stdin_open: true # Allows interactive input
+    tty: true        
+    depends_on:
+      - server
+    networks:
+      - drive-network
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    image: drive-tests
+    networks:
+      - drive-network
+
+networks:
+  drive-network:
+    driver: bridge

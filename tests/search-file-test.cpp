@@ -6,9 +6,9 @@
 #include <algorithm> 
 #include <sstream>
 
-#include "../src/commands/SearchCommand.h"
-#include "../src/services/FileStorage.h"
-#include "../src/services/RleCompressor.h"
+#include "../src/server/interfaces/SearchCommand.h"
+#include "../src/server/interfaces/FileStorage.h"
+#include "../src/server/interfaces/RleCompressor.h"
 
 namespace fs = std::filesystem;
 
@@ -62,7 +62,21 @@ protected:
 
         if (!io->collectedOutputs.empty()) {
             std::string rawLine = io->collectedOutputs[0];
-            std::stringstream ss(rawLine);
+            
+            // we expect: "200 OK\n\n<results>"
+            std::string header = "200 OK\n\n";
+            std::string actualContent = "";
+
+            // check that the response starts with the correct header
+            if (rawLine.find(header) == 0) {
+                // we cut off the header, leaving only the results (or nothing)
+                actualContent = rawLine.substr(header.length());
+            } else {
+                actualContent = rawLine; 
+            }
+
+            // split by spaces
+            std::stringstream ss(actualContent);
             std::string segment;
             
             while(std::getline(ss, segment, ' ')) {

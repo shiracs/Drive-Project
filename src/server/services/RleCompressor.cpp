@@ -1,4 +1,4 @@
-#include "RleCompressor.h"
+#include "../interfaces/RleCompressor.h"
 #include <string>
 
 /*
