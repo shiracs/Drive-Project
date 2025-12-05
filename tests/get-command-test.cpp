@@ -73,7 +73,7 @@ TEST_F(GetCommandTest, IncorrectUsage) {
     
     // our code fails silently (catches the error and prints nothing).
     // So 'lastOutput' remains "", which matches the expectation.
-    EXPECT_EQ(get(filename), "") << "Get function should return empty string for non-existent file.";
+    EXPECT_EQ(get(filename), "404 Not Found") << "Get function should return 404 for non-existent file.";
 }
 
 // test if getting content from an existing file works correctly
@@ -81,6 +81,7 @@ TEST_F(GetCommandTest, GetExistingFile) {
     std::string filename = "test_get_existing_file.txt";
     std::string comprressed_content = "A3#";    
     std::string expected_content = "AAA";
+    std::string expected_protocol_response = "200 OK\n\n" + expected_content;
 
     // create the file with known content
     {
@@ -90,7 +91,7 @@ TEST_F(GetCommandTest, GetExistingFile) {
     }
 
     // call the get function and verify it returns the correct content
-    EXPECT_EQ(get(filename), expected_content) << "Get function returned incorrect content for file: " << filename;
+    EXPECT_EQ(get(filename), expected_protocol_response) << "Get function returned incorrect content for file: " << filename;
 
     // clean up
     std::remove(filename.c_str());

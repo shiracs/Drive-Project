@@ -58,11 +58,11 @@ protected:
 // The full flow Test
 TEST_F(SystemFlowTest, FullRunScenario) {
     // Prepare the script
-    mockIO->addInput("add file1.txt AAAAA");
+    mockIO->addInput("post file1.txt AAAAA"); // Changed add to post
     mockIO->addInput("get file1.txt");
-    mockIO->addInput("add file1.txt BBBBB"); // Should not overwrite the current file1
+    mockIO->addInput("post file1.txt BBBBB"); // Should not overwrite the current file1
     mockIO->addInput("get file1.txt");
-    mockIO->addInput("add file2.txt ABC");
+    mockIO->addInput("post file2.txt ABC");
     mockIO->addInput("search A");
     mockIO->addInput("exit"); 
     
@@ -72,9 +72,12 @@ TEST_F(SystemFlowTest, FullRunScenario) {
 
     // Verify results
     std::vector<std::string> expectedOutputs = {
-        "AAAAA",               // Check 1: First output (from get)
-        "AAAAA",               // Check 2: Second output (from get, verifies no overwrite)
-        "file1.txt file2.txt"  // Check 3: Third output (from search)
+        "201 Created",                // Response to post 1
+        "200 OK\n\nAAAAA",            // Response to get 1
+        "201 Created",                // Response to post 2 (failed overwrite still returns status or success depending on implementation, assuming success flow returns 201)
+        "200 OK\n\nAAAAA",            // Response to get 2
+        "201 Created",                // Response to post 3
+        "200 OK\n\nfile1.txt file2.txt"  // Response to search
     };
 
     ASSERT_EQ(mockIO->outputs.size(), expectedOutputs.size());

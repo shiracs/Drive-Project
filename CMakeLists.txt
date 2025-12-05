@@ -30,7 +30,7 @@ target_link_libraries(server_app core_logic pthread)
 
 # Creating the executable for the client app.
 add_executable(client_app 
-    src/client/main.cpp 
+    src/client/main.cpp
     src/client/CliHandler.cpp
 )
 # Client is standalone, does not need core logic library.
@@ -57,8 +57,10 @@ enable_testing()
 # Find all the test files in the tests folder
 file(GLOB TEST_SOURCES "tests/*.cpp")
 
-# Create the test runner executable
-add_executable(run_tests ${TEST_SOURCES})
+add_executable(run_tests 
+    ${TEST_SOURCES}
+    src/client/CliHandler.cpp 
+)
 
 # Link the test runner to:
 # 1. core_logic

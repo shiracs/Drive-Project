@@ -35,6 +35,14 @@ services:
     networks:
       - drive-network
 
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    image: drive-tests
+    networks:
+      - drive-network
+
 networks:
   drive-network:
     driver: bridge

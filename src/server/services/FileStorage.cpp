@@ -14,7 +14,8 @@ FileStorage::FileStorage(const std::string& path) : directoryPath(path) {
 
 // Saves text to a file
 void FileStorage::saveFile(const std::string& fileName, const std::string& content) {
-    std::lock_guard<std::mutex> lock(fsMutex); // Lock for thread safety
+    // Lock for thread safety
+    std::lock_guard<std::mutex> lock(fsMutex);
 
     // If file already exists, do nothing
     if (fs::exists(directoryPath / fileName)) {
@@ -28,7 +29,8 @@ void FileStorage::saveFile(const std::string& fileName, const std::string& conte
 
 // Reads the whole file into a string. Throws an error if the file is missing
 std::string FileStorage::readFile(const std::string& fileName) {
-    std::lock_guard<std::mutex> lock(fsMutex); // Lock for thread safety
+    // Lock for thread safety
+    std::lock_guard<std::mutex> lock(fsMutex); 
 
     std::ifstream fileStream(directoryPath / fileName);
 
@@ -42,7 +44,8 @@ std::string FileStorage::readFile(const std::string& fileName) {
 
 // Returns a list of all the file names currently in the storage folder
 std::vector<std::string> FileStorage::listAllFiles() {
-    std::lock_guard<std::mutex> lock(fsMutex); // Lock for thread safety
+    // Lock for thread safety
+    std::lock_guard<std::mutex> lock(fsMutex); 
 
     std::vector<std::string> fileList;
     
@@ -61,7 +64,8 @@ std::vector<std::string> FileStorage::listAllFiles() {
 }
 
 bool FileStorage::deleteFile(const std::string& fileName) {
-    std::lock_guard<std::mutex> lock(fsMutex); // Lock for thread safety
+    // Lock for thread safety
+    std::lock_guard<std::mutex> lock(fsMutex); 
 
     // Construct the full file path
     fs::path filePath = directoryPath / fileName;
