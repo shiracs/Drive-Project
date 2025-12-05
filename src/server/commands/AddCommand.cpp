@@ -1,4 +1,4 @@
-#include "AddCommand.h"
+#include "../interfaces/AddCommand.h"
 
 void AddCommand::execute(const std::vector<std::string>& args) {
     // args[0] = "post"

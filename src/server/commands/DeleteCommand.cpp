@@ -1,4 +1,4 @@
-#include "DeleteCommand.h"
+#include "../interfaces/DeleteCommand.h"
 #include "../interfaces/Storage.h"    
 #include "../interfaces/IOHandler.h"
 

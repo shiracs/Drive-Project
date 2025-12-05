@@ -4,9 +4,9 @@
 #include <memory>
 #include <filesystem>
 #include <algorithm> 
-#include "../src/server/System.h"
-#include "../src/server/services/FileStorage.h"
-#include "../src/server/services/RleCompressor.h"
+#include "../src/server/interfaces/System.h"
+#include "../src/server/interfaces/FileStorage.h"
+#include "../src/server/interfaces/RleCompressor.h"
 #include "../src/server/interfaces/IOHandler.h"
 
 namespace fs = std::filesystem;

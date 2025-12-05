@@ -1,4 +1,4 @@
-#include "SearchCommand.h"
+#include "../interfaces/SearchCommand.h"
 #include <iostream>
 
 void SearchCommand::execute(const std::vector<std::string>& args) {

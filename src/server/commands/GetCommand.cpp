@@ -1,4 +1,4 @@
-#include "GetCommand.h"
+#include "../interfaces/GetCommand.h"
 #include <iostream>
 
 void GetCommand::execute(const std::vector<std::string>& args) {
