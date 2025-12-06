@@ -45,6 +45,7 @@ get <filename> : Retrieve and decompress a file.
 search <text> : Search for text inside files.
 delete <filename> : Delete a file.
 
+in the image we can see the server in the right terminal, and the two in the left are the cpp-client and the python-client, which are both being served simultaniousely
 ![Execution Demo](execution_demo.png)
 
 ## Design & Architecture (Reflection)
