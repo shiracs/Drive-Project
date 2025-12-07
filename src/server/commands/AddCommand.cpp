@@ -3,6 +3,10 @@
 void AddCommand::execute(const std::vector<std::string>& args) {
     // args[0] = "post"
     // args[1] = "[filename] [text...]"
+    if (!isValidInputStr(args)) {
+        io->output("400 Bad Request");
+        return;
+    }
     if (!isValidInputLogic(args)) {
         io->output("404 Not Found");
         return;
@@ -43,7 +47,7 @@ void AddCommand::execute(const std::vector<std::string>& args) {
     }
 }
 
-bool AddCommand::isValidInputLogic(const std::vector<std::string>& args) const {
+bool AddCommand::isValidInputStructure(const std::vector<std::string>& args) const {
     // must have at least 2 arguments: "add" and filename
     if (args.size() < 2) return false;
 
@@ -52,6 +56,10 @@ bool AddCommand::isValidInputLogic(const std::vector<std::string>& args) const {
     // if the params start with a space, it means the user typed "add  filename" (two spaces) - invalid.
     if (params.empty() || params[0] == ' ') return false;
 
+    return true;
+}
+
+bool AddCommand::isValidInputLogic(const std::vector<std::string>& args) const {
     // check if already exists
     // Extract the file name
     std::string fileName = args[1].substr(0, args[1].find(' '));

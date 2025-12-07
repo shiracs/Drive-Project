@@ -42,7 +42,7 @@ void System::run() {
             try {
                 commandMap[commandName]->execute(args);
             } catch (...) {
-                io->output("500 Internal Server Error");
+                // Silent failure on exceptions
             }
         } else {
             // Handle unknown commands

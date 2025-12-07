@@ -6,8 +6,8 @@
 
 void DeleteCommand::execute(const std::vector<std::string>& args) {
     
-    if (!isValidInputLogic(args)) {
-        io->output("404 Not Found"); 
+    if (!isValidInputStructure(args)) {
+        io->output("400 Bad Request"); 
         return;
     }     
     
@@ -27,7 +27,7 @@ void DeleteCommand::execute(const std::vector<std::string>& args) {
     }
 }
 
-bool DeleteCommand::isValidInputLogic(const std::vector<std::string>& args) const {
+bool DeleteCommand::isValidInputStructure(const std::vector<std::string>& args) const {
     // Basic validation: must have at least 2 arguments: "delete" and filename
     if (args.size() < 2) return false;
 
@@ -37,9 +37,6 @@ bool DeleteCommand::isValidInputLogic(const std::vector<std::string>& args) cons
 
     // Filename should not be empty
     if (filename.empty()) return false;
-
-    // Check if file exists in storage
-    if (!storage->fileExists(filename)) return false;
 
     return true;
 }
