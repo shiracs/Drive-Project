@@ -2,17 +2,12 @@
 #include <iostream>
 
 void SearchCommand::execute(const std::vector<std::string>& args) {
-    if (args.size() < 2) {
+    if (!isValidInputStructure(args)) {
         io->output("400 Bad Request");
         return;
     }
     
     std::string query = args[1];
-    if (query.empty()) {
-        io->output("400 Bad Request");
-        return;
-    }
-
     std::string resultLine = "";
     bool firstMatch = true;
 
@@ -55,6 +50,20 @@ void SearchCommand::execute(const std::vector<std::string>& args) {
         io->output(response);
 
     } catch (...) { 
-        io->output("500 Internal Server Error");
+        // Silent failure on unexpected errors
     }
+}
+
+bool SearchCommand::isValidInput(const std::vector<std::string>& args) const {
+    // Check if there are at least 2 arguments (command name and query)
+    if (args.size() < 2) {
+        return false;
+    }
+
+    // Check if the query is not empty
+    if (args[1].empty()) {
+        return false;
+    }
+
+    return true;
 }
