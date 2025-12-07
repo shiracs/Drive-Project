@@ -5,20 +5,13 @@
 // The constructor is implicitly inherited.
 
 void DeleteCommand::execute(const std::vector<std::string>& args) {
-    // 1. Validation (check if the command is complete: "DELETE filename")
-    if (args.size() < 2) {
-        // TODO:
-        // implement silent failure for incorrect usage later
-        // Silent failure for incorrect usage (matches Test 3 expectation)
+    
+    if (!isValidInputLogic(args)) {
+        io->output("404 Not Found"); 
         return;
-    }
+    }     
     
     std::string filename = args[1];
-    if (filename.empty()) {
-        // TODO:
-        // implement silent failure for incorrect usage later
-        return;
-    }
 
     try {
         bool success = storage->deleteFile(filename); 
@@ -32,4 +25,21 @@ void DeleteCommand::execute(const std::vector<std::string>& args) {
         // TODO: Implement error handling later
         return;
     }
+}
+
+bool DeleteCommand::isValidInputLogic(const std::vector<std::string>& args) const {
+    // Basic validation: must have at least 2 arguments: "delete" and filename
+    if (args.size() < 2) return false;
+
+    // Check for spaces in filename
+    std::string filename = args[1];
+    if (filename.find(' ') != std::string::npos) return false;
+
+    // Filename should not be empty
+    if (filename.empty()) return false;
+
+    // Check if file exists in storage
+    if (!storage->fileExists(filename)) return false;
+
+    return true;
 }

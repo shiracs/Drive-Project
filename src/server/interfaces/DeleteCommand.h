@@ -4,6 +4,11 @@
 #include "Command.h"
 
 class DeleteCommand : public Command {
+
+private:
+    // validate the input arguments
+    bool isValidInputLogic(const std::vector<std::string>& args) const;
+
 public:
     // Inherit the constructor from the Command class
     using Command::Command;
