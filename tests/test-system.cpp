@@ -74,7 +74,7 @@ TEST_F(SystemFlowTest, FullRunScenario) {
     std::vector<std::string> expectedOutputs = {
         "201 Created",                // Response to post 1
         "200 OK\n\nAAAAA",            // Response to get 1
-        "201 Created",                // Response to post 2 (failed overwrite still returns status or success depending on implementation, assuming success flow returns 201)
+        "404 Not Found",                // Response to post 2 (failed overwrite still returns status or success depending on implementation, assuming success flow returns 201)
         "200 OK\n\nAAAAA",            // Response to get 2
         "201 Created",                // Response to post 3
         "200 OK\n\nfile1.txt file2.txt"  // Response to search

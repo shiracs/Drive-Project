@@ -3,7 +3,7 @@
 void AddCommand::execute(const std::vector<std::string>& args) {
     // args[0] = "post"
     // args[1] = "[filename] [text...]"
-    if (!isValidInputStr(args)) {
+    if (!isValidInputStructure(args)) {
         io->output("400 Bad Request");
         return;
     }

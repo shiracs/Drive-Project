@@ -54,7 +54,7 @@ void SearchCommand::execute(const std::vector<std::string>& args) {
     }
 }
 
-bool SearchCommand::isValidInput(const std::vector<std::string>& args) const {
+bool SearchCommand::isValidInputStructure(const std::vector<std::string>& args) const {
     // Check if there are at least 2 arguments (command name and query)
     if (args.size() < 2) {
         return false;
