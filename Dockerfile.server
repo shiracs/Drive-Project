@@ -13,7 +13,7 @@ COPY . .
 # Build the project
 RUN mkdir build
 WORKDIR /usr/src/app/build
-RUN cmake .. && make server_app
+RUN cmake -DCMAKE_TLS_VERIFY=false .. && make server_app
 
 # Set environment variable for storage
 ENV STORAGE_PATH="/usr/src/app/my_storage"

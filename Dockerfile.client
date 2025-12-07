@@ -13,7 +13,8 @@ COPY . .
 # Build the project
 RUN mkdir build
 WORKDIR /usr/src/app/build
-RUN cmake .. && make client_app
+# RUN cmake .. && make client_app
+RUN cmake -DCMAKE_TLS_VERIFY=false .. && make client_app
 
 # NETWORK EXPLANATION:
 # By default, this client tries to connect to "127.0.0.1" (localhost).
