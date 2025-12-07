@@ -27,6 +27,9 @@ private:
     // Helper to convert string to lower case
     std::string toLower(const std::string& str);
 
+    // Helper to handle invalid command
+    std::string handleInvalidCommand(const std::string& commandName);
+
 public:
     System(std::shared_ptr<IOHandler> io, std::shared_ptr<Storage> storage, std::shared_ptr<Compressor> compressor); 
     
