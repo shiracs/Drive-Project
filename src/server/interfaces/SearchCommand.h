@@ -4,7 +4,7 @@
 #include "Command.h"
 
 class SearchCommand : public Command {
-    bool isValidInputStructure(const std::vector<std::string>& args) const;
+    bool isValidInputStructure(const std::vector<std::string>& args) override;
 
 public:
     // Inherit the constructor from the Command class

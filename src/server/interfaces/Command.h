@@ -9,6 +9,12 @@
 #include "../interfaces/IOHandler.h"
 
 class Command {
+private:
+    // Verify that the inpute is valid
+    virtual bool isValidInputStructure(const std::vector<std::string>& args) const = 0;
+    virtual bool isValidInputLogic(const std::vector<std::string>& args) const {
+        return true; 
+    }
 protected:
     // The commands in this project need access to a storage obj, a compressor obj and an io obj.
     std::shared_ptr<Storage> storage;
