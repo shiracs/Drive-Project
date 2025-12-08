@@ -73,3 +73,8 @@ bool FileStorage::deleteFile(const std::string& fileName) {
     // if the file does not exist- return false, else delete and return true
     return fs::remove(filePath);
 }
+
+bool FileStorage::fileExists(const std::string& fileName) {
+    fs::path filePath = directoryPath / fileName;
+    return fs::exists(filePath);
+}

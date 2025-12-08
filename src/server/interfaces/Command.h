@@ -14,6 +14,11 @@ protected:
     std::shared_ptr<Storage> storage;
     std::shared_ptr<Compressor> compressor;
     std::shared_ptr<IOHandler> io;
+        // Verify that the inpute is valid
+    virtual bool isValidInputStructure(const std::vector<std::string>& args) const = 0;
+    virtual bool isValidInputLogic(const std::vector<std::string>& args) const {
+        return true; 
+    }
 public:
     Command(std::shared_ptr<Storage> s, std::shared_ptr<Compressor> c, std::shared_ptr<IOHandler> i) 
         : storage(s), compressor(c), io(i) {}

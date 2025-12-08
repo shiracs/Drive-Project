@@ -42,11 +42,11 @@ void System::run() {
             try {
                 commandMap[commandName]->execute(args);
             } catch (...) {
-                io->output("500 Internal Server Error");
+                // Silent failure on exceptions
             }
         } else {
-            // Handle unknown commands
-            io->output("400 Bad Request");
+            // Handle invalid command
+            io->output(handleInvalidCommand(commandName));
         }
     }
 }
@@ -81,4 +81,9 @@ std::string System::toLower(const std::string& str) {
     std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(),
                    [](unsigned char c){ return std::tolower(c); });
     return lowerStr;
+}
+
+// handle invalid command
+std::string System::handleInvalidCommand(const std::string& commandName) {
+    return "400 Bad Request";
 }

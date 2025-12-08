@@ -63,8 +63,8 @@ protected:
         if (!io->collectedOutputs.empty()) {
             std::string rawLine = io->collectedOutputs[0];
             
-            // we expect: "200 OK\n\n<results>"
-            std::string header = "200 OK\n\n";
+            // we expect: "200 Ok \n\n<results>"
+            std::string header = "200 Ok\n\n";
             std::string actualContent = "";
 
             // check that the response starts with the correct header

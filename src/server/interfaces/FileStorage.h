@@ -16,6 +16,7 @@ public:
     std::string readFile(const std::string& fileName) override;
     std::vector<std::string> listAllFiles() override;
     bool deleteFile(const std::string& fileName) override;
+    bool fileExists(const std::string& fileName) override;
 };
 
 #endif
