@@ -7,8 +7,8 @@ class AddCommand : public Command {
     
 private:
     // Validates the input arguments for the add command
-    bool isValidInputStructure(const std::vector<std::string>& args) override;
-    bool isValidInputLogic(const std::vector<std::string>& args) override;
+    bool isValidInputStructure(const std::vector<std::string>& args) const override;
+    bool isValidInputLogic(const std::vector<std::string>& args) const override;
 public:
     // Inherit the constructor from the Command class
     using Command::Command; 
