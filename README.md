@@ -20,19 +20,25 @@ docker-compose up -d server
 
 ### 3. Run the Client
 Launch the client interactive shell. It will automatically connect to the server.
+There are 2 clients: cpp client, and python client.
+#### 3.1 to run the cpp-client: 
 ```bash
 docker-compose run --rm client
+```
+#### 3.2 or, you can run the python-client: 
+```bash
+docker-compose run --rm client-python
 ```
 You can now type commands like post, get, search, etc.
 To exit the client, type exit or press Ctrl+C.
 
-### 4. Run the Unit Tests
+### 5. Run the Unit Tests
 To run the automated test suite (Google Test) in an isolated container:
 ```bash
 docker-compose run --rm tests
 ```
 
-### 5. Stop and Clean Up
+### 6. Stop and Clean Up
 To stop the server and remove the containers:
 ```bash
 docker-compose down

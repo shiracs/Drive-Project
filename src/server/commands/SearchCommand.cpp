@@ -45,7 +45,7 @@ void SearchCommand::execute(const std::vector<std::string>& args) {
             }
         }
         
-        // send: "200 OK" + 2 empty lines + content
+        // send: "200 Ok" + 2 empty lines + content
         std::string response = "200 Ok\n\n" + resultLine;
         io->output(response);
 
