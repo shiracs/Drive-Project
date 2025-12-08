@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
             // output the response
             ui->output(statusLine);
 
-            if (statusLine == "200 OK") {
+            if (statusLine == "200 Ok") {
                 std::string emptyLine = readSocketLine(sock);
                 ui->output(emptyLine);
 
