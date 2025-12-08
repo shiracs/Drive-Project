@@ -81,7 +81,7 @@ TEST_F(GetCommandTest, GetExistingFile) {
     std::string filename = "test_get_existing_file.txt";
     std::string comprressed_content = "A3#";    
     std::string expected_content = "AAA";
-    std::string expected_protocol_response = "200 OK\n\n" + expected_content;
+    std::string expected_protocol_response = "200 Ok\n\n" + expected_content;
 
     // create the file with known content
     {

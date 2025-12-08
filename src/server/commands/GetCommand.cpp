@@ -19,7 +19,7 @@ void GetCommand::execute(const std::vector<std::string>& args) {
         
         // send: "200 OK" + newline + empty line + content
         // SocketIOHandler adds the final newline automatically.
-        std::string response = "200 OK\n\n" + originalText;
+        std::string response = "200 Ok\n\n" + originalText;
         
         io->output(response);
 
