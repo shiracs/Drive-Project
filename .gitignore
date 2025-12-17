@@ -208,3 +208,5 @@ __marimo__/
 
 .vscode
 my_storage_data/
+src/web-server/node_modules/
+src/web-server/package-lock.json

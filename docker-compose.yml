@@ -53,7 +53,18 @@ services:
       stdin_open: true 
       tty: true
       networks:
-        - drive-network      
+        - drive-network    
+
+  web-server:
+    build:
+      context: ./src/web-server
+      dockerfile: Dockerfile.webServer
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    networks:
+      - drive-network  
 
 networks:
   drive-network:
