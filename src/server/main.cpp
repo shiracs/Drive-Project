@@ -19,8 +19,11 @@ int main(int argc, char* argv[]) {
     // create the shared Storage and Compressor instances
     auto sharedStorage = std::make_shared<FileStorage>("./my_storage");
     auto sharedCompressor = std::make_shared<RleCompressor>();
+    
     // create the ClientHandler instance
-    ClientHandler clientHandler;
+    const char* poolSizeEnv = std::getenv("THREAD_POOL_SIZE");
+    int poolSize = (poolSizeEnv != nullptr) ? std::atoi(poolSizeEnv) : 4; 
+    ClientHandler clientHandler(poolSize);
 
     // set up the TCP server socket
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);

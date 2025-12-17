@@ -1,4 +1,13 @@
 # Drive-Project (Client-Server Architecture)
+Message to the Checker:
+ - all the code from the first excercise is in the ex1 branch: 
+ ```bash
+ git checkout ex1
+ ```
+ - all the code from the second excercise is in the ex2 branch:
+```bash
+ git checkout ex2
+ ```
 
 ## How to Run (with Docker Compose)
 

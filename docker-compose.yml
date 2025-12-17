@@ -16,6 +16,8 @@ services:
       - ./my_storage_data:/usr/src/app/my_storage
     networks:
       - drive-network
+    environment:
+      - THREAD_POOL_SIZE=5
 
   client:
     build:
