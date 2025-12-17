@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-// dummy endpoint to check server is running
-router.get('/status', (req, res) => {
-    res.json({ status: '200' });
-});
+const userController = require('../controllers/UserController');
+
+router.post('/users', userController.registerUser);
 
 module.exports = router;
