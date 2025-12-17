@@ -7,7 +7,7 @@
 void ClientHandler::handle(int clientSocket, std::shared_ptr<Storage> storage, std::shared_ptr<Compressor> compressor) {
 
     // create thread to handle the client
-    std::thread t([clientSocket, storage, compressor]() {
+    pool.addTask([clientSocket, storage, compressor]() {
         try {
             auto io = std::make_shared<SocketIOHandler>(clientSocket);
             // Create and run the system for this client
@@ -17,7 +17,4 @@ void ClientHandler::handle(int clientSocket, std::shared_ptr<Storage> storage, s
         } catch (...) {
         }
     });
-
-    // detach the thread so it runs independently
-    t.detach();
 }
