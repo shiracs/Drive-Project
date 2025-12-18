@@ -17,11 +17,12 @@ const User = {
     console.log("Current Users in Store:", users);
     return userData;
   },
-};
 
   // Find a user by ID (username in this case)
-User.findById = (id) => {
-  return users.find((u) => u.username === id);
+  findById: (id) => {
+    return users.find((u) => u.username === id);
+  },
+
 };
 
 module.exports = User;
