@@ -1,4 +1,4 @@
-const net = require('net');
+import net from 'net';
 
 /**
  * Sends a command to the C++ server and returns the response.
@@ -7,22 +7,43 @@ const net = require('net');
  */
 const sendToCpp = (command) => {
     return new Promise((resolve, reject) => {
-        // 'server' is the service name as defined in docker-compose
-        const client = net.createConnection({ port: 8080, host: 'server' }, () => {
-            // sending the command to the C++ server
+        const client = net.createConnection({ port: 8080, host: 'server' });
+        
+        let responseData = '';
+        let commandSent = false;
+
+        client.on('connect', () => {
+            // שולחים את הפקודה האמיתית
             client.write(command + '\n');
+            commandSent = true;
         });
 
         client.on('data', (data) => {
-            resolve(data.toString());
-            client.end(); 
+            responseData += data.toString();
+            
+            // בשרת ה-C++, התגובה מסתיימת ב-\n
+            // ברגע שקיבלנו תגובה שלמה לפקודה שלנו, אנחנו שולחים 'exit'
+            if (responseData.includes('\n')) {
+                client.write('exit\n'); 
+                // אנחנו לא סוגרים ידנית, אלא מחכים שהשרת יסגור את הצד שלו
+            }
+        });
+
+        client.on('end', () => {
+            // כאן ה-C++ סגר את הסוקט מרצונו אחרי ה-exit
+            resolve(responseData.trim());
         });
 
         client.on('error', (err) => {
-            console.error('Connection to CPP server failed:', err.message);
-            reject(err);
+            reject(new Error(`TCP Error: ${err.message}`));
+        });
+
+        client.setTimeout(4000);
+        client.on('timeout', () => {
+            client.destroy();
+            reject(new Error('C++ Server Timeout'));
         });
     });
 };
 
-module.exports = { sendToCpp };
+export default { sendToCpp };

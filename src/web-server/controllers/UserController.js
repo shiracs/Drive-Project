@@ -1,5 +1,4 @@
-const User = require("../models/UserModel");
-
+import UserModel from "../models/UserModel.js";
 /**
  * Register a new user
  * @param {*} req 
@@ -17,12 +16,12 @@ const registerUser = (req, res) => {
   }
 
   // Check if user already exists
-  if (User.exists(username)) {
+  if (UserModel.exists(username)) {
     return res.status(400).json({ error: "User already exists" });
   }
 
   // Create new user through UserModel
-  const newUser = User.create({
+  const newUser = UserModel.create({
     username,
     password,
     fullName,
@@ -34,16 +33,17 @@ const registerUser = (req, res) => {
   res.status(201).json(userResponse);
 };
 
+/**
+ * Get user by UUID
+ * @param {*} req 
+ * @param {*} res 
+ * @returns the user data or error message
+ */
 const getUserById = (req, res) => {
   const { id } = req.params;
 
-  // Basic validation
-  if (!id) {
-    return res.status(400).json({ error: "User ID is required" });
-  }
-
   // Find user by ID
-  const user = User.findById(id);
+  const user = UserModel.findById(id);
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
@@ -53,6 +53,12 @@ const getUserById = (req, res) => {
   res.status(200).json(userResponse);
 };
 
+/**
+ * Generate a token for a user
+ * @param {*} req 
+ * @param {*} res 
+ * @returns the token or error message
+ */
 const generateToken = (req, res) => {
   const { username, password } = req.body;
 
@@ -61,13 +67,14 @@ const generateToken = (req, res) => {
     return res.status(400).json({ error: "Username and password are required" });
   }
 
-  // TODO: Authenticate user
-  const user = User.findById(username);
-  if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
-    }
+  // Find user by username and validate password
+  const user = UserModel.findByUsername(username);
+  if (!user || user.password !== password) {
+    return res.status(401).json({ error: "Invalid username or password" });
+  }
 
-  res.json({ id: user.username });
+  // The token is simply the user ID for now
+  res.status(200).json({ id: user.id });
 };
 
-module.exports = { registerUser, getUserById, generateToken };
+export default { registerUser, getUserById, generateToken };

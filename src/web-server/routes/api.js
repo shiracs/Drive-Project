@@ -1,10 +1,13 @@
-const express = require('express');
+import express from 'express';
+import UserController from '../controllers/UserController.js';
+import FileController from '../controllers/FileController.js';
+
 const router = express.Router();
 
-const userController = require('../controllers/UserController');
+router.post('/users', UserController.registerUser);
+router.get('/users/:id', UserController.getUserById);
+router.post('/tokens', UserController.generateToken);
 
-router.post('/users', userController.registerUser);
-router.get('/users/:id', userController.getUserById);
-router.post('/tokens', userController.generateToken);
-
-module.exports = router;
+router.get('/files', FileController.getFiles);
+router.post('/files', FileController.uploadFile);
+export default router;
