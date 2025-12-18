@@ -1,5 +1,5 @@
-const express = require('express');
-const apiRoutes = require('./routes/api');
+import express from 'express';
+import apiRoutes from './routes/api.js';
 
 const app = express();
 const PORT =  3000;
@@ -11,4 +11,4 @@ app.listen(PORT, () => {
     console.log(`Web Server is listening on port ${PORT}`);
 });
 
-module.exports = app;
+export default app;
