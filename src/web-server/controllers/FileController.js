@@ -1,4 +1,4 @@
-import { sendToCpp } from '../services/cppService.js';
+import sendToCpp from '../services/cppService.js';
 
 /**
  * Upload a user's file to the cpp server
