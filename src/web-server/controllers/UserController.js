@@ -53,4 +53,21 @@ const getUserById = (req, res) => {
   res.status(200).json(userResponse);
 };
 
-module.exports = { registerUser, getUserById };
+const generateToken = (req, res) => {
+  const { username, password } = req.body;
+
+  // Basic validation
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username and password are required" });
+  }
+
+  // TODO: Authenticate user
+  const user = User.findById(username);
+  if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+    }
+
+  res.json({ id: user.username });
+};
+
+module.exports = { registerUser, getUserById, generateToken };
