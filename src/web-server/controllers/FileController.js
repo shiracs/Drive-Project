@@ -1,5 +1,11 @@
 import { sendToCpp } from '../services/cppService.js';
 
+/**
+ * Upload a user's file to the cpp server
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 const uploadFile = async (req, res) => {
     const { filename, content } = req.body;
     // Extract user ID from authorization header
@@ -30,6 +36,12 @@ const uploadFile = async (req, res) => {
     }
 };
 
+/**
+ * Get list of user's files from the cpp server
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 const getFiles = async (req, res) => {
     const userId = req.headers['authorization'];
 
