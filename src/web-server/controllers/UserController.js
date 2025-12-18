@@ -34,4 +34,23 @@ const registerUser = (req, res) => {
   res.status(201).json(userResponse);
 };
 
-module.exports = { registerUser };
+const getUserById = (req, res) => {
+  const { id } = req.params;
+
+  // Basic validation
+  if (!id) {
+    return res.status(400).json({ error: "User ID is required" });
+  }
+
+  // Find user by ID
+  const user = User.findById(id);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  // return the user data without the password
+  const { password: _, ...userResponse } = user;
+  res.status(200).json(userResponse);
+};
+
+module.exports = { registerUser, getUserById };
