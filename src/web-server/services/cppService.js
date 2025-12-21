@@ -5,7 +5,7 @@ import net from 'net';
  * @param {string} command
  * @returns {Promise<string>}
  */
-const sendToCpp = (command) => {
+export const sendToCpp = (command) => {
     return new Promise((resolve, reject) => {
         const client = net.createConnection({ port: 8080, host: 'server' });
         
@@ -45,5 +45,3 @@ const sendToCpp = (command) => {
         });
     });
 };
-
-export default { sendToCpp };

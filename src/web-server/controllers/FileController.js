@@ -1,77 +1,85 @@
-import sendToCpp from '../services/cppService.js';
+import FileModel from "../models/FileModel.js";
+import UserModel from "../models/UserModel.js";
+import PermissionsModel from "../models/PermissionsModel.js";
+import { sendToCpp } from "../services/cppService.js";
+import { ROLES } from "../enums/Roles.js";
 
 /**
- * Upload a user's file to the cpp server
- * @param {*} req 
- * @param {*} res 
- * @returns 
+ * GET /api/files
+ * Returns list of files the user has permission to view
+ */
+const getUserFiles = async (req, res) => {
+  const userId = req.headers["authorization"];
+
+  if (!UserModel.isValidId(userId))
+    return res.status(401).json({ error: "Unauthorized" });
+
+  const userFiles = FileModel.getFilesByUserId(userId);
+  res.json(userFiles.map((f) => ({ id: f.id, name: f.name })));
+};
+
+/**
+ * POST /api/files
+ * Creates records of the file here and sends file content to C++ server
  */
 const uploadFile = async (req, res) => {
-    const { filename, content } = req.body;
-    // Extract user ID from authorization header
-    const userId = req.headers['authorization']; 
+  const userId = req.headers["authorization"];
+  const { filename, content } = req.body;
 
-    if (!userId) {
-        return res.status(401).json({ error: "Unauthorized: Missing user ID in header" });
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (!filename || !content) {
+    return res.status(400).json({ error: "Missing required data" });
+  }
+
+  try {
+    // Create file record
+    const fileRecord = FileModel.createFileRecord(
+      userId,
+      filename,
+      content.length
+    );
+
+    // create OWNER permissions for the uploader
+    PermissionsModel.createFilePermission(fileRecord.id, userId, ROLES.OWNER);
+
+    // Send content to C++ using the unique UUID as the filename
+    const cppResponse = await sendToCpp(`POST ${fileRecord.id} ${content}`);
+
+    if (cppResponse.includes("201 Created")) {
+      return res.status(201).json(fileRecord);
     }
-
-    if (!filename || content === undefined) {
-        return res.status(400).json({ error: "Missing filename or content" });
-    }
-
-    try {
-        // Create a user-specific filename
-        const userSpecificFilename = `${userId}_${filename}`;
-        const command = `POST ${userSpecificFilename} ${content}`;
-        
-        const cppResponse = await sendToCpp(command);
-        const statusCode = parseInt(cppResponse.substring(0, 3));
-
-        if (!isNaN(statusCode)) {
-            return res.status(statusCode).json({ message: cppResponse });
-        }
-        res.status(500).json({ error: "Unexpected response", raw: cppResponse });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    res.status(500).json({ error: "Storage error", detail: cppResponse });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 /**
- * Get list of user's files from the cpp server
- * @param {*} req 
- * @param {*} res 
- * @returns 
+ * GET /api/files/:id
+ * Fetches file content if user has at least READER role
  */
-const getFiles = async (req, res) => {
-    const userId = req.headers['authorization'];
+const getFileContent = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { id } = req.params;
 
-    if (!userId) {
-        return res.status(401).json({ error: "Unauthorized: Missing user ID in header" });
-    }
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
-    try {
-        // search for files belonging to the user
-        const command = `SEARCH ${userId}_`;
-        const cppResponse = await sendToCpp(command);
+  // Check permission in storage here before going to C++ server
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.READER)) {
+    return res.status(403).json({ error: "Forbidden: No read access" });
+  }
 
-        if (cppResponse.includes("200 Ok")) {
-            const parts = cppResponse.split('\n\n');
-            const filesString = (parts[1] || "").trim(); 
-            if (!filesString) {
-                return res.status(200).json([]);
-            }
-
-            const fileList = filesString.split(' ')
-                .filter(name => name.startsWith(`${userId}_`))
-                .map(name => name.replace(`${userId}_`, "")); 
-
-            return res.status(200).json(fileList);
-        }
-        
-        res.status(500).json({ error: "Failed to retrieve files", raw: cppResponse });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+  try {
+    const cppResponse = await sendToCpp(`GET ${id}`);
+    const content = cppResponse.split("\n\n")[1] || "";
+    res.status(200).send(content);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-export default { uploadFile, getFiles };
+export default { getUserFiles, uploadFile, getFileContent };
