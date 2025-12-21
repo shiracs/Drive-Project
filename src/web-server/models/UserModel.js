@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
 // !Volatile user storage for now
-const users = [];
+const USERS = [];
 
 /**
  * Check if a user with the given username exists
@@ -8,7 +8,7 @@ const users = [];
  * @return {boolean} true if user exists, false otherwise
  */
 const exists = (username) => {
-  return users.some((u) => u.username === username);
+  return USERS.some((u) => u.username === username);
 };
 
 /**
@@ -21,8 +21,8 @@ const create = (userData) => {
     id: uuid(),
     ...userData,
   };
-  users.push(newUser);
-  console.log("Current Users in Store:", users);
+  USERS.push(newUser);
+  console.log("Current Users in Store:", USERS);
   return newUser;
 };
 
@@ -32,7 +32,7 @@ const create = (userData) => {
  * @returns the user data or null if not found
  */
 const findById = (id) => {
-  return users.find((u) => u.id === id);
+  return USERS.find((u) => u.id === id);
 };
 
 /**
@@ -41,7 +41,7 @@ const findById = (id) => {
  * @returns the user data or null if not found
  */
 const findByUsername = (username) => {
-  return users.find((u) => u.username === username);
+  return USERS.find((u) => u.username === username);
 };
 
 /**
@@ -49,8 +49,8 @@ const findByUsername = (username) => {
  * @param {*} userId 
  * @returns 
  */
-const checkUnauthorized = (userId) => {
-  return !userId || !findById(userId);
+const isValidId = (userId) => {
+  return userId && findById(userId);
 };
 
-export default { exists, create, findById, findByUsername, checkUnauthorized };
+export default { exists, create, findById, findByUsername, isValidId };

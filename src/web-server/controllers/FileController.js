@@ -1,6 +1,8 @@
 import FileModel from "../models/FileModel.js";
 import UserModel from "../models/UserModel.js";
+import PermissionsModel from "../models/PermissionsModel.js";
 import { sendToCpp } from "../services/cppService.js";
+import { ROLES } from "../enums/Roles.js";
 
 /**
  * GET /api/files
@@ -9,7 +11,7 @@ import { sendToCpp } from "../services/cppService.js";
 const getUserFiles = async (req, res) => {
   const userId = req.headers["authorization"];
 
-  if (UserModel.checkUnauthorized(userId))
+  if (!UserModel.isValidId(userId))
     return res.status(401).json({ error: "Unauthorized" });
 
   const userFiles = FileModel.getFilesByUserId(userId);
@@ -18,26 +20,29 @@ const getUserFiles = async (req, res) => {
 
 /**
  * POST /api/files
- * Creates metadata here and sends file content to C++ server
+ * Creates records of the file here and sends file content to C++ server
  */
 const uploadFile = async (req, res) => {
   const userId = req.headers["authorization"];
   const { filename, content } = req.body;
 
-  if (UserModel.checkUnauthorized(userId)) {
+  if (!UserModel.isValidId(userId)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  if (!filename || content === undefined) {
+  if (!filename || !content) {
     return res.status(400).json({ error: "Missing required data" });
   }
 
   try {
-    // Create file record and owner permission
+    // Create file record
     const fileRecord = FileModel.createFileRecord(
       userId,
       filename,
       content.length
     );
+
+    // create OWNER permissions for the uploader
+    PermissionsModel.createFilePermission(fileRecord.id, userId, ROLES.OWNER);
 
     // Send content to C++ using the unique UUID as the filename
     const cppResponse = await sendToCpp(`POST ${fileRecord.id} ${content}`);
@@ -59,12 +64,12 @@ const getFileContent = async (req, res) => {
   const userId = req.headers["authorization"];
   const { id } = req.params;
 
-  if (UserModel.checkUnauthorized(userId)) {
+  if (!UserModel.isValidId(userId)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
   // Check permission in storage here before going to C++ server
-  if (!FileModel.checkPermission(userId, id, FileModel.ROLES.READER)) {
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.READER)) {
     return res.status(403).json({ error: "Forbidden: No read access" });
   }
 
