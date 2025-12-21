@@ -40,7 +40,9 @@ const createFilePermission = (fileId, userId, role) => {
  */
 const checkPermission = (userId, fileId, requiredRole) => {
   // find the permission record for the userId and fileId
-  const permission = PERMISSIONS.find((p) => p.fileId === fileId && p.userId === userId);
+  const permission = PERMISSIONS.find(
+    (p) => p.fileId === fileId && p.userId === userId
+  );
 
   if (!permission) return false;
   if (requiredRole === ROLES.READER) return true; // Anyone with a permission record can read
@@ -57,8 +59,27 @@ const checkPermission = (userId, fileId, requiredRole) => {
  * @returns {Array} List of authorized file objects
  */
 const getPermittedFilesOfUser = (userId) => {
-  const fileIds = PERMISSIONS.filter((p) => p.userId === userId).map((p) => p.fileId);
+  const fileIds = PERMISSIONS.filter((p) => p.userId === userId).map(
+    (p) => p.fileId
+  );
   return fileIds;
 };
 
-export default { createFilePermission, checkPermission, getPermittedFilesOfUser };
+/**
+ * Removes all permission records associated with a file
+ * @param {*} fileId
+ */
+const removeAllPermissionsOfFile = (fileId) => {
+  for (let i = PERMISSIONS.length - 1; i >= 0; i--) {
+    if (PERMISSIONS[i].fileId === fileId) {
+      PERMISSIONS.splice(i, 1);
+    }
+  }
+};
+
+export default {
+  createFilePermission,
+  checkPermission,
+  getPermittedFilesOfUser,
+  removeAllPermissionsOfFile,
+};

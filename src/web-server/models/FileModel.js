@@ -40,4 +40,13 @@ const getFilesByUserId = (userId) => {
   return FILES.filter((f) => fileIds.includes(f.id));
 };
 
-export default { createFileRecord, getFilesByUserId };
+/**
+ * Removes a file record by the fileId
+ * @param {*} id 
+ */
+const removeFileRecord = (id) => {
+  const index = FILES.findIndex(f => f.id === id);
+  if (index !== -1) FILES.splice(index, 1);
+};
+
+export default { createFileRecord, getFilesByUserId, removeFileRecord };
