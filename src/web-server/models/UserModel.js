@@ -44,4 +44,13 @@ const findByUsername = (username) => {
   return users.find((u) => u.username === username);
 };
 
-export default { exists, create, findById, findByUsername };
+/**
+ * Check if userId is valid
+ * @param {*} userId 
+ * @returns 
+ */
+const checkUnauthorized = (userId) => {
+  return !userId || !findById(userId);
+};
+
+export default { exists, create, findById, findByUsername, checkUnauthorized };

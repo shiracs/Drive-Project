@@ -8,6 +8,8 @@ router.post('/users', UserController.registerUser);
 router.get('/users/:id', UserController.getUserById);
 router.post('/tokens', UserController.generateToken);
 
-router.get('/files', FileController.getFiles);
-router.post('/files', FileController.uploadFile);
+router.get('/files', FileController.getUserFiles);         
+router.post('/files', FileController.uploadFile);         
+router.get('/files/:id', FileController.getFileContent); 
+
 export default router;
