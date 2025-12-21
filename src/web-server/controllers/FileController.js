@@ -136,7 +136,13 @@ const deleteFile = async (req, res) => {
     ) {
       FileModel.removeFileRecord(id);
       PermissionsModel.removeAllPermissionsOfFile(id);
-      return res.status(204).send();
+      return res
+        .status(cppResponse.includes("204 No Content") ? 204 : 404)
+        .send({
+          message: cppResponse.includes("204 No Content")
+            ? "Deleted successfully"
+            : "File not found",
+        });
     }
     res.status(500).json({ error: "Delete failed" });
   } catch (error) {
