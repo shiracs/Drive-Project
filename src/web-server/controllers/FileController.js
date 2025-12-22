@@ -150,10 +150,64 @@ const deleteFile = async (req, res) => {
   }
 };
 
-export default {
-  getUserFiles,
-  uploadFile,
-  getFileContent,
-  updateFile,
-  deleteFile,
+/**
+ * GET /api/files/:id/permissions
+ * Returns all permission records for a specific file - only for the OWNER can view 
+ */
+const getFilePermissions = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { id } = req.params;
+
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // Only the OWNER can see the full list of permissions
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+    return res.status(403).json({ error: "Forbidden: Only owners can view permission lists" });
+  }
+
+  const permissions = PermissionsModel.getPermissionsByFileId(id);
+  res.json(permissions);
+};
+
+/**
+ * POST /api/files/:id/permissions
+ * Grants a new permission to a user for a specific file
+ */
+const grantPermission = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { id } = req.params;
+  const { targetUserId, role } = req.body; 
+
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  if (!targetUserId || !role) {
+    return res.status(400).json({ error: "Missing targetUserId or role" });
+  }
+
+  // Verify the target user exists
+  if (!UserModel.isValidId(targetUserId)) {
+    return res.status(404).json({ error: "Target user not found" });
+  }
+
+  // Only the OWNER of the file can grant new permissions
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+    return res.status(403).json({ error: "Forbidden: Only owners can grant permissions" });
+  }
+
+  const newPermission = PermissionsModel.createFilePermission(id, targetUserId, role);
+  res.status(201).json(newPermission);
+};
+
+export default { 
+  getUserFiles, 
+  uploadFile, 
+  getFileContent, 
+  updateFile, 
+  deleteFile, 
+  getFilePermissions, 
+  grantPermission 
 };

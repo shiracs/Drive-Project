@@ -76,10 +76,14 @@ const removeAllPermissionsOfFile = (fileId) => {
     }
   }
 };
+const getPermissionsByFileId = (fileId) => {
+  return PERMISSIONS.filter(p => p.fileId === fileId);
+};
 
-export default {
-  createFilePermission,
-  checkPermission,
-  getPermittedFilesOfUser,
+export default { 
+  createFilePermission, 
+  checkPermission, 
+  getPermittedFilesOfUser, 
   removeAllPermissionsOfFile,
+  getPermissionsByFileId 
 };
