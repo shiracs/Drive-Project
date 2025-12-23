@@ -166,7 +166,7 @@ const searchFilesByQuery = async (req, res) => {
   }
 
   try {
-     // First, get the user's permitted files
+    // First, get the user's permitted files
     const allUsersFiles = FileModel.getFilesByUserId(userId);
     const cppResponse = await sendToCpp(`SEARCH ${query}`);
     let contentMatchIds = [];
@@ -181,7 +181,7 @@ const searchFilesByQuery = async (req, res) => {
       file.name.includes(query) || contentMatchIds.includes(file.id)
     );
 
-    const finalResponse = foundFiles.map(f => f.name);
+    const finalResponse = foundFiles.map(f =>{ id: f.id, name: f.name} );
     return res.status(200).json(finalResponse);
 
   } catch (error) {
