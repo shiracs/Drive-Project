@@ -150,10 +150,71 @@ const deleteFile = async (req, res) => {
   }
 };
 
+/** 
+ * GET /api/search/:query
+ * Searches files by name or content containing the query string 
+ */
+const searchFilesByQuery = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { query } = req.params;
+
+  // check user authorization - every user must be authorized
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // check if query is provided
+  if (!query) {
+    return res.status(400).json({ error: "Missing search query" });
+  }
+
+  // Search file names in FileModel
+  const allUsersFiles = FileModel.getFilesByUserId(userId);
+  const nameMatchedFiles = allUsersFiles.filter(file => 
+    file.name.includes(query)
+  );
+
+  let contentMatchIds = [];
+  // content will be searched in the C++ server
+  try {
+    const cppResponse = await sendToCpp(`SEARCH ${query}`);
+    if (cppResponse.includes("200 Ok")) {
+      const parts = cppResponse.split("\n\n");
+        if (parts.length > 1 && parts[1].trim() !== "") {
+            contentMatchIds = parts[1].trim().split(" ");
+        }
+      }
+    } catch (error) {
+      return res.status(500).json({ error: "Search failed", detail: error.message });
+    }
+
+  // Combine results and remove duplicates
+  const resultsMap = new Map();
+
+  // first, adding name matched files
+  nameMatchedFiles.forEach(file => {
+    resultsMap.set(file.id, { id: file.id, name: file.name });
+  });
+
+  // then, adding content matched files
+  contentMatchIds.forEach(id => {
+    const fileRecord = allUsersFiles.find(f => f.id === id);
+    
+    if (fileRecord) {
+      resultsMap.set(id, { id: fileRecord.id, name: fileRecord.name });
+    }
+  });
+
+  // Prepare final response
+  const finalResponse = Array.from(resultsMap.values()).map(file => file.name);
+  return res.status(200).json(finalResponse);
+}
+
 export default {
   getUserFiles,
   uploadFile,
   getFileContent,
   updateFile,
   deleteFile,
+  searchFilesByQuery
 };

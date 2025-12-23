@@ -15,4 +15,6 @@ router.get('/files/:id', FileController.getFileContent);
 router.patch('/files/:id', FileController.updateFile);
 router.delete('/files/:id', FileController.deleteFile);
 
+router.get('/search/:query', FileController.searchFilesByQuery);
+
 export default router;
