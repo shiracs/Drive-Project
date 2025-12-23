@@ -177,46 +177,29 @@ const searchFilesByQuery = async (req, res) => {
     return res.status(400).json({ error: "Missing search query" });
   }
 
-  // Search file names in FileModel
-  const allUsersFiles = FileModel.getFilesByUserId(userId);
-  const nameMatchedFiles = allUsersFiles.filter(file => 
-    file.name.includes(query)
-  );
-
-  let contentMatchIds = [];
-  // content will be searched in the C++ server
   try {
+    // First, get the user's permitted files
+    const allUsersFiles = FileModel.getFilesByUserId(userId);
     const cppResponse = await sendToCpp(`SEARCH ${query}`);
+    let contentMatchIds = [];
+
     if (cppResponse.includes("200 Ok")) {
       const parts = cppResponse.split("\n\n");
-        if (parts.length > 1 && parts[1].trim() !== "") {
-            contentMatchIds = parts[1].trim().split(" ");
-        }
-      }
-    } catch (error) {
-      return res.status(500).json({ error: "Search failed", detail: error.message });
+      contentMatchIds = parts.length > 1 ? parts[1].trim().split(" ") : [];
     }
 
-  // Combine results and remove duplicates
-  const resultsMap = new Map();
+    // Filter files that match by name or content
+    const foundFiles = allUsersFiles.filter(file => 
+      file.name.includes(query) || contentMatchIds.includes(file.id)
+    );
 
-  // first, adding name matched files
-  nameMatchedFiles.forEach(file => {
-    resultsMap.set(file.id, { id: file.id, name: file.name });
-  });
+    const finalResponse = foundFiles.map(f =>{ id: f.id, name: f.name} );
+    return res.status(200).json(finalResponse);
 
-  // then, adding content matched files
-  contentMatchIds.forEach(id => {
-    const fileRecord = allUsersFiles.find(f => f.id === id);
-    
-    if (fileRecord) {
-      resultsMap.set(id, { id: fileRecord.id, name: fileRecord.name });
-    }
-  });
-
-  // Prepare final response
-  const finalResponse = Array.from(resultsMap.values()).map(file => file.name);
-  return res.status(200).json(finalResponse);
+  } catch (error) {
+    console.error("Search Error:", error);
+    return res.status(500).json({ error: "Search failed", detail: error.message });
+  }
 }
 
 export default {
