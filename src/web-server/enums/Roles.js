@@ -3,3 +3,7 @@ export const ROLES = {
   WRITER: "WRITER",
   READER: "READER",
 };
+
+export const isValidRole = (role) => {
+  return Object.values(ROLES).includes(role);
+}

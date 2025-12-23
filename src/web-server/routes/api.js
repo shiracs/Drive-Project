@@ -17,4 +17,7 @@ router.delete('/files/:id', FileController.deleteFile);
 
 router.get('/files/:id/permissions', FileController.getFilePermissions);
 router.post('/files/:id/permissions', FileController.grantPermission);
+
+router.patch('/files/:id/permissions/:pId', FileController.updatePermission);
+router.delete('/files/:id/permissions/:pId', FileController.deletePermission);
 export default router;

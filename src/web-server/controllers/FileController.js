@@ -152,7 +152,7 @@ const deleteFile = async (req, res) => {
 
 /**
  * GET /api/files/:id/permissions
- * Returns all permission records for a specific file - only for the OWNER can view 
+ * Returns all permission records for a specific file - only for the OWNER can view
  */
 const getFilePermissions = async (req, res) => {
   const userId = req.headers["authorization"];
@@ -164,7 +164,9 @@ const getFilePermissions = async (req, res) => {
 
   // Only the OWNER can see the full list of permissions
   if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
-    return res.status(403).json({ error: "Forbidden: Only owners can view permission lists" });
+    return res
+      .status(403)
+      .json({ error: "Forbidden: Only owners can view permission lists" });
   }
 
   const permissions = PermissionsModel.getPermissionsByFileId(id);
@@ -178,7 +180,7 @@ const getFilePermissions = async (req, res) => {
 const grantPermission = async (req, res) => {
   const userId = req.headers["authorization"];
   const { id } = req.params;
-  const { targetUserId, role } = req.body; 
+  const { targetUserId, role } = req.body;
 
   if (!UserModel.isValidId(userId)) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -195,11 +197,69 @@ const grantPermission = async (req, res) => {
 
   // Only the OWNER of the file can grant new permissions
   if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
-    return res.status(403).json({ error: "Forbidden: Only owners can grant permissions" });
+    return res
+      .status(403)
+      .json({ error: "Forbidden: Only owners can grant permissions" });
   }
 
-  const newPermission = PermissionsModel.createFilePermission(id, targetUserId, role);
+  const newPermission = PermissionsModel.createFilePermission(
+    id,
+    targetUserId,
+    role
+  );
   res.status(201).json(newPermission);
+};
+
+/**
+ * PATCH /api/files/:id/permissions/:pId
+ * Updates a specific user's role for a file
+ */
+const updatePermission = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { id: fileId, pId: permissionId } = req.params;
+  const { role: newRole } = req.body;
+
+  if (!UserModel.isValidId(userId))
+    return res.status(401).json({ error: "Unauthorized" });
+  if (!newRole) return res.status(400).json({ error: "Missing new role" });
+
+  // Only the OWNER can modify permissions
+  if (!PermissionsModel.checkPermission(userId, fileId, ROLES.OWNER)) {
+    return res
+      .status(403)
+      .json({ error: "Forbidden: Only owners can update permissions" });
+  }
+
+  const updated = PermissionsModel.updatePermission(permissionId, newRole);
+  if (!updated)
+    return res.status(404).json({ error: "Permission record not found" });
+
+  res.status(200).json(updated);
+};
+
+/**
+ * DELETE /api/files/:id/permissions/:pId
+ * Revokes a specific user's access to a file
+ */
+const deletePermission = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { id, pId } = req.params;
+
+  if (!UserModel.isValidId(userId))
+    return res.status(401).json({ error: "Unauthorized" });
+
+  // Only the OWNER can revoke permissions
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+    return res
+      .status(403)
+      .json({ error: "Forbidden: Only owners can delete permissions" });
+  }
+
+  const success = PermissionsModel.deletePermission(pId);
+  if (!success)
+    return res.status(404).json({ error: "Permission record not found" });
+
+  res.status(204).send();
 };
 
 export default { 
@@ -209,5 +269,7 @@ export default {
   updateFile, 
   deleteFile, 
   getFilePermissions, 
-  grantPermission 
+  grantPermission,
+  updatePermission,
+  deletePermission
 };
