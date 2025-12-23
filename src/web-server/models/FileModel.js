@@ -49,4 +49,28 @@ const removeFileRecord = (id) => {
   if (index !== -1) FILES.splice(index, 1);
 };
 
-export default { createFileRecord, getFilesByUserId, removeFileRecord };
+/**
+ * Updates the name of a file
+ * @param {string} id - The file ID
+ * @param {string} newName - The new name
+ * @returns {boolean} true if successful, false if not found
+ */
+const renameFile = (id, newName) => {
+  const file = FILES.find(f => f.id === id);
+  if (file) {
+    file.name = newName;
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Finds a file record by ID
+ * @param {string} id 
+ * @returns {Object|undefined}
+ */
+const findById = (id) => {
+  return FILES.find(f => f.id === id);
+};
+
+export default { createFileRecord, getFilesByUserId, removeFileRecord, renameFile, findById };
