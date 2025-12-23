@@ -114,6 +114,21 @@ const removeFileRecord = (id) => {
   if (index !== -1) FILES.splice(index, 1);
 };
 
+/**
+ * Updates the name of a file
+ * @param {string} id - The file ID
+ * @param {string} newName - The new name
+ * @returns {boolean} true if successful, false if not found
+ */
+const renameFile = (id, newName) => {
+  const file = FILES.find(f => f.id === id);
+  if (file) {
+    file.name = newName;
+    return true;
+  }
+  return false;
+};
+
 export default { 
   createFileRecord, 
   getFilesByUserId, 
@@ -122,5 +137,6 @@ export default {
   getFilesByParentId,
   getDescendants,
   getAllFilesByUser,
-  validateParent
+  validateParent,
+  renameFile
 };

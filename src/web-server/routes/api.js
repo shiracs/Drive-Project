@@ -17,6 +17,8 @@ router.get('/files/:id', FileController.getResourceContent);
 router.patch('/files/:id', FileController.updateResource);
 router.delete('/files/:id', FileController.deleteFile);
 
+router.get('/search/:query', FileController.searchFilesByQuery);
+
 // Permissions Routes
 router.get('/files/:id/permissions', PermissionsController.getFilePermissions);
 router.post('/files/:id/permissions', PermissionsController.grantPermission);

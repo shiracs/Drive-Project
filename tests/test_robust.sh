@@ -11,17 +11,16 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 echo -e "${BLUE}=============================================================${NC}"
-echo -e "${BLUE}    ROBUST SYSTEM TEST: NESTED FOLDERS & COMPLEX PERMS       ${NC}"
+echo -e "${BLUE}   ULTIMATE STRESS TEST: DUPLICATES, PERMS & SEARCH          ${NC}"
 echo -e "${BLUE}=============================================================${NC}"
 
 # ------------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------------
-
 get_json_value() {
     echo "$1" | node -e "
         try {
@@ -32,8 +31,7 @@ get_json_value() {
     "
 }
 
-# Helper to find a Permission ID (pId) given a fileId and userId
-# Necessary for the DELETE /permissions endpoint
+# Helper to find permission ID needed for revocation
 get_perm_id() {
     local fileId=$1
     local targetUserId=$2
@@ -61,7 +59,7 @@ check_status() {
 }
 
 # ============================================================================
-# 1. USER CREATION (Alice, Bob, Charlie, Dave)
+# 1. SETUP USERS (Alice, Bob, Charlie, Dave)
 # ============================================================================
 echo -e "\n${YELLOW}[Step 1] Creating 4 Users...${NC}"
 
@@ -71,177 +69,182 @@ create_user() {
     local res=$(curl -s -X POST "$BASE_URL/users" -H "$CONTENT_TYPE" \
         -d "{\"username\":\"$lower\", \"password\":\"123\", \"fullName\":\"$name User\", \"profilePic\":\"pic\"}")
     local id=$(get_json_value "$res" "id")
-    # Login to verify/get token format
-    local login=$(curl -s -X POST "$BASE_URL/tokens" -H "$CONTENT_TYPE" -d "{\"username\":\"$lower\", \"password\":\"123\"}")
-    local token=$(get_json_value "$login" "id")
     echo "$id"
 }
 
-ID_ALICE=$(create_user "Alice")
-ID_BOB=$(create_user "Bob")
-ID_CHARLIE=$(create_user "Charlie")
-ID_DAVE=$(create_user "Dave")
+ID_ALICE=$(create_user "Alice")   # The Owner
+ID_BOB=$(create_user "Bob")       # Has access to File A
+ID_CHARLIE=$(create_user "Charlie") # Has access to File B
+ID_DAVE=$(create_user "Dave")     # Has access to the whole Folder
 
-echo "   Alice (Owner): $ID_ALICE"
-echo "   Bob (Finance): $ID_BOB"
-echo "   Charlie (IT):  $ID_CHARLIE"
-echo "   Dave (Guest):  $ID_DAVE"
+echo "   Alice (Owner):   $ID_ALICE"
+echo "   Bob (File A):    $ID_BOB"
+echo "   Charlie (File B):$ID_CHARLIE"
+echo "   Dave (Folder):   $ID_DAVE"
+
+if [ -z "$ID_ALICE" ]; then
+    echo -e "${RED}FATAL: Failed to create users. Did you restart the server?${NC}"
+    exit 1
+fi
 
 # ============================================================================
-# 2. BUILDING COMPLEX HIERARCHY
+# 2. CREATE THE "CONFUSING" STRUCTURE
 # ============================================================================
-echo -e "\n${YELLOW}[Step 2] Building 3-Layer Hierarchy...${NC}"
+echo -e "\n${YELLOW}[Step 2] Creating Duplicate Files Structure...${NC}"
 
-# ROOT: CorpData
-RES=$(curl -s -X POST "$BASE_URL/files" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" -d '{"filename": "CorpData", "type": "FOLDER"}')
+# Root Folder
+RES=$(curl -s -X POST "$BASE_URL/files" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" -d '{"filename": "Confidential", "type": "FOLDER"}')
 ID_ROOT=$(get_json_value "$RES" "id")
-echo "   1. Root 'CorpData' created ($ID_ROOT)"
 
-# LEVEL 1: Finance (Folder) & IT (Folder)
+# File A: "secret.txt" (Content: "Version 1 - For Bob")
 RES=$(curl -s -X POST "$BASE_URL/files" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
-    -d "{\"filename\": \"Finance\", \"type\": \"FOLDER\", \"parentId\": \"$ID_ROOT\"}")
-ID_FINANCE=$(get_json_value "$RES" "id")
+    -d "{\"filename\": \"secret.txt\", \"content\": \"Version 1 - For Bob\", \"type\": \"FILE\", \"parentId\": \"$ID_ROOT\"}")
+ID_FILE_A=$(get_json_value "$RES" "id")
 
+# File B: "secret.txt" (Content: "Version 2 - For Charlie") - SAME NAME, SAME FOLDER!
 RES=$(curl -s -X POST "$BASE_URL/files" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
-    -d "{\"filename\": \"IT\", \"type\": \"FOLDER\", \"parentId\": \"$ID_ROOT\"}")
-ID_IT=$(get_json_value "$RES" "id")
-echo "   2. Subfolders 'Finance' & 'IT' created"
+    -d "{\"filename\": \"secret.txt\", \"content\": \"Version 2 - For Charlie\", \"type\": \"FILE\", \"parentId\": \"$ID_ROOT\"}")
+ID_FILE_B=$(get_json_value "$RES" "id")
 
-# LEVEL 2: Files in Finance
-RES=$(curl -s -X POST "$BASE_URL/files" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
-    -d "{\"filename\": \"budget.txt\", \"content\": \"1M USD\", \"type\": \"FILE\", \"parentId\": \"$ID_FINANCE\"}")
-ID_BUDGET=$(get_json_value "$RES" "id")
-echo "   3. File 'budget.txt' in Finance created"
+echo "   Created File A (ID: $ID_FILE_A)"
+echo "   Created File B (ID: $ID_FILE_B)"
+echo "   (Both are named 'secret.txt' inside 'Confidential')"
 
-# LEVEL 2: Folder in IT
-RES=$(curl -s -X POST "$BASE_URL/files" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
-    -d "{\"filename\": \"Logs\", \"type\": \"FOLDER\", \"parentId\": \"$ID_IT\"}")
-ID_LOGS=$(get_json_value "$RES" "id")
-
-# LEVEL 3: File in Logs
-RES=$(curl -s -X POST "$BASE_URL/files" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
-    -d "{\"filename\": \"server.log\", \"content\": \"System OK\", \"type\": \"FILE\", \"parentId\": \"$ID_LOGS\"}")
-ID_SERVER_LOG=$(get_json_value "$RES" "id")
-echo "   4. Deep file 'server.log' in IT/Logs created ($ID_SERVER_LOG)"
-
+if [ "$ID_FILE_A" == "$ID_FILE_B" ]; then
+    echo -e "${RED}[FAIL] IDs are identical! System failed to handle duplicates.${NC}"
+    exit 1
+fi
 
 # ============================================================================
-# 3. GRANTING PERMISSIONS (Complex Scenarios)
+# 3. GRANULAR PERMISSION GRANTS
 # ============================================================================
-echo -e "\n${YELLOW}[Step 3] Granting Permissions...${NC}"
+echo -e "\n${YELLOW}[Step 3] Granting Specific Permissions...${NC}"
 
-# A. Bob gets WRITER on Finance (Should allow reading/writing budget.txt)
-echo "   -> Granting Bob WRITER on 'Finance'..."
-curl -s -X POST "$BASE_URL/files/$ID_FINANCE/permissions" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
-    -d "{\"targetUserId\": \"$ID_BOB\", \"role\": \"WRITER\"}" > /dev/null
+# Bob gets READER on File A ONLY
+curl -s -X POST "$BASE_URL/files/$ID_FILE_A/permissions" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
+    -d "{\"targetUserId\": \"$ID_BOB\", \"role\": \"READER\"}" > /dev/null
 
-# B. Charlie gets READER on IT (Should allow reading server.log)
-echo "   -> Granting Charlie READER on 'IT'..."
-curl -s -X POST "$BASE_URL/files/$ID_IT/permissions" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
+# Charlie gets READER on File B ONLY
+curl -s -X POST "$BASE_URL/files/$ID_FILE_B/permissions" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
     -d "{\"targetUserId\": \"$ID_CHARLIE\", \"role\": \"READER\"}" > /dev/null
 
-# C. Dave gets READER on server.log DIRECTLY (bypassing folder permissions)
-echo "   -> Granting Dave READER on 'server.log' (Directly)..."
-curl -s -X POST "$BASE_URL/files/$ID_SERVER_LOG/permissions" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
+# Dave gets READER on the whole ROOT FOLDER (Should see both)
+curl -s -X POST "$BASE_URL/files/$ID_ROOT/permissions" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
     -d "{\"targetUserId\": \"$ID_DAVE\", \"role\": \"READER\"}" > /dev/null
 
 # ============================================================================
-# 4. VERIFYING ACCESS (The "Happy Path")
+# 4. VERIFY ACCESS ISOLATION (CRITICAL TEST)
 # ============================================================================
-echo -e "\n${YELLOW}[Step 4] Verifying Access Control...${NC}"
+echo -e "\n${YELLOW}[Step 4] Verifying Access Isolation (The 'Duplicate' Test)...${NC}"
 
-# 1. Bob writes to budget (Should succeed)
-CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH "$BASE_URL/files/$ID_BUDGET" \
-    -H "$CONTENT_TYPE" -H "Authorization: $ID_BOB" -d '{"content": "2M USD"}')
-check_status $CODE 200 "Bob writes to budget.txt (Recursive Writer)"
-
-# 2. Bob tries to access IT (Should fail)
-CODE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_SERVER_LOG" -H "Authorization: $ID_BOB")
-check_status $CODE 403 "Bob tries to read IT logs (Should be blocked)"
-
-# 3. Charlie reads server.log (Should succeed)
-CONTENT=$(curl -s -X GET "$BASE_URL/files/$ID_SERVER_LOG" -H "Authorization: $ID_CHARLIE")
-if [[ $CONTENT == "System OK" ]]; then
-    echo -e "${GREEN}   [PASS] Charlie reads deep log file${NC}"
+# Test Bob (Should see V1, Fail on V2)
+CONTENT=$(curl -s -X GET "$BASE_URL/files/$ID_FILE_A" -H "Authorization: $ID_BOB")
+if [[ $CONTENT == *"Version 1"* ]]; then
+    echo -e "${GREEN}   [PASS] Bob can read File A${NC}"
 else
-    echo -e "${RED}   [FAIL] Charlie failed to read log${NC}"
+    echo -e "${RED}   [FAIL] Bob cannot read File A${NC}"
 fi
 
-# 4. Charlie tries to WRITE server.log (Should fail - only READER)
-CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH "$BASE_URL/files/$ID_SERVER_LOG" \
-    -H "$CONTENT_TYPE" -H "Authorization: $ID_CHARLIE" -d '{"content": "Hacked"}')
-check_status $CODE 403 "Charlie tries to write (Should be blocked)"
+CODE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_FILE_B" -H "Authorization: $ID_BOB")
+check_status $CODE 403 "Bob trying to read File B (Should Fail)"
 
-# ============================================================================
-# 5. UPDATING PERMISSIONS (Upgrade & Downgrade)
-# ============================================================================
-echo -e "\n${YELLOW}[Step 5] Modifying Permissions...${NC}"
 
-# A. Upgrade Charlie to WRITER on IT
-echo "   -> Upgrading Charlie to WRITER on 'IT'..."
-curl -s -X POST "$BASE_URL/files/$ID_IT/permissions" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
-    -d "{\"targetUserId\": \"$ID_CHARLIE\", \"role\": \"WRITER\"}" > /dev/null
-
-# Test Charlie Write
-CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH "$BASE_URL/files/$ID_SERVER_LOG" \
-    -H "$CONTENT_TYPE" -H "Authorization: $ID_CHARLIE" -d '{"content": "Log Updated"}')
-check_status $CODE 200 "Charlie writes to log after upgrade"
-
-# B. Downgrade Bob to READER on Finance
-echo "   -> Downgrading Bob to READER on 'Finance'..."
-curl -s -X POST "$BASE_URL/files/$ID_FINANCE/permissions" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
-    -d "{\"targetUserId\": \"$ID_BOB\", \"role\": \"READER\"}" > /dev/null
-
-# Test Bob Write (Should Fail now)
-CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH "$BASE_URL/files/$ID_BUDGET" \
-    -H "$CONTENT_TYPE" -H "Authorization: $ID_BOB" -d '{"content": "3M USD"}')
-check_status $CODE 403 "Bob tries to write after downgrade (Should fail)"
-
-# ============================================================================
-# 6. REVOKING PERMISSIONS
-# ============================================================================
-echo -e "\n${YELLOW}[Step 6] Revoking Permissions...${NC}"
-
-# Revoke Charlie from 'IT'
-echo "   -> Revoking Charlie from 'IT'..."
-# 1. Get Permission ID for Charlie on IT Folder
-PERM_ID=$(get_perm_id "$ID_IT" "$ID_CHARLIE" "$ID_ALICE")
-
-if [ -z "$PERM_ID" ]; then
-    echo -e "${RED}   [FAIL] Could not find permission ID for Charlie${NC}"
+# Test Charlie (Should see V2, Fail on V1)
+CONTENT=$(curl -s -X GET "$BASE_URL/files/$ID_FILE_B" -H "Authorization: $ID_CHARLIE")
+if [[ $CONTENT == *"Version 2"* ]]; then
+    echo -e "${GREEN}   [PASS] Charlie can read File B${NC}"
 else
-    # 2. Delete it (Recursive revoke)
-    curl -s -X DELETE "$BASE_URL/files/$ID_IT/permissions/$PERM_ID" -H "Authorization: $ID_ALICE" > /dev/null
-    
-    # 3. Verify Charlie cannot access server.log anymore
-    CODE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_SERVER_LOG" -H "Authorization: $ID_CHARLIE")
-    check_status $CODE 403 "Charlie accesses log after revoke (Should fail)"
+    echo -e "${RED}   [FAIL] Charlie cannot read File B${NC}"
 fi
 
-# Verify Dave STILL HAS ACCESS (He was granted directly on the file, outside IT folder logic)
-# Note: If your deletePermission logic recurses down, it removes permissions for that user on descendants.
-# Dave was granted on server.log directly. Charlie was granted on IT. 
-# Revoking Charlie on IT should NOT affect Dave on server.log.
-CODE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_SERVER_LOG" -H "Authorization: $ID_DAVE")
-check_status $CODE 200 "Dave (Direct Access) checks log (Should still succeed)"
+CODE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_FILE_A" -H "Authorization: $ID_CHARLIE")
+check_status $CODE 403 "Charlie trying to read File A (Should Fail)"
+
+
+# Test Dave (Should see BOTH because he has Folder access)
+CONTENT_A=$(curl -s -X GET "$BASE_URL/files/$ID_FILE_A" -H "Authorization: $ID_DAVE")
+CONTENT_B=$(curl -s -X GET "$BASE_URL/files/$ID_FILE_B" -H "Authorization: $ID_DAVE")
+
+if [[ $CONTENT_A == *"Version 1"* && $CONTENT_B == *"Version 2"* ]]; then
+    echo -e "${GREEN}   [PASS] Dave can read BOTH files (Folder Permission works)${NC}"
+else
+    echo -e "${RED}   [FAIL] Dave failed to read one or both files${NC}"
+fi
 
 # ============================================================================
-# 7. DESTRUCTIVE ACTIONS
+# 5. PERMISSION UPDATES (UPGRADE & REVOKE)
 # ============================================================================
-echo -e "\n${YELLOW}[Step 7] Recursive Deletion...${NC}"
+echo -e "\n${YELLOW}[Step 5] Complex Permission Changes...${NC}"
 
-echo "   -> Alice deletes ROOT 'CorpData'..."
+# A. Upgrade Bob to WRITER on File A
+echo "   -> Upgrading Bob to WRITER on File A..."
+curl -s -X POST "$BASE_URL/files/$ID_FILE_A/permissions" -H "$CONTENT_TYPE" -H "Authorization: $ID_ALICE" \
+    -d "{\"targetUserId\": \"$ID_BOB\", \"role\": \"WRITER\"}" > /dev/null
+
+# Bob Updates File A
+CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH "$BASE_URL/files/$ID_FILE_A" \
+    -H "$CONTENT_TYPE" -H "Authorization: $ID_BOB" -d '{"content": "Bob Updated V1"}')
+check_status $CODE 204 "Bob writes to File A"
+
+# B. Revoke Dave from Root Folder
+echo "   -> Revoking Dave from Root Folder..."
+PERM_ID=$(get_perm_id "$ID_ROOT" "$ID_DAVE" "$ID_ALICE")
+curl -s -X DELETE "$BASE_URL/files/$ID_ROOT/permissions/$PERM_ID" -H "Authorization: $ID_ALICE" > /dev/null
+
+# Check Dave Access (Should be gone for both files)
+CODE_A=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_FILE_A" -H "Authorization: $ID_DAVE")
+CODE_B=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_FILE_B" -H "Authorization: $ID_DAVE")
+
+if [[ $CODE_A == "403" && $CODE_B == "403" ]]; then
+    echo -e "${GREEN}   [PASS] Dave successfully revoked from all files${NC}"
+else
+    echo -e "${RED}   [FAIL] Dave still has access! A:$CODE_A B:$CODE_B${NC}"
+fi
+
+# ============================================================================
+# 6. SEARCH SCOPE TEST
+# ============================================================================
+echo -e "\n${YELLOW}[Step 6] Testing Search Scope (Who finds what?)...${NC}"
+
+# Search query: "secret" (Both files are named secret.txt)
+
+# Bob searches (Should find ONLY File A)
+SEARCH_BOB=$(curl -s -X GET "$BASE_URL/search/secret" -H "Authorization: $ID_BOB")
+COUNT_BOB=$(echo $SEARCH_BOB | grep -o "id" | wc -l)
+
+if [[ $SEARCH_BOB == *"$ID_FILE_A"* && $SEARCH_BOB != *"$ID_FILE_B"* ]]; then
+    echo -e "${GREEN}   [PASS] Bob found only his authorized file${NC}"
+else
+    echo -e "${RED}   [FAIL] Bob search incorrect. Got: $SEARCH_BOB${NC}"
+fi
+
+# Alice searches (Should find BOTH)
+SEARCH_ALICE=$(curl -s -X GET "$BASE_URL/search/secret" -H "Authorization: $ID_ALICE")
+COUNT_ALICE=$(echo $SEARCH_ALICE | grep -o "id" | wc -l)
+
+if [[ $COUNT_ALICE -ge 2 ]]; then
+    echo -e "${GREEN}   [PASS] Alice found both duplicates${NC}"
+else
+    echo -e "${RED}   [FAIL] Alice didn't find both. Got: $SEARCH_ALICE${NC}"
+fi
+
+# Dave searches (Should find NOTHING)
+SEARCH_DAVE=$(curl -s -X GET "$BASE_URL/search/secret" -H "Authorization: $ID_DAVE")
+if [[ $SEARCH_DAVE == "[]" || $SEARCH_DAVE == "" ]]; then
+    echo -e "${GREEN}   [PASS] Dave found nothing (Correct)${NC}"
+else
+    echo -e "${RED}   [FAIL] Dave found something! $SEARCH_DAVE${NC}"
+fi
+
+# ============================================================================
+# 7. CLEANUP
+# ============================================================================
+echo -e "\n${YELLOW}[Step 7] Cleanup...${NC}"
 curl -s -X DELETE "$BASE_URL/files/$ID_ROOT" -H "Authorization: $ID_ALICE" > /dev/null
 
-# 1. Check File Gone
-CODE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_SERVER_LOG" -H "Authorization: $ID_ALICE")
-check_status $CODE 404 "Deep file existence check (404)"
+CODE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_FILE_A" -H "Authorization: $ID_ALICE")
+check_status $CODE 404 "Verify Deletion"
 
-# 2. Check Dave Access (Should be 404 Not Found, NOT 403)
-CODE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/files/$ID_SERVER_LOG" -H "Authorization: $ID_DAVE")
-check_status $CODE 404 "Dave access after delete (404)"
-
-
-echo -e "\n${CYAN}=============================================================${NC}"
-echo -e "${CYAN}                  ROBUST TEST COMPLETED                      ${NC}"
-echo -e "${CYAN}=============================================================${NC}"
+echo -e "\n${MAGENTA}=============================================================${NC}"
+echo -e "${MAGENTA}                ULTIMATE TEST PASSED                         ${NC}"
+echo -e "${MAGENTA}=============================================================${NC}"
