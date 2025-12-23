@@ -147,10 +147,54 @@ const deleteFile = async (req, res) => {
   }
 };
 
+/** 
+ * GET /api/search/:query
+ * Searches files by name or content containing the query string 
+ */
+const searchFilesByQuery = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { query } = req.params;
+
+  // check user authorization - every user must be authorized
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // check if query is provided
+  if (!query) {
+    return res.status(400).json({ error: "Missing search query" });
+  }
+
+  try {
+    // First, get the user's permitted files
+    const allUsersFiles = FileModel.getFilesByUserId(userId);
+    const cppResponse = await sendToCpp(`SEARCH ${query}`);
+    let contentMatchIds = [];
+
+    if (cppResponse.includes("200 Ok")) {
+      const parts = cppResponse.split("\n\n");
+      contentMatchIds = parts.length > 1 ? parts[1].trim().split(" ") : [];
+    }
+
+    // Filter files that match by name or content
+    const foundFiles = allUsersFiles.filter(file => 
+      file.name.includes(query) || contentMatchIds.includes(file.id)
+    );
+
+    const finalResponse = foundFiles.map(f =>{ id: f.id, name: f.name} );
+    return res.status(200).json(finalResponse);
+
+  } catch (error) {
+    console.error("Search Error:", error);
+    return res.status(500).json({ error: "Search failed", detail: error.message });
+  }
+}
+
 export default {
   getUserFiles,
   uploadFile,
   getFileContent,
   updateFile,
   deleteFile,
+  searchFilesByQuery
 };
