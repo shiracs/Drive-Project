@@ -142,10 +142,7 @@ const deleteFile = async (req, res) => {
   try {
     const cppResponse = await sendToCpp(`DELETE ${id}`);
 
-    if (
-      cppResponse.includes("204 No Content") ||
-      cppResponse.includes("404 Not Found")
-    ) {
+    if (cppResponse.includes("204 No Content") || cppResponse.includes("404 Not Found")) {
       FileModel.removeFileRecord(id);
       PermissionsModel.removeAllPermissionsOfFile(id);
       return res

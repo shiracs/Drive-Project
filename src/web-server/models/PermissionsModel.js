@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { ROLES } from "../enums/Roles.js";
+import { ROLES, isValidRole } from "../enums/Roles.js";
 
 //! Volatile storage for files and permissions
 /**
@@ -76,10 +76,50 @@ const removeAllPermissionsOfFile = (fileId) => {
     }
   }
 };
+const getPermissionsByFileId = (fileId) => {
+  return PERMISSIONS.filter(p => p.fileId === fileId);
+};
+
+/**
+ * Updates a specific permission record's role
+ * @param {string} pId - The permission record ID
+ * @param {string} newRole - The new role to assign
+ * @returns {Object|null} The updated record or null if not found
+ */
+const updatePermission = (pId, newRole) => {
+  if (!isValidRole(newRole)) {
+    throw new Error(`Invalid role: ${newRole}. Must be one of: ${Object.values(ROLES).join(", ")}`);
+  }
+  const permission = PERMISSIONS.find((p) => p.id === pId);
+  if (permission) {
+    permission.role = newRole;
+    console.log(`[STORAGE UPDATE] Permission updated:`, permission);
+    return permission;
+  }
+  return null;
+};
+
+/**
+ * Deletes a specific permission record
+ * @param {string} pId - The permission record ID
+ * @returns {boolean} true if deleted
+ */
+const deletePermission = (pId) => {
+  const index = PERMISSIONS.findIndex((p) => p.id === pId);
+  if (index !== -1) {
+    PERMISSIONS.splice(index, 1);
+    console.log(`[STORAGE UPDATE] Permission deleted: ${pId}`);
+    return true;
+  }
+  return false;
+};
 
 export default {
   createFilePermission,
   checkPermission,
   getPermittedFilesOfUser,
   removeAllPermissionsOfFile,
+  getPermissionsByFileId,
+  updatePermission,
+  deletePermission,
 };
