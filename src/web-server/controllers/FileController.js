@@ -3,19 +3,28 @@ import UserModel from "../models/UserModel.js";
 import PermissionsModel from "../models/PermissionsModel.js";
 import { sendToCpp } from "../services/cppService.js";
 import { ROLES } from "../enums/Roles.js";
+import { FILE_TYPE, isValidFileType } from "../enums/FileType.js";
 
 /**
- * GET /api/files
+ * GET /api/files?parentId=...
  * Returns a list of files the user has permission to view
  */
 const getUserFiles = async (req, res) => {
   const userId = req.headers["authorization"];
+  const parentId = req.query.parentId || null; 
 
   if (!UserModel.isValidId(userId))
     return res.status(401).json({ error: "Unauthorized" });
 
-  const userFiles = FileModel.getFilesByUserId(userId);
-  res.json(userFiles.map((f) => ({ id: f.id, name: f.name })));
+  // Get files only for this specific level (folder or root)
+  const userFiles = FileModel.getFilesByUserId(userId, parentId);
+  
+  // Return list with types so client knows if it's a folder or file
+  res.json(userFiles.map((f) => ({ 
+      id: f.id, 
+      name: f.name, 
+      type: f.type 
+  })));
 };
 
 /**
@@ -24,30 +33,61 @@ const getUserFiles = async (req, res) => {
  */
 const uploadFile = async (req, res) => {
   const userId = req.headers["authorization"];
-  const { filename, content } = req.body;
+  const {
+    filename,
+    content,
+    type = FILE_TYPE.FILE,
+    parentId = null,
+  } = req.body;
 
   if (!UserModel.isValidId(userId)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  if (!filename || !content) {
-    return res.status(400).json({ error: "Missing required data" });
+
+  // Validate File Type
+  if (!isValidFileType(type)) {
+    return res.status(400).json({ 
+        error: `Invalid type. Must be one of: ${Object.values(FILE_TYPE).join(", ")}` 
+    });
   }
 
+  // Validate Parent Id
+  if (!FileModel.validateParent(parentId).valid) {
+      return res.status(parentCheck.status).json({ error: parentCheck.error });
+  }
+
+  // Validate Content vs Type
+  if (!filename) {
+    return res.status(400).json({ error: "Filename is required" });
+  }
+  if (type === FILE_TYPE.FILE && (content === undefined || content === null)) {
+    return res.status(400).json({ error: "Missing content for file" });
+  }
   try {
     // Create file record and owner permission
     const fileRecord = FileModel.createFileRecord(
       userId,
       filename,
-      content.length
+      type,
+      parentId
     );
     PermissionsModel.createFilePermission(fileRecord.id, userId, ROLES.OWNER);
 
-    const cppResponse = await sendToCpp(`POST ${fileRecord.id} ${content}`);
-
-    if (cppResponse.includes("201 Created")) {
+    if (type === FILE_TYPE.FOLDER) {
+      // Folders are virtual, no C++ storage needed
       return res.status(201).json(fileRecord);
+    } else {
+      const cppResponse = await sendToCpp(`POST ${fileRecord.id} ${content}`);
+
+      if (cppResponse.includes("201 Created")) {
+        return res.status(201).json(fileRecord);
+      }
+
+      // Rollback records if C++ storage fails
+      FileModel.removeFileRecord(fileRecord.id);
+      PermissionsModel.removeAllPermissionsOfFile(fileRecord.id);
+      res.status(500).json({ error: "Storage error", detail: cppResponse });
     }
-    res.status(500).json({ error: "Storage error", detail: cppResponse });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -56,6 +96,7 @@ const uploadFile = async (req, res) => {
 /**
  * GET /api/files/:id
  * Fetches file content if user has at least READER role
+ * IF FOLDER: Returns array of its children.
  */
 const getFileContent = async (req, res) => {
   const userId = req.headers["authorization"];
@@ -70,6 +111,16 @@ const getFileContent = async (req, res) => {
     return res.status(403).json({ error: "Forbidden: No read access" });
   }
 
+  const file = FileModel.findById(id);
+
+  // Handle Folder: Return list of children names
+  if (file && file.type === FILE_TYPE.FOLDER) {
+    // We use the existing function, passing the current folder ID as the parentId
+    const children = FileModel.getFilesByUserId(userId, id);
+    return res.status(200).json(children.map(c => ({ id: c.id, name: c.name, type: c.type })));
+  }
+
+  // Handle File: Fetch content from C++
   try {
     const cppResponse = await sendToCpp(`GET ${id}`);
     const content = cppResponse.split("\n\n")[1] || "";
@@ -97,6 +148,12 @@ const updateFile = async (req, res) => {
     return res.status(403).json({ error: "Forbidden: No write access" });
   }
 
+  // Guard: Folders cannot have content updated
+  const file = FileModel.findById(id);
+  if (file && file.type === FILE_TYPE.FOLDER) {
+    return res.status(400).json({ error: "Cannot update content of a folder" });
+  }
+
   try {
     // C++ server AddCommand prevents overwriting, so we delete first, then post the new version
     await sendToCpp(`DELETE ${id}`);
@@ -113,7 +170,7 @@ const updateFile = async (req, res) => {
 
 /**
  * DELETE /api/files/:id
- * Removes file from storage and cleans up records here
+ * Recursively removes files/folders
  */
 const deleteFile = async (req, res) => {
   const userId = req.headers["authorization"];
@@ -128,24 +185,42 @@ const deleteFile = async (req, res) => {
   }
 
   try {
-    const cppResponse = await sendToCpp(`DELETE ${id}`);
-
-    if (cppResponse.includes("204 No Content") || cppResponse.includes("404 Not Found")) {
-      FileModel.removeFileRecord(id);
-      PermissionsModel.removeAllPermissionsOfFile(id);
-      return res
-        .status(cppResponse.includes("204 No Content") ? 204 : 404)
-        .send({
-          message: cppResponse.includes("204 No Content")
-            ? "Deleted successfully"
-            : "File not found",
-        });
-    }
-    res.status(500).json({ error: "Delete failed" });
+    // Use recursive delete helper
+    await deleteRecursive(id);
+    res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
+/**
+ * Helper Recursive function to delete folders and their content
+ */
+async function deleteRecursive(fileId) {
+  const file = FileModel.findById(fileId);
+  if (!file) return; 
+
+  if (file.type === FILE_TYPE.FOLDER) {
+    // If it's a folder, find all immediate children
+    const children = FileModel.getFilesByParentId(fileId);
+    
+    // Recursively delete each child
+    for (const child of children) {
+      await deleteRecursive(child.id);
+    }
+  } else {
+    // If it's a FILE, ask C++ server to delete physical data
+    try {
+        await sendToCpp(`DELETE ${fileId}`);
+    } catch (err) {
+        console.error(`[DELETE ERROR] Failed to delete physical file ${fileId}:`, err.message);
+    }
+  }
+
+  // Finally, remove Metadata and Permissions
+  FileModel.removeFileRecord(fileId);
+  PermissionsModel.removeAllPermissionsOfFile(fileId);
+}
 
 export default {
   getUserFiles,
