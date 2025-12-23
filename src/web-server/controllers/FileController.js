@@ -119,7 +119,9 @@ const deleteFile = async (req, res) => {
   const userId = req.headers["authorization"];
   const { id } = req.params;
 
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
     return res.status(403).json({ error: "Forbidden: Only owners can delete" });
@@ -131,7 +133,13 @@ const deleteFile = async (req, res) => {
     if (cppResponse.includes("204 No Content") || cppResponse.includes("404 Not Found")) {
       FileModel.removeFileRecord(id);
       PermissionsModel.removeAllPermissionsOfFile(id);
-      return res.status(cppResponse.includes("204 No Content") ? 204 : 404).send();
+      return res
+        .status(cppResponse.includes("204 No Content") ? 204 : 404)
+        .send({
+          message: cppResponse.includes("204 No Content")
+            ? "Deleted successfully"
+            : "File not found",
+        });
     }
     res.status(500).json({ error: "Delete failed" });
   } catch (error) {

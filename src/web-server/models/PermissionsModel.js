@@ -114,7 +114,6 @@ const deletePermission = (pId) => {
   return false;
 };
 
-// Add to export
 export default {
   createFilePermission,
   checkPermission,
