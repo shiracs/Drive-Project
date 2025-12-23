@@ -2,14 +2,6 @@ import { v4 as uuid } from "uuid";
 // !Volatile user storage for now
 const USERS = [];
 
-/**
- * Check if a user with the given username exists
- * @param {string} username
- * @return {boolean} true if user exists, false otherwise
- */
-const exists = (username) => {
-  return USERS.some((u) => u.username === username);
-};
 
 /**
  * Create and store a new user
@@ -53,4 +45,4 @@ const isValidId = (userId) => {
   return userId && findById(userId);
 };
 
-export default { exists, create, findById, findByUsername, isValidId };
+export default { create, findById, findByUsername, isValidId };

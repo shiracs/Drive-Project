@@ -12,9 +12,9 @@ router.post('/tokens', UserController.generateToken);
 
 // File Routes
 router.get('/files', FileController.getUserFiles);         
-router.post('/files', FileController.uploadFile);     
-router.get('/files/:id', FileController.getFileContent); 
-router.patch('/files/:id', FileController.updateFile);
+router.post('/files', FileController.uploadResource);     
+router.get('/files/:id', FileController.getResourceContent); 
+router.patch('/files/:id', FileController.updateResource);
 router.delete('/files/:id', FileController.deleteFile);
 
 // Permissions Routes
