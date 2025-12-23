@@ -165,9 +165,8 @@ const searchFilesByQuery = async (req, res) => {
     return res.status(400).json({ error: "Missing search query" });
   }
 
-  // First, get the user's permitted files
-  // then filter by name match
   try {
+    // First, get the user's permitted files
     const allUsersFiles = FileModel.getFilesByUserId(userId);
     const cppResponse = await sendToCpp(`SEARCH ${query}`);
     let contentMatchIds = [];
