@@ -1,0 +1,286 @@
+import ResourceModel from "../models/ResourceModel.js";
+import UserModel from "../models/UserModel.js";
+import PermissionsModel from "../models/PermissionsModel.js";
+import { sendToCpp } from "../services/cppService.js";
+import { ROLES } from "../enums/Roles.js";
+import { REASOURCE_TYPE, isValidResourceType } from "../enums/ResourceType.js";
+
+/**
+ * GET /api/files
+ * Returns a list of resources the user has permission to view in the specified folder (or root if none specified)
+ */
+const getUserResourcesInDir = async (req, res) => {
+  const userId = req.headers["authorization"];
+
+  if (!UserModel.isValidId(userId))
+    return res.status(401).json({ error: "Unauthorized" });
+
+  // Get resources only for this specific level (right now we use null for root)
+  const userResources = ResourceModel.getResourcesByUserId(userId, null);
+  
+  // Return list with types so client knows if it's a folder or file
+  res.json(userResources.map((r) => ({ 
+      id: r.id, 
+      name: r.name, 
+      type: r.type 
+  })));
+};
+
+/**
+ * POST /api/files
+ * Creates records of the resource here and sends file content to C++ server
+ */
+const uploadResource = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const {
+    name,
+    content,
+    type = REASOURCE_TYPE.FILE,
+    parentId = null,
+  } = req.body;
+
+  // --- VALIDATIONS --- //
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // Validate Resource Type
+  if (!isValidResourceType(type)) {
+    return res.status(400).json({ error: `Invalid type.` });
+  }
+
+  // Validate Parent Id
+  if (!(ResourceModel.validateParent(parentId)).valid) {
+    return res.status(parentCheck.status).json({ error: parentCheck.error });
+  }
+
+  // Validate Content vs Type
+  if (!name) {
+    return res.status(400).json({ error: "Resource name is required" });
+  }
+  if (type === REASOURCE_TYPE.FILE && (content === undefined || content === null)) {
+    return res.status(400).json({ error: "Missing content for file" });
+  }
+
+  // --- CREATION LOGIC --- //
+  try {
+    // Create resource record and create OWNER permission to uploader
+    const resourceRecord = ResourceModel.createResourceRecord(
+      userId,
+      name,
+      type,
+      parentId
+    );
+    PermissionsModel.createResourcePermission(resourceRecord.id, userId, ROLES.OWNER);
+
+    const resourceUrl = `/api/files/${resourceRecord.id}`;
+
+    // HANDLE FOLDERS: folders are virtual, no C++ storage needed
+    if (type === REASOURCE_TYPE.FOLDER) {
+      return res.status(201).location(resourceUrl).json(resourceRecord);
+    } 
+    // HANDLE FILES: send content to C++
+    else {
+      const cppResponse = await sendToCpp(`POST ${resourceRecord.id} ${content}`);
+
+      if (cppResponse.includes("201 Created")) {
+        return res.status(201).location(resourceUrl).json(resourceRecord);
+      }
+
+      // Rollback records if C++ storage fails
+      ResourceModel.removeResourceRecord(resourceRecord.id);
+      PermissionsModel.removeAllPermissionsOfResource(resourceRecord.id);
+      res.status(500).json({ error: "Storage error", detail: cppResponse });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * GET /api/files/:id
+ * Fetches file content if user has at least READER role
+ * IF FOLDER: Returns array of its children.
+ */
+const getResourceContent = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { id } = req.params;
+
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const resource = ResourceModel.findById(id);
+  if (!resource) return res.status(404).json({ error: "Resource not found" });
+
+  // Check permission in storage here before going to C++ server
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.READER)) {
+    return res.status(403).json({ error: "Forbidden: No read access" });
+  }
+
+  // HANDLE FOLDER: Return list of children names
+  if (resource && resource.type === REASOURCE_TYPE.FOLDER) {
+    // We use the existing function, passing the current folder ID as the parentId
+    const children = ResourceModel.getResourcesByUserId(userId, id);
+    return res.status(200).json(children.map(c => ({ id: c.id, name: c.name, type: c.type })));
+  }
+
+  // HANDLE FILE: Fetch content from C++
+  try {
+    const cppResponse = await sendToCpp(`GET ${id}`);
+    const content = cppResponse.split("\n\n")[1] || "";
+    res.status(200).send(content);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * PATCH /api/files/:id
+ * Updates existing resource's name and/or content
+ */
+const updateResource = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { id } = req.params;
+  const { name, content } = req.body;
+
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const resourceRecord = ResourceModel.findById(id);
+  if (!resourceRecord) {
+      return res.status(404).json({ error: "Resource not found" });
+  }
+
+  // Check permission in storage here before going to C++ server
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.WRITER)) {
+    return res.status(403).json({ error: "Forbidden: No write access" });
+  }
+
+  try {
+    // Rename if needed
+    if (name && name !== resourceRecord.name) {
+      ResourceModel.renameResource(id, name);
+    }
+    // C++ server AddCommand prevents overwriting, so we delete first, then post the new version
+    if (content !== undefined) {
+
+      // Folders content cannot be updated
+      if (resourceRecord.type === REASOURCE_TYPE.FOLDER) {
+         return res.status(400).json({ error: "Cannot update content of a folder" });
+      }
+
+      await sendToCpp(`DELETE ${id}`);
+      const cppResponse = await sendToCpp(`POST ${id} ${content}`);
+
+      if (!cppResponse.includes("201 Created")) {
+            return res.status(500).json({ error: "Content update failed", detail: cppResponse });
+      }
+    }
+    return res.status(204).send();
+    
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * DELETE /api/files/:id
+ * Uses Flat Deletion logic for folders (using Path) to delete all descendants
+ */
+const deleteResource = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { id } = req.params;
+
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+    return res.status(403).json({ error: "Forbidden: Only owners can delete" });
+  }
+
+  try {
+    // Get the resource to delete
+    const targetResource = ResourceModel.findById(id);
+    if (!targetResource) return res.status(404).json({ error: "Resource not found" });
+
+    // Get ALL its descendants - if its a file, this will be an empty array
+    const descendants = ResourceModel.getDescendants(id);
+
+    // Combine into one list to delete
+    const allToDelete = [targetResource, ...descendants];
+
+    // Delete each one
+    for (const resource of allToDelete) {
+      // If it's a file, delete from C++, otherwise skip
+      if (resource.type === REASOURCE_TYPE.FILE) {
+        try {
+          await sendToCpp(`DELETE ${resource.id}`);
+        } catch (e) {
+          console.error(`Failed to delete physical file ${resource.id}`, e.message);
+        }
+      }
+      // Remove Metadata & Permissions
+      ResourceModel.removeResourceRecord(resource.id);
+      PermissionsModel.removeAllPermissionsOfResource(resource.id);
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/** 
+ * GET /api/search/:query
+ * Searches resources by name or content containing the query string 
+ */
+const searchResourcesByQuery = async (req, res) => {
+  const userId = req.headers["authorization"];
+  const { query } = req.params;
+
+  // check user authorization - every user must be authorized
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // check if query is provided
+  if (!query) {
+    return res.status(400).json({ error: "Missing search query" });
+  }
+
+  try {
+    // First, get the user's permitted files
+    const allUsersResources = ResourceModel.getAllResourcesByUser(userId);
+    const cppResponse = await sendToCpp(`SEARCH ${query}`);
+    let contentMatchIds = [];
+
+    if (cppResponse.includes("200 Ok")) {
+      const parts = cppResponse.split("\n\n");
+      contentMatchIds = parts.length > 1 ? parts[1].trim().split(" ") : [];
+    }
+
+    // Filter resources that match by name or content
+    const foundResources = allUsersResources.filter(file => 
+      file.name.includes(query) || contentMatchIds.includes(file.id)
+    );
+
+    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name }));
+    return res.status(200).json(finalResponse);
+
+  } catch (error) {
+    console.error("Search Error:", error);
+    return res.status(500).json({ error: "Search failed", detail: error.message });
+  }
+}
+
+export default {
+  getUserResourcesInDir,
+  uploadResource,
+  getResourceContent,
+  updateResource,
+  deleteResource,
+  searchResourcesByQuery
+};

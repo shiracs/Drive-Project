@@ -16,7 +16,7 @@ const registerUser = (req, res) => {
   }
 
   // Check if user already exists
-  if (UserModel.exists(username)) {
+  if (UserModel.findByUsername(username)) {
     return res.status(400).json({ error: "User already exists" });
   }
 
