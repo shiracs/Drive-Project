@@ -1,42 +1,41 @@
-import FileModel from "../models/FileModel.js";
+import ResourceModel from "../models/ResourceModel.js";
 import UserModel from "../models/UserModel.js";
 import PermissionsModel from "../models/PermissionsModel.js";
 import { sendToCpp } from "../services/cppService.js";
 import { ROLES } from "../enums/Roles.js";
-import { FILE_TYPE, isValidFileType } from "../enums/FileType.js";
+import { REASOURCE_TYPE, isValidResourceType } from "../enums/ResourceType.js";
 
 /**
- * GET /api/files?parentId=...
- * Returns a list of files the user has permission to view in the specified folder (or root if none specified)
+ * GET /api/files
+ * Returns a list of resources the user has permission to view in the specified folder (or root if none specified)
  */
-const getUserFiles = async (req, res) => {
+const getUserResourcesInDir = async (req, res) => {
   const userId = req.headers["authorization"];
-  const parentId = req.query.parentId || null; 
 
   if (!UserModel.isValidId(userId))
     return res.status(401).json({ error: "Unauthorized" });
 
-  // Get files only for this specific level (folder or root)
-  const userFiles = FileModel.getFilesByUserId(userId, parentId);
+  // Get resources only for this specific level (right now we use null for root)
+  const userResources = ResourceModel.getResourcesByUserId(userId, null);
   
   // Return list with types so client knows if it's a folder or file
-  res.json(userFiles.map((f) => ({ 
-      id: f.id, 
-      name: f.name, 
-      type: f.type 
+  res.json(userResources.map((r) => ({ 
+      id: r.id, 
+      name: r.name, 
+      type: r.type 
   })));
 };
 
 /**
  * POST /api/files
- * Creates records of the file here and sends file content to C++ server
+ * Creates records of the resource here and sends file content to C++ server
  */
 const uploadResource = async (req, res) => {
   const userId = req.headers["authorization"];
   const {
-    filename,
+    name,
     content,
-    type = FILE_TYPE.FILE,
+    type = REASOURCE_TYPE.FILE,
     parentId = null,
   } = req.body;
 
@@ -46,51 +45,51 @@ const uploadResource = async (req, res) => {
   }
 
   // Validate Resource Type
-  if (!isValidFileType(type)) {
+  if (!isValidResourceType(type)) {
     return res.status(400).json({ error: `Invalid type.` });
   }
 
   // Validate Parent Id
-  if (!(FileModel.validateParent(parentId)).valid) {
+  if (!(ResourceModel.validateParent(parentId)).valid) {
     return res.status(parentCheck.status).json({ error: parentCheck.error });
   }
 
   // Validate Content vs Type
-  if (!filename) {
-    return res.status(400).json({ error: "Filename is required" });
+  if (!name) {
+    return res.status(400).json({ error: "Resource name is required" });
   }
-  if (type === FILE_TYPE.FILE && (content === undefined || content === null)) {
+  if (type === REASOURCE_TYPE.FILE && (content === undefined || content === null)) {
     return res.status(400).json({ error: "Missing content for file" });
   }
 
   // --- CREATION LOGIC --- //
   try {
-    // Create file record and create OWNER permission to uploader
-    const fileRecord = FileModel.createFileRecord(
+    // Create resource record and create OWNER permission to uploader
+    const resourceRecord = ResourceModel.createResourceRecord(
       userId,
-      filename,
+      name,
       type,
       parentId
     );
-    PermissionsModel.createFilePermission(fileRecord.id, userId, ROLES.OWNER);
+    PermissionsModel.createResourcePermission(resourceRecord.id, userId, ROLES.OWNER);
 
-    const resourceUrl = `/api/files/${fileRecord.id}`;
+    const resourceUrl = `/api/files/${resourceRecord.id}`;
 
     // HANDLE FOLDERS: folders are virtual, no C++ storage needed
-    if (type === FILE_TYPE.FOLDER) {
-      return res.status(201).location(resourceUrl).json(fileRecord);
+    if (type === REASOURCE_TYPE.FOLDER) {
+      return res.status(201).location(resourceUrl).json(resourceRecord);
     } 
     // HANDLE FILES: send content to C++
     else {
-      const cppResponse = await sendToCpp(`POST ${fileRecord.id} ${content}`);
+      const cppResponse = await sendToCpp(`POST ${resourceRecord.id} ${content}`);
 
       if (cppResponse.includes("201 Created")) {
-        return res.status(201).location(resourceUrl).json(fileRecord);
+        return res.status(201).location(resourceUrl).json(resourceRecord);
       }
 
       // Rollback records if C++ storage fails
-      FileModel.removeFileRecord(fileRecord.id);
-      PermissionsModel.removeAllPermissionsOfFile(fileRecord.id);
+      ResourceModel.removeResourceRecord(resourceRecord.id);
+      PermissionsModel.removeAllPermissionsOfResource(resourceRecord.id);
       res.status(500).json({ error: "Storage error", detail: cppResponse });
     }
   } catch (error) {
@@ -111,8 +110,8 @@ const getResourceContent = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const file = FileModel.findById(id);
-  if (!file) return res.status(404).json({ error: "File not found" });
+  const resource = ResourceModel.findById(id);
+  if (!resource) return res.status(404).json({ error: "Resource not found" });
 
   // Check permission in storage here before going to C++ server
   if (!PermissionsModel.checkPermission(userId, id, ROLES.READER)) {
@@ -120,9 +119,9 @@ const getResourceContent = async (req, res) => {
   }
 
   // HANDLE FOLDER: Return list of children names
-  if (file && file.type === FILE_TYPE.FOLDER) {
+  if (resource && resource.type === REASOURCE_TYPE.FOLDER) {
     // We use the existing function, passing the current folder ID as the parentId
-    const children = FileModel.getFilesByUserId(userId, id);
+    const children = ResourceModel.getResourcesByUserId(userId, id);
     return res.status(200).json(children.map(c => ({ id: c.id, name: c.name, type: c.type })));
   }
 
@@ -138,7 +137,7 @@ const getResourceContent = async (req, res) => {
 
 /**
  * PATCH /api/files/:id
- * Updates existing file content if user has at least WRITER role
+ * Updates existing resource's name and/or content
  */
 const updateResource = async (req, res) => {
   const userId = req.headers["authorization"];
@@ -149,9 +148,9 @@ const updateResource = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const fileRecord = FileModel.findById(id);
-  if (!fileRecord) {
-      return res.status(404).json({ error: "File not found" });
+  const resourceRecord = ResourceModel.findById(id);
+  if (!resourceRecord) {
+      return res.status(404).json({ error: "Resource not found" });
   }
 
   // Check permission in storage here before going to C++ server
@@ -161,14 +160,14 @@ const updateResource = async (req, res) => {
 
   try {
     // Rename if needed
-    if (name && name !== fileRecord.name) {
-      const renamed = FileModel.renameFile(id, name);
+    if (name && name !== resourceRecord.name) {
+      ResourceModel.renameResource(id, name);
     }
     // C++ server AddCommand prevents overwriting, so we delete first, then post the new version
     if (content !== undefined) {
 
       // Folders content cannot be updated
-      if (fileRecord.type === FILE_TYPE.FOLDER) {
+      if (resourceRecord.type === REASOURCE_TYPE.FOLDER) {
          return res.status(400).json({ error: "Cannot update content of a folder" });
       }
 
@@ -190,7 +189,7 @@ const updateResource = async (req, res) => {
  * DELETE /api/files/:id
  * Uses Flat Deletion logic for folders (using Path) to delete all descendants
  */
-const deleteFile = async (req, res) => {
+const deleteResource = async (req, res) => {
   const userId = req.headers["authorization"];
   const { id } = req.params;
 
@@ -203,28 +202,29 @@ const deleteFile = async (req, res) => {
   }
 
   try {
-    // Get the file 
-    const targetFile = FileModel.findById(id);
-    if (!targetFile) return res.status(404).json({ error: "File not found" });
-    // Get ALL its descendants
-    const descendants = FileModel.getDescendants(id);
+    // Get the resource to delete
+    const targetResource = ResourceModel.findById(id);
+    if (!targetResource) return res.status(404).json({ error: "Resource not found" });
+
+    // Get ALL its descendants - if its a file, this will be an empty array
+    const descendants = ResourceModel.getDescendants(id);
 
     // Combine into one list to delete
-    const allToDelete = [targetFile, ...descendants];
+    const allToDelete = [targetResource, ...descendants];
 
     // Delete each one
-    for (const file of allToDelete) {
-      // If it's an actual file, delete from C++, otherwise skip
-      if (file.type === FILE_TYPE.FILE) {
+    for (const resource of allToDelete) {
+      // If it's a file, delete from C++, otherwise skip
+      if (resource.type === REASOURCE_TYPE.FILE) {
         try {
-          await sendToCpp(`DELETE ${file.id}`);
+          await sendToCpp(`DELETE ${resource.id}`);
         } catch (e) {
-          console.error(`Failed to delete physical file ${file.id}`, e.message);
+          console.error(`Failed to delete physical file ${resource.id}`, e.message);
         }
       }
       // Remove Metadata & Permissions
-      FileModel.removeFileRecord(file.id);
-      PermissionsModel.removeAllPermissionsOfFile(file.id);
+      ResourceModel.removeResourceRecord(resource.id);
+      PermissionsModel.removeAllPermissionsOfResource(resource.id);
     }
 
     res.status(204).send();
@@ -235,9 +235,9 @@ const deleteFile = async (req, res) => {
 
 /** 
  * GET /api/search/:query
- * Searches files by name or content containing the query string 
+ * Searches resources by name or content containing the query string 
  */
-const searchFilesByQuery = async (req, res) => {
+const searchResourcesByQuery = async (req, res) => {
   const userId = req.headers["authorization"];
   const { query } = req.params;
 
@@ -253,7 +253,7 @@ const searchFilesByQuery = async (req, res) => {
 
   try {
     // First, get the user's permitted files
-    const allUsersFiles = FileModel.getAllFilesByUser(userId);
+    const allUsersResources = ResourceModel.getAllResourcesByUser(userId);
     const cppResponse = await sendToCpp(`SEARCH ${query}`);
     let contentMatchIds = [];
 
@@ -262,12 +262,12 @@ const searchFilesByQuery = async (req, res) => {
       contentMatchIds = parts.length > 1 ? parts[1].trim().split(" ") : [];
     }
 
-    // Filter files that match by name or content
-    const foundFiles = allUsersFiles.filter(file => 
+    // Filter resources that match by name or content
+    const foundResources = allUsersResources.filter(file => 
       file.name.includes(query) || contentMatchIds.includes(file.id)
     );
 
-    const finalResponse = foundFiles.map(f => ({ id: f.id, name: f.name }));
+    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name }));
     return res.status(200).json(finalResponse);
 
   } catch (error) {
@@ -277,10 +277,10 @@ const searchFilesByQuery = async (req, res) => {
 }
 
 export default {
-  getUserFiles,
+  getUserResourcesInDir,
   uploadResource,
   getResourceContent,
   updateResource,
-  deleteFile,
-  searchFilesByQuery
+  deleteResource,
+  searchResourcesByQuery
 };

@@ -1,29 +1,29 @@
 import { v4 as uuidv4 } from "uuid";
 import { ROLES, isValidRole } from "../enums/Roles.js";
 
-//! Volatile storage for files and permissions
+//! Volatile storage for permissions
 /**
  * Permissions structure:
  * {
  *   id: PERMISSION_ID,
- *   fileId: FILE_ID,
+ *   resourceId: RESOURCE_ID,
  *   userId: USER_ID,
  *   role: READER | WRITER | OWNER
  */
 const PERMISSIONS = [];
 
 /**
- * Creates a new permission record for a user on a specific file
- * @param {*} fileId
+ * Creates a new permission record for a user on a specific resource
+ * @param {*} resourceId
  * @param {*} userId
  * @param {*} role
  * @returns the permission record
  */
-const createFilePermission = (fileId, userId, role) => {
+const createResourcePermission = (resourceId, userId, role) => {
   const permission = {
     id: uuidv4(), //This is the pId
-    fileId: fileId,
-    userId: userId,
+    resourceId,
+    userId,
     role,
   };
   PERMISSIONS.push(permission);
@@ -34,14 +34,14 @@ const createFilePermission = (fileId, userId, role) => {
 /**
  * Checks if a user has sufficient permissions for a specific action
  * @param {string} userId
- * @param {string} fileId
+ * @param {string} resourceId
  * @param {string} requiredRole - Minimum role required (reader/writer/owner)
  * @returns true if user has permission
  */
-const checkPermission = (userId, fileId, requiredRole) => {
-  // find the permission record for the userId and fileId
+const checkPermission = (userId, resourceId, requiredRole) => {
+  // find the permission record for the userId and resourceId
   const permission = PERMISSIONS.find(
-    (p) => p.fileId === fileId && p.userId === userId
+    (p) => p.resourceId === resourceId && p.userId === userId
   );
 
   if (!permission) return false;
@@ -54,30 +54,30 @@ const checkPermission = (userId, fileId, requiredRole) => {
 };
 
 /**
- * Returns all files that a user has access to view
+ * Returns all resources that a user has access to view
  * @param {string} userId - ID of the user
- * @returns {Array} List of authorized file objects
+ * @returns {Array} List of authorized resource objects
  */
-const getPermittedFilesOfUser = (userId) => {
-  const fileIds = PERMISSIONS.filter((p) => p.userId === userId).map(
-    (p) => p.fileId
+const getPermittedResourcesOfUser = (userId) => {
+  const resourceIds = PERMISSIONS.filter((p) => p.userId === userId).map(
+    (p) => p.resourceId
   );
-  return fileIds;
+  return resourceIds;
 };
 
 /**
- * Removes all permission records associated with a file
- * @param {*} fileId
+ * Removes all permission records associated with a resource
+ * @param {*} resourceId
  */
-const removeAllPermissionsOfFile = (fileId) => {
+const removeAllPermissionsOfResource = (resourceId) => {
   for (let i = PERMISSIONS.length - 1; i >= 0; i--) {
-    if (PERMISSIONS[i].fileId === fileId) {
+    if (PERMISSIONS[i].resourceId === resourceId) {
       PERMISSIONS.splice(i, 1);
     }
   }
 };
-const getPermissionsByFileId = (fileId) => {
-  return PERMISSIONS.filter(p => p.fileId === fileId);
+const getPermissionsByResourceId = (resourceId) => {
+  return PERMISSIONS.filter(p => p.resourceId === resourceId);
 };
 
 /**
@@ -115,11 +115,11 @@ const deletePermission = (pId) => {
 };
 
 export default {
-  createFilePermission,
+  createResourcePermission,
   checkPermission,
-  getPermittedFilesOfUser,
-  removeAllPermissionsOfFile,
-  getPermissionsByFileId,
+  getPermittedResourcesOfUser,
+  removeAllPermissionsOfResource,
+  getPermissionsByResourceId,
   updatePermission,
   deletePermission,
 };

@@ -1,26 +1,26 @@
 import UserModel from "../models/UserModel.js";
 import PermissionsModel from "../models/PermissionsModel.js";
-import FileModel from "../models/FileModel.js"; 
+import ResourceModel from "../models/ResourceModel.js"; 
 import { ROLES } from "../enums/Roles.js";
 
 /**
  * GET /api/files/:id/permissions
  * Returns all permission records for a specific file - only for the OWNER
  */
-const getFilePermissions = async (req, res) => {
+const getResourcePermissions = async (req, res) => {
   const userId = req.headers["authorization"];
-  const { id: fileId } = req.params;
+  const { id: resourceId } = req.params;
 
   if (!UserModel.isValidId(userId)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
   // Only the OWNER can see the list of permissions
-  if (!PermissionsModel.checkPermission(userId, fileId, ROLES.OWNER)) {
+  if (!PermissionsModel.checkPermission(userId, resourceId, ROLES.OWNER)) {
     return res.status(403).json({ error: "Forbidden: Only owners can view permission lists" });
   }
 
-  const permissions = PermissionsModel.getPermissionsByFileId(fileId);
+  const permissions = PermissionsModel.getPermissionsByResourceId(resourceId);
   res.json(permissions);
 };
 
@@ -44,19 +44,19 @@ const grantPermission = async (req, res) => {
   }
 
   // Get resource and ALL descendants
-  const descendants = FileModel.getDescendants(fileId);
+  const descendants = ResourceModel.getDescendants(fileId);
   const allIdsToGrant = [fileId, ...descendants.map(f => f.id)];
 
   // Grant permissions to all these files/folders
   allIdsToGrant.forEach(targetId => {
       // Check for EXISTING permission record for this user&file
-      const filePerms = PermissionsModel.getPermissionsByFileId(targetId);
+      const filePerms = PermissionsModel.getPermissionsByResourceId(targetId);
       const existingPerm = filePerms.find(p => p.userId === targetUserId);
 
       if (existingPerm) {
           PermissionsModel.updatePermission(existingPerm.id, role);
       } else {
-          PermissionsModel.createFilePermission(targetId, targetUserId, role);
+          PermissionsModel.createResourcePermission(targetId, targetUserId, role);
       }
   });
   
@@ -102,7 +102,7 @@ const deletePermission = async (req, res) => {
   }
 
   // Find the permission to know WHO we are revoking from
-  const allPerms = PermissionsModel.getPermissionsByFileId(fileId);
+  const allPerms = PermissionsModel.getPermissionsByResourceId(fileId);
   const rootPermToDelete = allPerms.find(p => p.id === pId);
   
   if (!rootPermToDelete) return res.status(404).json({ error: "Permission record not found" });
@@ -110,13 +110,13 @@ const deletePermission = async (req, res) => {
   const revokedUserId = rootPermToDelete.userId;
 
   // Get ALL descendants + current file
-  const descendants = FileModel.getDescendants(fileId);
+  const descendants = ResourceModel.getDescendants(fileId);
   const allFilesToCheck = [fileId, ...descendants.map(f => f.id)];
 
   // Remove permission for this user on all these files
   allFilesToCheck.forEach(fid => {
       // Find the specific permission ID for this user on this file
-      const filePerms = PermissionsModel.getPermissionsByFileId(fid);
+      const filePerms = PermissionsModel.getPermissionsByResourceId(fid);
       const userPermToDelete = filePerms.find(p => p.userId === revokedUserId);
       
       if (userPermToDelete) {
@@ -128,7 +128,7 @@ const deletePermission = async (req, res) => {
 };
 
 export default {
-  getFilePermissions,
+  getResourcePermissions,
   grantPermission,
   updatePermission,
   deletePermission,
