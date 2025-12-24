@@ -3,20 +3,21 @@ import UserModel from "../models/UserModel.js";
 import PermissionsModel from "../models/PermissionsModel.js";
 import { sendToCpp } from "../services/cppService.js";
 import { ROLES } from "../enums/Roles.js";
-import { REASOURCE_TYPE, isValidResourceType } from "../enums/ResourceType.js";
+import { RESOURCE_TYPE, isValidResourceType } from "../enums/ResourceType.js";
 
 /**
- * GET /api/files
+ * GET /api/files?parentId=
  * Returns a list of resources the user has permission to view in the specified folder (or root if none specified)
  */
 const getUserResourcesInDir = async (req, res) => {
   const userId = req.headers["authorization"];
+  const parentId = req.query.parentId || null;
 
   if (!UserModel.isValidId(userId))
     return res.status(401).json({ error: "Unauthorized" });
 
   // Get resources only for this specific level (right now we use null for root)
-  const userResources = ResourceModel.getResourcesByUserId(userId, null);
+  const userResources = ResourceModel.getResourcesByUserId(userId, parentId);
   
   // Return list with types so client knows if it's a folder or file
   res.json(userResources.map((r) => ({ 
@@ -35,7 +36,7 @@ const uploadResource = async (req, res) => {
   const {
     name,
     content,
-    type = REASOURCE_TYPE.FILE,
+    type = RESOURCE_TYPE.FILE,
     parentId = null,
   } = req.body;
 
@@ -58,7 +59,7 @@ const uploadResource = async (req, res) => {
   if (!name) {
     return res.status(400).json({ error: "Resource name is required" });
   }
-  if (type === REASOURCE_TYPE.FILE && (content === undefined || content === null)) {
+  if (type === RESOURCE_TYPE.FILE && (content === undefined || content === null)) {
     return res.status(400).json({ error: "Missing content for file" });
   }
 
@@ -76,7 +77,7 @@ const uploadResource = async (req, res) => {
     const resourceUrl = `/api/files/${resourceRecord.id}`;
 
     // HANDLE FOLDERS: folders are virtual, no C++ storage needed
-    if (type === REASOURCE_TYPE.FOLDER) {
+    if (type === RESOURCE_TYPE.FOLDER) {
       return res.status(201).location(resourceUrl).json(resourceRecord);
     } 
     // HANDLE FILES: send content to C++
@@ -119,7 +120,7 @@ const getResourceContent = async (req, res) => {
   }
 
   // HANDLE FOLDER: Return list of children names
-  if (resource && resource.type === REASOURCE_TYPE.FOLDER) {
+  if (resource && resource.type === RESOURCE_TYPE.FOLDER) {
     // We use the existing function, passing the current folder ID as the parentId
     const children = ResourceModel.getResourcesByUserId(userId, id);
     return res.status(200).json(children.map(c => ({ id: c.id, name: c.name, type: c.type })));
@@ -167,7 +168,7 @@ const updateResource = async (req, res) => {
     if (content !== undefined) {
 
       // Folders content cannot be updated
-      if (resourceRecord.type === REASOURCE_TYPE.FOLDER) {
+      if (resourceRecord.type === RESOURCE_TYPE.FOLDER) {
          return res.status(400).json({ error: "Cannot update content of a folder" });
       }
 
@@ -215,7 +216,7 @@ const deleteResource = async (req, res) => {
     // Delete each one
     for (const resource of allToDelete) {
       // If it's a file, delete from C++, otherwise skip
-      if (resource.type === REASOURCE_TYPE.FILE) {
+      if (resource.type === RESOURCE_TYPE.FILE) {
         try {
           await sendToCpp(`DELETE ${resource.id}`);
         } catch (e) {
