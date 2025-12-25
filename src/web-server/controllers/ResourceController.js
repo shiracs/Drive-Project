@@ -35,7 +35,7 @@ const uploadResource = async (req, res) => {
   const userId = req.headers["authorization"];
   const {
     name,
-    content,
+    content = "",
     type = RESOURCE_TYPE.FILE,
     parentId = null,
   } = req.body;
@@ -51,16 +51,14 @@ const uploadResource = async (req, res) => {
   }
 
   // Validate Parent Id
-  if (!(ResourceModel.validateParent(parentId)).valid) {
+  const parentCheck = ResourceModel.validateParent(parentId);
+  if (!parentCheck.valid) {
     return res.status(parentCheck.status).json({ error: parentCheck.error });
   }
 
   // Validate Content vs Type
   if (!name) {
-    return res.status(400).json({ error: "Resource name is required" });
-  }
-  if (type === RESOURCE_TYPE.FILE && (content === undefined || content === null)) {
-    return res.status(400).json({ error: "Missing content for file" });
+    return res.status(400).json({ error: "Name is required" });
   }
 
   // --- CREATION LOGIC --- //
@@ -78,14 +76,14 @@ const uploadResource = async (req, res) => {
 
     // HANDLE FOLDERS: folders are virtual, no C++ storage needed
     if (type === RESOURCE_TYPE.FOLDER) {
-      return res.status(201).location(resourceUrl).json(resourceRecord);
+      return res.status(201).location(resourceUrl).send();
     } 
     // HANDLE FILES: send content to C++
     else {
       const cppResponse = await sendToCpp(`POST ${resourceRecord.id} ${content}`);
 
       if (cppResponse.includes("201 Created")) {
-        return res.status(201).location(resourceUrl).json(resourceRecord);
+        return res.status(201).location(resourceUrl).send();
       }
 
       // Rollback records if C++ storage fails
@@ -112,7 +110,7 @@ const getResourceContent = async (req, res) => {
   }
 
   const resource = ResourceModel.findById(id);
-  if (!resource) return res.status(404).json({ error: "Resource not found" });
+  if (!resource) return res.status(404).json({ error: "File not found" });
 
   // Check permission in storage here before going to C++ server
   if (!PermissionsModel.checkPermission(userId, id, ROLES.READER)) {
@@ -130,7 +128,7 @@ const getResourceContent = async (req, res) => {
   try {
     const cppResponse = await sendToCpp(`GET ${id}`);
     const content = cppResponse.split("\n\n")[1] || "";
-    res.status(200).send(content);
+    res.status(200).json({...resource, content: content });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
