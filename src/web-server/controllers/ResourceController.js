@@ -58,7 +58,7 @@ const uploadResource = async (req, res) => {
 
   // Validate Content vs Type
   if (!name) {
-    return res.status(400).json({ error: "Resource name is required" });
+    return res.status(400).json({ error: "Name is required" });
   }
 
   // --- CREATION LOGIC --- //
@@ -76,14 +76,14 @@ const uploadResource = async (req, res) => {
 
     // HANDLE FOLDERS: folders are virtual, no C++ storage needed
     if (type === RESOURCE_TYPE.FOLDER) {
-      return res.status(201).location(resourceUrl).json(resourceRecord);
+      return res.status(201).location(resourceUrl).send();
     } 
     // HANDLE FILES: send content to C++
     else {
       const cppResponse = await sendToCpp(`POST ${resourceRecord.id} ${content}`);
 
       if (cppResponse.includes("201 Created")) {
-        return res.status(201).location(resourceUrl).json(resourceRecord);
+        return res.status(201).location(resourceUrl).send();
       }
 
       // Rollback records if C++ storage fails
