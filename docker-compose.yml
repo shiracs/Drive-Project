@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile.server
     image: drive-server
-    
+
     # PORT MAPPING EXPLANATION:
     # "8080:8080" means:
     # Map port 8080 on my computer to port 8080 inside the container.
@@ -24,14 +24,14 @@ services:
       context: .
       dockerfile: Dockerfile.client
     image: drive-client
-    
+
     # COMMAND OVERRIDE EXPLANATION:
     # We override the default CMD command from Dockerfile.client.
     # Instead of connecting to "127.0.0.1", we tell it to connect to "server".
     # "server" is the name of the service defined above (lines 4-5).
     command: ./client_app server 8080
     stdin_open: true # Allows interactive input
-    tty: true        
+    tty: true
     depends_on:
       - server
     networks:
@@ -46,27 +46,37 @@ services:
       - drive-network
 
   client-python:
-      build:
-        context: .
-        dockerfile: Dockerfile.pythonClient
-      command: ["server", "8080"] 
-      depends_on:
-        - server
-      stdin_open: true 
-      tty: true
-      networks:
-        - drive-network    
+    build:
+      context: .
+      dockerfile: Dockerfile.pythonClient
+    command: ["server", "8080"]
+    depends_on:
+      - server
+    stdin_open: true
+    tty: true
+    networks:
+      - drive-network
 
   web-server:
     build:
-      context: ./src/web-server
+      context: ./web-server
       dockerfile: Dockerfile.webServer
     ports:
-      - "3000:3000"
+      - "5000:5000"
     depends_on:
       - server
     networks:
-      - drive-network  
+      - drive-network
+
+client-react:
+  build:
+    context: ./client-react
+  ports:
+    - "3000:3000" 
+  depends_on:
+    - web-server
+  networks:
+    - drive-network
 
 networks:
   drive-network:

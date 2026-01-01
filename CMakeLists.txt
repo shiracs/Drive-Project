@@ -10,9 +10,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Gathering all the source files (Logic, Services, Commands).
 file(GLOB_RECURSE SERVER_SOURCES 
-    "src/server/System.cpp"
-    "src/server/services/*.cpp" 
-    "src/server/commands/*.cpp"
+    "server/System.cpp"
+    "server/services/*.cpp" 
+    "server/commands/*.cpp"
 )
 
 # Creating a shared library from the sources.
@@ -22,7 +22,7 @@ add_library(core_logic ${SERVER_SOURCES})
 # -----Server Application-----
 
 # Creating the executable for the server app.
-add_executable(server_app src/server/main.cpp)
+add_executable(server_app server/main.cpp)
 # This links server.cpp with the core logic library and pthread (for threading).
 target_link_libraries(server_app core_logic pthread)
 
@@ -30,8 +30,8 @@ target_link_libraries(server_app core_logic pthread)
 
 # Creating the executable for the client app.
 add_executable(client_app 
-    src/client/main.cpp
-    src/client/CliHandler.cpp
+    client/main.cpp
+    client/CliHandler.cpp
 )
 # Client is standalone, does not need core logic library.
 
@@ -59,7 +59,7 @@ file(GLOB TEST_SOURCES "tests/*.cpp")
 
 add_executable(run_tests 
     ${TEST_SOURCES}
-    src/client/CliHandler.cpp 
+    client/CliHandler.cpp 
 )
 
 # Link the test runner to:
