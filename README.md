@@ -1,8 +1,8 @@
 # Drive-Project (Client-Server Architecture)
 Message to the Checker:
- - all the code from the second excercise is in the ex2 branch:
+ - all the code from the second excercise is in the ex3 branch:
 ```bash
- git checkout ex2
+ git checkout ex3
  ```
 
 ## How to Run (with Docker Compose)
@@ -17,8 +17,8 @@ docker-compose up --build -d server web-server
 ```
 
 ### 2. Access the API
-The Web Server is exposed on `http://localhost:3000`. 
-You can use `curl` to interact with the endpoints defined in `src/web-server/routes/api.js`.
+The Web Server is exposed on `http://localhost:5000`. 
+You can use `curl` to interact with the endpoints defined in `web-server/routes/api.js`.
 
 ### 3. Run the Unit Tests
 To run the automated test suite (Google Test) in an isolated container:

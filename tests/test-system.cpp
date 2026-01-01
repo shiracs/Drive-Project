@@ -4,10 +4,10 @@
 #include <memory>
 #include <filesystem>
 #include <algorithm> 
-#include "../src/server/interfaces/System.h"
-#include "../src/server/interfaces/FileStorage.h"
-#include "../src/server/interfaces/RleCompressor.h"
-#include "../src/server/interfaces/IOHandler.h"
+#include "../server/interfaces/System.h"
+#include "../server/interfaces/FileStorage.h"
+#include "../server/interfaces/RleCompressor.h"
+#include "../server/interfaces/IOHandler.h"
 
 namespace fs = std::filesystem;
 

@@ -7,9 +7,9 @@
 #include <vector>
 #include <filesystem>
 
-#include "../src/server/interfaces/GetCommand.h"
-#include "../src/server/interfaces/FileStorage.h"
-#include "../src/server/interfaces/RleCompressor.h"
+#include "../server/interfaces/GetCommand.h"
+#include "../server/interfaces/FileStorage.h"
+#include "../server/interfaces/RleCompressor.h"
 
 /* Capturing IO for tests
 Instead of printing to the console, this class SAVES the output

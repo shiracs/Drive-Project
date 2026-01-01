@@ -9,10 +9,10 @@
 #include <algorithm> 
 
 // Your project files
-#include "../src/server/interfaces/DeleteCommand.h" 
-#include "../src/server/interfaces/FileStorage.h"
-#include "../src/server/interfaces/RleCompressor.h"
-#include "../src/server/interfaces/IOHandler.h"
+#include "../server/interfaces/DeleteCommand.h" 
+#include "../server/interfaces/FileStorage.h"
+#include "../server/interfaces/RleCompressor.h"
+#include "../server/interfaces/IOHandler.h"
 
 namespace fs = std::filesystem;
 

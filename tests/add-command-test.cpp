@@ -8,10 +8,10 @@
 #include <filesystem>
 
 // Your project files
-#include "../src/server/interfaces/AddCommand.h"
-#include "../src/server/interfaces/FileStorage.h"
-#include "../src/server/interfaces/RleCompressor.h"
-#include "../src/client/CliHandler.h"
+#include "../server/interfaces/AddCommand.h"
+#include "../server/interfaces/FileStorage.h"
+#include "../server/interfaces/RleCompressor.h"
+#include "../client/CliHandler.h"
 
 namespace fs = std::filesystem;
 
