@@ -1,6 +1,15 @@
 import { v4 as uuid } from "uuid";
 // !Volatile user storage for now
-const USERS = [];
+const USERS = [
+  //Todo: remove hardcoded user for submission
+  {
+    id: "admin-123", 
+    username: "admin",
+    password: "123",
+    fullName: "Admin User",
+    profilePic: "https://via.placeholder.com/150"
+  }
+];
 
 
 /**

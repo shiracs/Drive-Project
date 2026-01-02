@@ -1,8 +1,8 @@
 import UserModel from "../models/UserModel.js";
 /**
  * Register a new user
- * @param {*} req 
- * @param {*} res 
+ * @param {*} req
+ * @param {*} res
  * @returns the new user data or error message
  */
 const registerUser = (req, res) => {
@@ -30,13 +30,17 @@ const registerUser = (req, res) => {
 
   // return the user data that was created without the password
   const { password: _, ...userResponse } = newUser;
-  res.status(201).json(userResponse);
+  res.status(201).json({
+    message: "User registered successfully",
+    id: newUser.id, //todo: change to real token
+    username: newUser.username,
+  });
 };
 
 /**
  * Get user by UUID
- * @param {*} req 
- * @param {*} res 
+ * @param {*} req
+ * @param {*} res
  * @returns the user data or error message
  */
 const getUserById = (req, res) => {
@@ -55,8 +59,8 @@ const getUserById = (req, res) => {
 
 /**
  * Generate a token for a user
- * @param {*} req 
- * @param {*} res 
+ * @param {*} req
+ * @param {*} res
  * @returns the token or error message
  */
 const generateToken = (req, res) => {
@@ -64,7 +68,9 @@ const generateToken = (req, res) => {
 
   // Basic validation
   if (!username || !password) {
-    return res.status(400).json({ error: "Username and password are required" });
+    return res
+      .status(400)
+      .json({ error: "Username and password are required" });
   }
 
   // Find user by username and validate password
@@ -73,7 +79,7 @@ const generateToken = (req, res) => {
     return res.status(401).json({ error: "Invalid username or password" });
   }
 
-  // The token is simply the user ID for now
+  //todo: The token is simply the user ID for now
   res.status(200).json({ id: user.id });
 };
 
