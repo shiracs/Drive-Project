@@ -68,15 +68,15 @@ services:
     networks:
       - drive-network
 
-client-react:
-  build:
-    context: ./client-react
-  ports:
-    - "3000:3000" 
-  depends_on:
-    - web-server
-  networks:
-    - drive-network
+  client-react:
+    build:
+      context: ./client-react
+    ports:
+      - "3000:3000" 
+    depends_on:
+      - web-server
+    networks:
+      - drive-network
 
 networks:
   drive-network:
