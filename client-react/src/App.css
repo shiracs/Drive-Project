@@ -79,11 +79,11 @@ body {
   box-shadow: 0 1px 2px 0 rgba(60,64,67, .3), 0 1px 3px 1px rgba(60,64,67, .15);
 }
 
-/* --- הגדרות כלליות לתיקייה (RTL) --- */
+
 .drive-folder-card {
-  direction: rtl; /* מבטיח שהתוכן יתחיל מימין */
+  direction: rtl;
   display: flex;
-  justify-content: space-between; /* מרחיק את התוכן הימני מהשמאלי */
+  justify-content: space-between;
   align-items: center;
   background-color: #ffffff;
   border: 1px solid #dadce0;
@@ -106,7 +106,7 @@ body {
   display: flex;
   align-items: center;
   overflow: hidden;
-  gap: 12px; /* רווח בין האייקון לשם */
+  gap: 12px;
 }
 
 .folder-icon {
@@ -140,11 +140,6 @@ body {
   background-color: #e8eaed;
 }
 
-
-/* =========================
-   כרטיס קובץ – מראה Google Drive
-   ========================= */
-
 .drive-file-card {
   direction: rtl;
   width: 260px;
@@ -163,10 +158,6 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   border-color: #dadce0;
 }
-
-/* =========================
-   אזור תצוגה מקדימה
-   ========================= */
 
 .file-preview-container {
   flex: 1;
@@ -190,7 +181,6 @@ body {
   flex-direction: column;
 }
 
-/* קווים אפורים כמו דף אמיתי */
 .text-lines {
   margin-bottom: 6px;
 }
@@ -205,7 +195,6 @@ body {
 .text-lines .line.full { width: 100%; }
 .text-lines .line.half { width: 65%; }
 
-/* טקסט מקדים */
 .preview-text-content {
   font-size: 9px;
   color: #5f6368;
@@ -216,10 +205,6 @@ body {
   -webkit-box-orient: vertical;
 }
 
-/* =========================
-   אזור מידע תחתון
-   ========================= */
-
 .file-info-area {
   padding: 10px 12px;
   height: 72px;
@@ -228,7 +213,6 @@ body {
   justify-content: space-between;
 }
 
-/* שורה עליונה – אייקון + שם */
 .file-header-row {
   display: flex;
   align-items: center;
@@ -249,7 +233,6 @@ body {
   text-overflow: ellipsis;
 }
 
-/* שורה תחתונה – תאריך + אווטר */
 .file-footer-row {
   display: flex;
   align-items: center;
@@ -261,7 +244,6 @@ body {
   color: #5f6368;
 }
 
-/* עיגול משתמש */
 .user-avatar-circle {
   width: 26px;
   height: 26px;
@@ -273,4 +255,12 @@ body {
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
+  overflow: hidden;
+  border: 1px solid #fff;
+}
+
+.user-avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
