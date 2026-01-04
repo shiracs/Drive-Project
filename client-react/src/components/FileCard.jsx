@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
 import '../App.css';
 
@@ -9,37 +9,39 @@ const FileCard = ({ file, onNavigate }) => {
     type,
     owner = "User",
     profilePic,
+    content, // TODO: only for demo purpose
     updatedAt
   } = file;
 
   const isFolder = type === 'FOLDER';
-  const [fileContent, setFileContent] = useState("");
+  // TODO: use dummy content for now
+  const [fileContent, setFileContent] = useState(content || "This is a preview of the file content...");
   
   // display formatted date or 'date unknown'
   const displayDate = updatedAt 
     ? new Date(updatedAt).toLocaleDateString('he-IL') 
     : 'date unknown';
-
-  // load preview content for files
-  useEffect(() => {
-    // only for files, not folders
-    if (!isFolder && id) {
-      const fetchPreview = async () => {
-        try {
-            // fetch file content from server
-            const response = await fetch(`${API_BASE_URL}/files/${id}`);
-            if (response.ok) {
-            const text = await response.text();
-            setFileContent(text.substring(0, 100)); // first 100 chars
-            }
-        } catch (err) {
-            console.error("Failed to load preview", err);
-            setFileContent("Error loading preview");
-        }
-      };
-      fetchPreview();
-    }
-  }, [id, isFolder]);
+  
+  // // load preview content for files
+  // useEffect(() => {
+  //   // only for files, not folders
+  //   if (!isFolder && id) {
+  //     const fetchPreview = async () => {
+  //       try {
+  //           // fetch file content from server
+  //           const response = await fetch(`${API_BASE_URL}/files/${id}`);
+  //           if (response.ok) {
+  //           const text = await response.text();
+  //           setFileContent(text.substring(0, 100)); // first 100 chars
+  //           }
+  //       } catch (err) {
+  //           console.error("Failed to load preview", err);
+  //           setFileContent("Error loading preview");
+  //       }
+  //     };
+  //     fetchPreview();
+  //   }
+  // }, [id, isFolder]);
 
   // TODO: handle click event 
   const handleClick = (e) => {
@@ -60,22 +62,14 @@ const FileCard = ({ file, onNavigate }) => {
 
   // display file
   return (
-    <div className="drive-file-card" onClick={handleClick} title={name}>
-      {/* display preview area */}
+<div className="drive-file-card" onClick={handleClick} title={name}>
       <div className="file-preview-container">
         <div className="file-paper-preview">
-          <div className="text-lines">
-            <div className="line full"></div>
-            <div className="line full"></div>
-            <div className="line half"></div>
-            <div className="line full"></div>
-          </div>
           <div className="preview-text-content">
             {fileContent}
           </div>
         </div>
       </div>
-
       {/* display info area */}
       <div className="file-info-area">
         <div className="file-header-row">
