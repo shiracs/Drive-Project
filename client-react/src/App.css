@@ -78,3 +78,89 @@ body {
   background-color: #1765cc;
   box-shadow: 0 1px 2px 0 rgba(60,64,67, .3), 0 1px 3px 1px rgba(60,64,67, .15);
 }
+
+/* כפתור "חדש" - מרובע יותר עם פינות מעוגלות קלות */
+.google-new-btn {
+  background-color: white;
+  color: #3c4043;
+  padding: 18px 24px;
+  border-radius: 16px; /* מרובע יותר מאשר pill */
+  border: none;
+  box-shadow: 0 1px 3px 0 rgba(60,64,67,0.302), 0 4px 8px 3px rgba(60,64,67,0.149);
+  font-weight: 500;
+  transition: box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.google-new-btn:hover {
+  background-color: #f1f3f4;
+  box-shadow: 0 1px 3px 0 rgba(60,64,67,0.302), 0 8px 12px 6px rgba(60,64,67,0.149);
+}
+
+/* כפתורי התפריט הצידי - עגולים לגמרי (Pill shape) */
+.sidebar-item {
+  border-radius: 0 24px 24px 0; /* מעוגל בצד אחד כי הוא נצמד לימין */
+  margin-left: 12px;
+  padding: 10px 24px !important;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.sidebar-item.active {
+  background-color: #e8f0fe !important;
+  color: #1967d2 !important;
+  font-weight: 500;
+}
+
+/* יישור טקסט בחיפוש לימין */
+.google-search-input {
+  background-color: #f1f3f4;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  width: 100%;
+  text-align: right; /* יישור הטקסט לימין */
+  direction: rtl;    /* מבטיח שהסמן והמילים יתחילו מימין */
+}
+
+.google-search-input:focus {
+  background-color: white;
+  box-shadow: 0 1px 1px 0 rgba(65,69,73,0.3), 0 1px 3px 1px rgba(65,69,73,0.15);
+  outline: none;
+}
+
+/* כפתורי התפריט הצידי - עגולים מכל הכיוונים */
+.sidebar-item {
+  border-radius: 24px !important; /* עיגול מלא מכל הכיוונים */
+  margin: 2px 12px;             /* ריווח מהצדדים כדי שיראו את העיגול */
+  padding: 10px 20px !important;
+  transition: background-color 0.2s;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #3c4043;
+  font-size: 14px;
+}
+
+.sidebar-item:hover {
+  background-color: #f1f3f4;
+}
+
+.sidebar-item.active {
+  background-color: #e8f0fe !important;
+  color: #1967d2 !important;
+  font-weight: 500;
+}
+
+/* התאמת האייקונים בתפריט */
+.sidebar-item i {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+}
