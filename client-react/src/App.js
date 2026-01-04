@@ -8,7 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./components/layout/MainLayout";
-import { SIDEBAR_PATHS } from "./consts/S\idebar"
+import { SIDEBAR_PATHS } from "./consts/Sidebar"
 
 function App() {
   return (
