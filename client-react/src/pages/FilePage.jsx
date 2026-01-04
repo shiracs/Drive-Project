@@ -1,30 +1,35 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
-import FileCard from '../components/FileCard'; // הנחה שהקומפוננט קיים בתיקייה זו
+import FileCard from '../components/FileCard';
+import '../App.css'; 
 
 const FilePage = () => {
     const [resources, setResources] = useState([]);
-    const [currentFolderId, setCurrentFolderId] = useState(null); // null מסמל את תיקיית השורש
-    const [folderHistory, setFolderHistory] = useState([]); // מעקב אחרי היסטוריית התיקיות לניווט אחורה
+    const [currentFolderId, setCurrentFolderId] = useState(null);
+    const [folderHistory, setFolderHistory] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    
+    const navigate = useNavigate();
+    const username = localStorage.getItem('username') || 'User';
 
-    // פונקציה לטעינת הקבצים והתיקיות
+    // load files from server
     const fetchResources = async () => {
         setLoading(true);
         setError('');
         
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setError('לא נמצא משתמש מחובר. אנא התחבר מחדש.');
-                setLoading(false);
-                return;
-            }
+        // check authentication token 
+        const token = localStorage.getItem('userToken');
+        
+        // if no token, redirect to login
+        if (!token) {
+            navigate('/login');
+            return;
+        }
 
-            // בניית ה-URL: אם יש ID של תיקייה, מוסיפים אותו כפרמטר, אחרת טוענים את השורש
-            // הערה: אנו מסתמכים על הראוט ב-web-server/routes/api.js
-            // router.get('/files', ResourceController.getUserResourcesInDir);
+        try {
+            // build URL with current folder if applicable
             let url = `${API_BASE_URL}/files`;
             if (currentFolderId) {
                 url += `?parentId=${currentFolderId}`;
@@ -33,75 +38,98 @@ const FilePage = () => {
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': token 
                 }
             });
 
+            if (response.status === 401 || response.status === 403) {
+                // unauthorized, redirect to login
+                localStorage.removeItem('userToken');
+                navigate('/login');
+                return;
+            }
+
             if (!response.ok) {
-                throw new Error('שגיאה בטעינת הקבצים');
+                throw new Error('Failed to fetch files');
             }
 
             const data = await response.json();
-            setResources(data); // עדכון רשימת הקבצים
+            setResources(data);
+
         } catch (err) {
             console.error(err);
-            setError('אירעה שגיאה בטעינת הקבצים.');
+            setError('Error loading files. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
-    // הפעלת הטעינה בכל פעם שמשנים תיקייה
+    // call server whenever current folder changes
     useEffect(() => {
         fetchResources();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentFolderId]);
 
-    // טיפול בכניסה לתיקייה
+    // navigate into folder
     const handleNavigate = (folderId) => {
-        setFolderHistory((prev) => [...prev, currentFolderId]); // שמירת המיקום הנוכחי בהיסטוריה
-        setCurrentFolderId(folderId); // מעבר לתיקייה החדשה
+        setFolderHistory((prev) => [...prev, currentFolderId]); // save history
+        setCurrentFolderId(folderId); // update current folder
     };
 
-    // טיפול בחזרה אחורה
+    // go back up one folder
     const handleGoBack = () => {
-        if (folderHistory.length === 0) return;
+        if (folderHistory.length === 0) return; // can't go back if at root
         
-        const prevHistory = [...folderHistory];
-        const prevFolderId = prevHistory.pop(); // שליפת התיקייה האחרונה
+        const newHistory = [...folderHistory];
+        const prevFolderId = newHistory.pop(); // pop last folder
         
-        setFolderHistory(prevHistory);
+        setFolderHistory(newHistory);
         setCurrentFolderId(prevFolderId);
     };
 
+    // logout user
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate('/login');
+    };
+
     return (
-        <div className="file-page-container" style={{ padding: '20px' }}>
-            <h1>הקבצים שלי</h1>
-
-            {/* כפתור חזרה למעלה אם אנחנו לא בתיקיית השורש */}
-            {currentFolderId && (
-                <button 
-                    onClick={handleGoBack} 
-                    style={{ marginBottom: '20px', padding: '5px 10px', cursor: 'pointer' }}
-                >
-                    ⬅ חזור לתיקייה הקודמת
+        <div className="file-page-container" style={{ padding: '30px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+            
+            {/* כותרת וכפתור התנתקות */}
+            <header className="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>האחסון של {username}</h2>
+                    {currentFolderId && (
+                        <button 
+                            className="btn btn-outline-secondary btn-sm mt-2" 
+                            onClick={handleGoBack}
+                        >
+                            ⬆ חזור תיקייה אחת למעלה
+                        </button>
+                    )}
+                </div>
+                <button className="btn btn-outline-danger" onClick={handleLogout}>
+                    התנתק
                 </button>
-            )}
+            </header>
 
-            {loading && <p>טוען קבצים...</p>}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {/* error/loading states */}
+            {loading && <div className="text-center">טוען...</div>}
+            {error && <div className="alert alert-danger">{error}</div>}
 
-            {!loading && !error && resources.length === 0 && (
-                <p>התיקייה ריקה.</p>
-            )}
+            {/* files display area */}
+            <div className="d-flex flex-wrap" style={{ gap: '15px' }}>
+                {!loading && resources.length === 0 && !error && (
+                    <p className="text-muted">התיקייה ריקה.</p>
+                )}
 
-            <div className="files-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-                {resources.map((resource) => (
+                {resources.map((file) => (
                     <FileCard 
-                        key={resource.id} 
-                        file={resource} 
-                        onNavigate={handleNavigate} // מעבירים פונקציה לטיפול בלחיצה על תיקייה
+                        key={file.id} 
+                        file={file} 
+                        onNavigate={handleNavigate} 
                     />
                 ))}
             </div>

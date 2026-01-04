@@ -2,7 +2,7 @@ import React from 'react';
 import { API_BASE_URL } from '../consts/Urls';
 import '../App.css';
 
-const FileCard = async ({ file, onNavigate }) => {
+const FileCard = ({ file, onNavigate }) => {
   const {
     id,
     name,
@@ -59,13 +59,6 @@ const FileCard = async ({ file, onNavigate }) => {
   }
 
   // display file
-
-  // get content fron server or placeholder - first few lines
-  try {
-    const fileContent = await fetch(`API_URL/files/${id}/content`).then(res => res.text());
-  } catch {
-    const fileContent = "error";
-  }
   return (
     <div className="drive-file-card" onClick={handleClick} title={name}>
       {/* display preview area */}
