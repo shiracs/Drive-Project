@@ -7,7 +7,8 @@ import net from 'net';
  */
 export const sendToCpp = (command) => {
     return new Promise((resolve, reject) => {
-        const client = net.createConnection({ port: 8080, host: 'server' });
+        //TODO: before submission host has to be set to 'server'
+        const client = net.createConnection({ port: 8080, host: 'localhost' });
         
         let responseData = '';
         let commandSent = false;
