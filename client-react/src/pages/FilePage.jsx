@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
 import FileCard from '../components/FileCard';
+import { UI_TEXT } from '../consts/FilePage';
 import '../App.css'; 
 
 // --- העברנו את הפונקציה החוצה כדי שלא תרוץ בכל רינדור ---
@@ -49,17 +50,22 @@ const FilePage = () => {
     // fetch files from server or use dummy data
     const fetchResources = useCallback(async () => {
         setLoading(true);
-        setError('');   
-        
-        // מדמה טעינה מהשרת עם הנתונים הקבועים
         setTimeout(() => {
-            setResources(DUMMY_DATA);
+            if (currentFolderId !== null) {
+                setResources([
+                    { id: `inner-${currentFolderId}`, name: `קובץ בתוך ${currentFolderId}`, type: 'FILE' }
+                ]);
+            } else {
+                setResources(DUMMY_DATA);
+            }
             setLoading(false);
-        }, 800);
-    }, []);
+        }, 500);
+    }, [currentFolderId]);
 
+    // TODO: make sure refresh after enter a folder
     // // load files from server
-    // const fetchResources = async () => {
+    // load files from server
+    // const fetchResources = useCallback(async () => {
     //     setLoading(true);
     //     setError('');
         
@@ -107,7 +113,7 @@ const FilePage = () => {
     //     } finally {
     //         setLoading(false);
     //     }
-    // };
+    // }, [currentFolderId, navigate]);
 
     // call server whenever current folder changes
     useEffect(() => {
@@ -117,16 +123,16 @@ const FilePage = () => {
 
     // navigate into folder
     const handleNavigate = (folderId) => {
-        setFolderHistory((prev) => [...prev, currentFolderId]); // save history
-        setCurrentFolderId(folderId); // update current folder
+        setFolderHistory((prev) => [...prev, currentFolderId]); 
+        setCurrentFolderId(folderId);
     };
 
     // go back up one folder
     const handleGoBack = () => {
-        if (folderHistory.length === 0) return; // can't go back if at root
+        if (folderHistory.length === 0) return;
         
         const newHistory = [...folderHistory];
-        const prevFolderId = newHistory.pop(); // pop last folder
+        const prevFolderId = newHistory.pop();
         
         setFolderHistory(newHistory);
         setCurrentFolderId(prevFolderId);
@@ -143,34 +149,47 @@ const FilePage = () => {
 
     return (
         <div className="file-page-container" style={{ padding: '20px 40px', backgroundColor: '#f8f9fa', minHeight: '100vh', direction: 'rtl' }}>
-            
-            {/* file zone header */}
-            {folders.length > 0 && (
-                <section className="drive-section">
-                    <div className="drive-grid">
-                        {folders.map(folder => (
-                            <FileCard 
-                                key={folder.id} 
-                                file={folder} 
-                                onNavigate={(id) => setCurrentFolderId(id)} 
-                            />
-                        ))}
-                    </div>
-                </section>
-            )}
+        
+        {/* go back button */}
+        {folderHistory.length > 0 && (
+        <div className="back-button-container">
+            <button 
+                onClick={handleGoBack}
+                className="back-button"
+            >
+                <span>⬅️</span> {UI_TEXT.BACK_BUTTON}
+            </button>
+        </div>
+        )}
+    
+        {/* file zone header */}
+        {folders.length > 0 && (
+            <section className="drive-section">
+                <div className="drive-grid">
+                    {folders.map(folder => (
+                        <FileCard 
+                            key={folder.id} 
+                            file={folder} 
+                            onNavigate={handleNavigate}
+                        />
+                    ))}
+                </div>
+            </section>
+        )}
 
-            {/* file zone files - always below folders */}
-            {files.length > 0 && (
-                <section className="drive-section" style={{ marginTop: '20px' }}>
-                    <div className="drive-grid">
-                        {files.map(file => (
-                            <FileCard 
-                                key={file.id} 
-                                file={file} 
-                            />
-                        ))}
-                    </div>
-                </section>
+        {/* file zone files - always below folders */}
+        {files.length > 0 && (
+            <section className="drive-section" style={{ marginTop: '20px' }}>
+                <div className="drive-grid">
+                    {files.map(file => (
+                        <FileCard 
+                            key={file.id} 
+                            file={file} 
+                            onNavigate={handleNavigate}
+                        />
+                    ))}
+                </div>
+            </section>
             )}
         </div>
     );

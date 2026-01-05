@@ -373,3 +373,22 @@ body {
   height: 230px !important;
   margin: 0 !important;
 }                                                   
+
+.back-button-container {
+    margin-bottom: 20px;
+}
+
+.back-button {
+    background: none;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-button:hover {
+    background-color: #f1f3f4;
+}
