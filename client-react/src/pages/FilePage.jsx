@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
 import FileCard from '../components/FileCard';
@@ -138,48 +138,43 @@ const FilePage = () => {
         navigate('/login');
     };
 
+    const folders = useMemo(() => resources.filter(r => r.type === 'FOLDER'), [resources]);
+    const files = useMemo(() => resources.filter(r => r.type === 'FILE'), [resources]);
+
     return (
-        <div className="file-page-container" style={{ padding: '30px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <div className="file-page-container" style={{ padding: '20px 40px', backgroundColor: '#f8f9fa', minHeight: '100vh', direction: 'rtl' }}>
             
-            {/* כותרת וכפתור התנתקות */}
-            <header className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2>האחסון של {username}</h2>
-                    {currentFolderId && (
-                        <button 
-                            className="btn btn-outline-secondary btn-sm mt-2" 
-                            onClick={handleGoBack}
-                        >
-                            ⬆ חזור תיקייה אחת למעלה
-                        </button>
-                    )}
-                </div>
-                <button className="btn btn-outline-danger" onClick={handleLogout}>
-                    התנתק
-                </button>
-            </header>
+            {/* file zone header */}
+            {folders.length > 0 && (
+                <section className="drive-section">
+                    <div className="drive-grid">
+                        {folders.map(folder => (
+                            <FileCard 
+                                key={folder.id} 
+                                file={folder} 
+                                onNavigate={(id) => setCurrentFolderId(id)} 
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
 
-            {/* error/loading states */}
-            {loading && <div className="text-center">טוען...</div>}
-            {error && <div className="alert alert-danger">{error}</div>}
-
-            {/* files display area */}
-            <div className="d-flex flex-wrap" style={{ gap: '15px' }}>
-                {!loading && resources.length === 0 && !error && (
-                    <p className="text-muted">התיקייה ריקה.</p>
-                )}
-                
-                {/* TODO: not all details sent to FileCard */}
-                {resources.map((file) => (
-                    <FileCard 
-                        key={file.id} 
-                        file={file} 
-                        onNavigate={handleNavigate} 
-                    />
-                ))}
-            </div>
+            {/* file zone files - always below folders */}
+            {files.length > 0 && (
+                <section className="drive-section" style={{ marginTop: '20px' }}>
+                    <div className="drive-grid">
+                        {files.map(file => (
+                            <FileCard 
+                                key={file.id} 
+                                file={file} 
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
     );
 };
+
 
 export default FilePage;

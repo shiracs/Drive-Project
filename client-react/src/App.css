@@ -349,3 +349,27 @@ body {
   justify-content: center;
   width: 24px;
 }
+
+/* המיכל של הגריד */
+.drive-grid {
+  display: grid;
+  /* כאן נשתמש ב-auto-fill עם הגודל המקסימלי של האלמנטים שלך */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+  gap: 16px;
+  justify-items: start; /* זהו המפתח! מונע מהאלמנטים להימתח לכל רוחב העמודה */
+  width: 100%;
+}
+
+/* הגדרות לכרטיס התיקייה - שמירה על הגודל המקורי */
+.drive-folder-card {
+  width: 240px !important; /* הגודל המקורי שלך */
+  height: 48px !important;
+  margin: 0 !important; /* הגריד כבר נותן מרווחים (gap) */
+}
+
+/* הגדרות לכרטיס הקובץ - שמירה על הגודל המקורי */
+.drive-file-card {
+  width: 260px !important; /* הגודל המקורי שלך */
+  height: 230px !important;
+  margin: 0 !important;
+}                                                   
