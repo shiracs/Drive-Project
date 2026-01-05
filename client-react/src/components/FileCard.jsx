@@ -7,26 +7,18 @@ const FileCard = ({ file, onNavigate }) => {
     id,
     name,
     type,
-    owner = "User",
-    profilePic,
-    content, // TODO: only for demo purpose
-    updatedAt
+    content,
   } = file;
 
   const isFolder = type === 'FOLDER';
   // TODO: use dummy content for now
   const [fileContent, setFileContent] = useState(content || "This is a preview of the file content...");
   
-  // display formatted date or 'date unknown'
-  const displayDate = updatedAt 
-    ? new Date(updatedAt).toLocaleDateString('he-IL') 
-    : 'date unknown';
-  
   // load preview content for files
   useEffect(() => {
     // only for files, not folders
     if (!isFolder && id) {
-      let isMounted = true; // למניעת memory leaks
+      let isMounted = true;
       
       const fetchPreview = async () => {
         try {
@@ -84,7 +76,7 @@ const FileCard = ({ file, onNavigate }) => {
     );
   }
 
- // display file
+  // display file
   return (
     <div className="drive-file-card" onClick={handleClick} title={name}>
       <div className="file-preview-container">
@@ -95,47 +87,21 @@ const FileCard = ({ file, onNavigate }) => {
         </div>
       </div>
 
-      {/* data area below preview */}
+      {/* info data under preview */}
       <div className="file-info-area">
-        {/* file name and menu dots */}
-        <div className="file-header-row" style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          width: '100%' 
-        }}>
-          {/* right side: icon and name */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            overflow: 'hidden',
-            flex: 1 
-          }}>
+        <div className="file-header-row">
+          
+          {/* right side: icon and file name */}
+          <div className="file-name-container">
             <div className="file-icon-small">📄</div>
-            <div className="file-name-text" style={{ 
-              whiteSpace: 'nowrap', 
-              overflow: 'hidden', 
-              textOverflow: 'ellipsis' 
-            }}>
+            <div className="file-name-text">
               {name}
             </div>
           </div>
           
           {/* left side: three dots button */}
-          <div className="folder-menu-dots" style={{ marginLeft: '-8px' }}>
+          <div className="folder-menu-dots">
             ⋮
-          </div>
-        </div>
-
-        <div className="file-footer-row">
-          <span className="file-date">{displayDate}</span>
-          <div className="user-avatar-circle" title={owner}>
-            {profilePic ? (
-              <img src={profilePic} alt={owner} />
-            ) : (
-              owner.charAt(0).toUpperCase()
-            )}
           </div>
         </div>
       </div>

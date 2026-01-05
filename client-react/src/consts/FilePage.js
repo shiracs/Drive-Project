@@ -1,4 +1,4 @@
-const UI_TEXT = {
+export const UI_TEXT = {
     BACK_BUTTON: "חזור לתיקייה הקודמת",
     EMPTY_FOLDER: "התיקייה ריקה",
     LOADING: "טוען...",
