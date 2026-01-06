@@ -13,7 +13,9 @@ const FilePage = () => {
     const [error, setError] = useState('');
     
     const navigate = useNavigate();
-    const username = localStorage.getItem('username') || 'User';
+    
+    const folders = useMemo(() => resources.filter(r => r.type === 'FOLDER'), [resources]);
+    const files = useMemo(() => resources.filter(r => r.type === 'FILE'), [resources]);
     
     const fetchResources = useCallback(async () => {
         setLoading(true);
@@ -68,7 +70,6 @@ const FilePage = () => {
     // call server whenever current folder changes
     useEffect(() => {
         fetchResources();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentFolderId]);
 
     // navigate into folder
@@ -87,15 +88,6 @@ const FilePage = () => {
         setFolderHistory(newHistory);
         setCurrentFolderId(prevFolderId);
     };
-
-    // logout user
-    const handleLogout = () => {
-        localStorage.clear();
-        navigate('/login');
-    };
-
-    const folders = useMemo(() => resources.filter(r => r.type === 'FOLDER'), [resources]);
-    const files = useMemo(() => resources.filter(r => r.type === 'FILE'), [resources]);
 
     return (
         <div className="file-page-container" style={{ padding: '20px 40px', backgroundColor: '#f8f9fa', minHeight: '100vh', direction: 'rtl' }}>

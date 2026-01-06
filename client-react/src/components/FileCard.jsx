@@ -7,12 +7,11 @@ const FileCard = ({ file, onNavigate }) => {
     id,
     name,
     type,
-    content,
   } = file;
 
   const isFolder = type === 'FOLDER';
-  // TODO: use dummy content for now
-  const [fileContent, setFileContent] = useState(content || "This is a preview of the file content...");
+  
+  const [fileContent, setFileContent] = useState("Loading...");
   
   // load preview content for files
   useEffect(() => {
@@ -22,8 +21,14 @@ const FileCard = ({ file, onNavigate }) => {
       
       const fetchPreview = async () => {
         try {
+          const token = localStorage.getItem('userToken');
           // fetch file content from server
-          const response = await fetch(`${API_BASE_URL}/files/${id}`);
+          const response = await fetch(`${API_BASE_URL}/files/${id}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': token 
+            }
+          });
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -32,8 +37,14 @@ const FileCard = ({ file, onNavigate }) => {
           const text = await response.text();
           
           if (isMounted) {
-            setFileContent(text.substring(0, 100)); // first 100 chars
+            try {
+              const jsonData = JSON.parse(text);
+              setFileContent(jsonData.content || text.substring(0, 100));
+            } catch (e) {
+              setFileContent(text.substring(0, 100));
+            }
           }
+
         } catch (err) {
           console.error("Failed to load preview", err);
           if (isMounted) {
@@ -63,49 +74,43 @@ const FileCard = ({ file, onNavigate }) => {
     }
   };
 
-  // display folder
-  if (isFolder) {
-    return (
-      <div className="drive-folder-card" onClick={handleClick} title={name}>
-        <div className="folder-content-right">
-          <span className="folder-icon">📁</span>
-          <span className="folder-name">{name}</span>
-        </div>
-        <div className="folder-menu-dots">⋮</div>
-      </div>
-    );
-  }
-
-  // display file
   return (
-    <div className="drive-file-card" onClick={handleClick} title={name}>
-      <div className="file-preview-container">
-        <div className="file-paper-preview">
-          <div className="preview-text-content">
-            {fileContent}
+    <>
+      {isFolder ? (
+        /* Folder UI */
+        <div className="drive-folder-card" onClick={handleClick} title={name}>
+          <div className="folder-content-right">
+            <span className="folder-icon">📁</span>
+            <span className="folder-name">{name}</span>
           </div>
+          <div className="folder-menu-dots">⋮</div>
         </div>
-      </div>
-
-      {/* info data under preview */}
-      <div className="file-info-area">
-        <div className="file-header-row">
-          
-          {/* right side: icon and file name */}
-          <div className="file-name-container">
-            <div className="file-icon-small">📄</div>
-            <div className="file-name-text">
-              {name}
+      ) : (
+        /* File UI */
+        <div className="drive-file-card" onClick={handleClick} title={name}>
+          <div className="file-preview-container">
+            <div className="file-paper-preview">
+              <div className="preview-text-content">
+                {fileContent}
+              </div>
             </div>
           </div>
-          
-          {/* left side: three dots button */}
-          <div className="folder-menu-dots">
-            ⋮
+
+          <div className="file-info-area">
+            <div className="file-header-row">
+              {/* Right side: icon and file name */}
+              <div className="file-name-container">
+                <div className="file-icon-small">📄</div>
+                <div className="file-name-text">{name}</div>
+              </div>
+              
+              {/* Left side: options button */}
+              <div className="folder-menu-dots">⋮</div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 
