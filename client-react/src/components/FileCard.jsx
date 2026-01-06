@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
 import '../App.css';
 
@@ -9,6 +10,8 @@ const FileCard = ({ file, onNavigate }) => {
     type,
   } = file;
 
+  const navigate = useNavigate();
+  
   const isFolder = type === 'FOLDER';
   
   const [fileContent, setFileContent] = useState("Loading...");
@@ -70,7 +73,7 @@ const FileCard = ({ file, onNavigate }) => {
       onNavigate(id);
     } else {
       // TODO: for files, maybe open or download
-      console.log("Opening file:", name);
+      navigate('/test-view', { state: { file } });
     }
   };
 

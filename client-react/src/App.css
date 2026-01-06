@@ -415,56 +415,110 @@ body {
 
 
 
-/* The White Paper logic only */
-.document-paper {
-  background-color: white;
-  width: 100%;
-  max-width: 816px; /* Standard US Letter/A4 width in pixels */
-  min-height: 1056px; /* Standard height */
-  margin: 0 auto; /* Center the paper */
-  padding: 95px; /* Standard Google Docs margins (approx 1 inch) */
-  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.15), 0 4px 8px rgba(60, 64, 67, 0.1);
-  box-sizing: border-box;
+
+/* --- Document View Container --- */
+.document-view-container {
   display: flex;
   flex-direction: column;
+  height: 100vh;
 }
 
-/* Internal body of the document */
+
+.header-left-group {
+  display: flex;
+  align-items: center;
+}
+
+/* --- Buttons in Header --- */
+.back-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #5f6368;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  font-size: 20px;
+}
+
+.back-button:hover {
+  background-color: #f1f3f4;
+}
+
+.file-name-button {
+  background: none;
+  border: 1px solid transparent;
+  font-family: 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+.file-name-button:hover {
+  border: 1px solid #dadce0;
+  background-color: #f8f9fa;
+}
+
+.file-name-button:focus {
+  border: 2px solid #1a73e8;
+  outline: none;
+  background-color: white;
+}
+
+.edit-button {
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 4px;
+  font-family: 'Google Sans', Arial, sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.edit-button:hover {
+  background-color: #1765cc;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3);
+}
+
+/* --- Workspace & Paper --- */
+.document-workspace {
+  flex: 1;
+  background-color: #f1f3f4;
+  padding: 40px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.document-paper {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 816px;         /* A4 width */
+  min-height: 1056px;       /* A4 height */
+  padding: 95px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.30), 
+              0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  margin-bottom: 80px;
+}
+
+/* --- Document Content & States --- */
 .document-body {
   flex: 1;
   cursor: text;
-}
-
-/* Text styling to match Google Docs */
-.document-text-lines {
-  font-family: 'Arial', sans-serif;
-  font-size: 11pt; /* Default Google Docs font size */
-  line-height: 1.5;
-  color: #202124;
-  white-space: pre-wrap; /* Keeps line breaks from the database */
-  word-wrap: break-word;
-  text-align: left;
-}
-
-/* Style for when the document is empty */
-.document-empty-state {
-  color: #70757a;
-  font-style: italic;
-  font-family: 'Arial', sans-serif;
-}
-
-/* Document paper styles (same as before) */
-.document-paper {
-  background-color: white;
-  width: 100%;
-  max-width: 816px;
-  min-height: 1056px;
-  margin: 0 auto;
-  padding: 95px;
-  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.15), 0 4px 8px rgba(60, 64, 67, 0.1);
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
 }
 
 .document-text-lines {
@@ -474,9 +528,15 @@ body {
   color: #202124;
   white-space: pre-wrap;
   word-wrap: break-word;
+  text-align: left;
 }
 
-/* Loading and Error states inside the paper */
+.document-empty-state {
+  color: #b8bbbe;
+  font-style: italic;
+  font-family: 'Arial', sans-serif;
+}
+
 .document-loading, .document-error {
   font-family: 'Arial', sans-serif;
   color: #70757a;
@@ -486,4 +546,27 @@ body {
 
 .document-error {
   color: #d93025; /* Google error red */
+}
+
+.document-header {
+  height: 60px;
+  background-color: white;
+  display: flex;
+  /* נחליף ל-row רגיל */
+  flex-direction: row; 
+  /* נגדיר כיוון כללי מימין לשמאל */
+  direction: rtl; 
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  border-bottom: 1px solid #e0e0e0;
+  box-sizing: border-box;
+}
+
+.header-right-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* מרווח בין החץ לשם */
+  gap: 10px; 
 }
