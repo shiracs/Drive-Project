@@ -36,7 +36,6 @@ const DocumentViewPage = () => {
 
   return (
     <div className="document-view-container">
-      {/* סרגל כותרת עליון */}
       <div className="document-header">
         
         {/* right group: back arrow and file name */}

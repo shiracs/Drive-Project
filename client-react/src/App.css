@@ -411,25 +411,17 @@ body {
   line-height: 1.2; 
 }
 
-
-
-
-
-
-/* --- Document View Container --- */
 .document-view-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
-
 .header-left-group {
   display: flex;
   align-items: center;
 }
 
-/* --- Buttons in Header --- */
 .back-button {
   background: none;
   border: none;
@@ -492,7 +484,6 @@ body {
   box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3);
 }
 
-/* --- Workspace & Paper --- */
 .document-workspace {
   flex: 1;
   background-color: #f1f3f4;
@@ -506,8 +497,8 @@ body {
 .document-paper {
   background-color: #ffffff;
   width: 100%;
-  max-width: 816px;         /* A4 width */
-  min-height: 1056px;       /* A4 height */
+  max-width: 816px;         
+  min-height: 1056px;       
   padding: 95px;
   box-sizing: border-box;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.30), 
@@ -515,7 +506,6 @@ body {
   margin-bottom: 80px;
 }
 
-/* --- Document Content & States --- */
 .document-body {
   flex: 1;
   cursor: text;
@@ -545,16 +535,14 @@ body {
 }
 
 .document-error {
-  color: #d93025; /* Google error red */
+  color: #d93025; 
 }
 
 .document-header {
   height: 60px;
   background-color: white;
   display: flex;
-  /* נחליף ל-row רגיל */
   flex-direction: row; 
-  /* נגדיר כיוון כללי מימין לשמאל */
   direction: rtl; 
   justify-content: space-between;
   align-items: center;
@@ -567,13 +555,12 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  /* מרווח בין החץ לשם */
   gap: 10px; 
 }
 
 .document-editor-textarea {
   width: 100%;
-  min-height: 800px; /* Adjust to fit the paper */
+  min-height: 800px; 
   border: none;
   outline: none;
   resize: none;

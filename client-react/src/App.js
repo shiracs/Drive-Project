@@ -4,38 +4,39 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+
+// Import your pages
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import FilePage from "./pages/FilePage";
+import DocumentViewPage from "./pages/DocumentViewPage";
 import MainLayout from "./components/layout/MainLayout";
-import { SIDEBAR_PATHS } from "./consts/Sidebar"
+import { SIDEBAR_PATHS } from "./consts/Sidebar";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Login and Register Pages */}
+        {/* Test route for the white paper - no layout wrappers */}
+        <Route path="/test-view" element={<DocumentViewPage />} />
+
+        {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Pages under MainLayout */}
+        {/* Dashboard Routes with Sidebar */}
         <Route element={<MainLayout />}>
-          
           <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} />
-          <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />{" "}
-          {/* <Route path={SIDEBAR_PATHS.SHARED} element={<SharedPage />} />
-          <Route path={SIDEBAR_PATHS.RECENT} element={<RecentPage />} />
-          <Route path={SIDEBAR_PATHS.STARRED} element={<StarredPage />} />
-          <Route path={SIDEBAR_PATHS.TRASH} element={<TrashPage />} />
-          <Route path={SIDEBAR_PATHS.STORAGE} element={<StoragePage />} /> */}
+          <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />
           <Route
             path="/"
             element={<Navigate to={SIDEBAR_PATHS.HOME} replace />}
           />
         </Route>
 
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
   );
