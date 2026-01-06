@@ -7,6 +7,7 @@ import {
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
+import FilePage from "./pages/FilePage";
 import MainLayout from "./components/layout/MainLayout";
 import { SIDEBAR_PATHS } from "./consts/Sidebar"
 
@@ -20,7 +21,8 @@ function App() {
 
         {/* Pages under MainLayout */}
         <Route element={<MainLayout />}>
-          <Route path={SIDEBAR_PATHS.HOME} element={<Dashboard />} />
+          
+          <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} />
           <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />{" "}
           {/* <Route path={SIDEBAR_PATHS.SHARED} element={<SharedPage />} />
           <Route path={SIDEBAR_PATHS.RECENT} element={<RecentPage />} />

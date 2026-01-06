@@ -79,12 +79,162 @@ body {
   box-shadow: 0 1px 2px 0 rgba(60,64,67, .3), 0 1px 3px 1px rgba(60,64,67, .15);
 }
 
-/* כפתור "חדש" - מרובע יותר עם פינות מעוגלות קלות */
+
+.drive-folder-card {
+  direction: rtl;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 0 16px;
+  width: 240px;
+  height: 48px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+  user-select: none;
+  margin: 10px;
+}
+
+.drive-folder-card:hover {
+  background-color: #f1f3f4;
+  box-shadow: 0 1px 2px rgba(60,64,67,0.3);
+}
+
+.folder-content-right {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  gap: 12px;
+}
+
+.folder-icon {
+  font-size: 22px;
+  color: #5f6368;
+}
+
+.folder-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #3c4043;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-menu-dots {
+  color: #5f6368;
+  font-size: 20px;
+  padding: 4px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+}
+
+.folder-menu-dots:hover {
+  background-color: #e8eaed;
+}
+
+.drive-file-card {
+  direction: rtl;
+  width: 260px;
+  height: 230px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.drive-file-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-color: #dadce0;
+}
+
+.file-preview-container {
+  flex: 1;
+  background: #f1f3f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+}
+
+.file-paper-preview {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.text-lines {
+  margin-bottom: 6px;
+}
+
+.text-lines .line {
+  height: 5px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  margin-bottom: 5px;
+}
+
+.text-lines .line.full { width: 100%; }
+.text-lines .line.half { width: 65%; }
+
+.preview-text-content {
+  font-size: 9px;
+  color: #5f6368;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+}
+
+.file-icon-small {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.file-name-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #202124;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.file-date {
+  font-size: 11px;
+  color: #5f6368;
+}
+
 .google-new-btn {
   background-color: white;
   color: #3c4043;
   padding: 18px 24px;
-  border-radius: 16px; /* מרובע יותר מאשר pill */
+  border-radius: 16px;
   border: none;
   box-shadow: 0 1px 3px 0 rgba(60,64,67,0.302), 0 4px 8px 3px rgba(60,64,67,0.149);
   font-weight: 500;
@@ -99,9 +249,8 @@ body {
   box-shadow: 0 1px 3px 0 rgba(60,64,67,0.302), 0 8px 12px 6px rgba(60,64,67,0.149);
 }
 
-/* כפתורי התפריט הצידי - עגולים לגמרי (Pill shape) */
 .sidebar-item {
-  border-radius: 0 24px 24px 0; /* מעוגל בצד אחד כי הוא נצמד לימין */
+  border-radius: 0 24px 24px 0;
   margin-left: 12px;
   padding: 10px 24px !important;
   transition: background-color 0.2s;
@@ -114,15 +263,14 @@ body {
   font-weight: 500;
 }
 
-/* יישור טקסט בחיפוש לימין */
 .google-search-input {
   background-color: #f1f3f4;
   border: none;
   border-radius: 8px;
   padding: 12px 16px;
   width: 100%;
-  text-align: right; /* יישור הטקסט לימין */
-  direction: rtl;    /* מבטיח שהסמן והמילים יתחילו מימין */
+  text-align: right;
+  direction: rtl;   
 }
 
 .google-search-input:focus {
@@ -131,10 +279,9 @@ body {
   outline: none;
 }
 
-/* כפתורי התפריט הצידי - עגולים מכל הכיוונים */
 .sidebar-item {
-  border-radius: 24px !important; /* עיגול מלא מכל הכיוונים */
-  margin: 2px 12px;             /* ריווח מהצדדים כדי שיראו את העיגול */
+  border-radius: 24px !important; 
+  margin: 2px 12px;        
   padding: 10px 20px !important;
   transition: background-color 0.2s;
   cursor: pointer;
@@ -156,11 +303,110 @@ body {
   font-weight: 500;
 }
 
-/* התאמת האייקונים בתפריט */
 .sidebar-item i {
   font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
+}
+
+.drive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+  gap: 16px;
+  justify-items: start; 
+  width: 100%;
+}
+
+
+.drive-folder-card {
+  width: 240px !important;  
+  height: 48px !important;
+  margin: 0 !important; 
+}
+
+.drive-file-card {
+  width: 260px !important;
+  height: 230px !important;
+  margin: 0 !important;
+}                                                   
+
+.back-button-container {
+    margin-bottom: 20px;
+}
+
+.back-button {
+    background: none;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-button:hover {
+    background-color: #f1f3f4;
+}
+
+.file-info-area {
+  padding: 8px 12px; 
+  background-color: white;
+  border-top: 1px solid #e8eaed;
+}
+
+.file-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.file-name-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  flex: 1; 
+}
+
+.file-name-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: #3c4043;
+  font-weight: 500;
+}
+
+.folder-menu-dots {
+  margin-left: -4px;
+  font-size: 18px;
+  color: #5f6368;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.folder-menu-dots:hover {
+  background-color: rgba(60, 64, 67, 0.1);
+}
+
+.file-info-area {
+  padding: 4px 12px 6px 12px; 
+  background-color: white;
+  border-top: 1px solid #e8eaed;
+  min-height: unset; 
+}
+
+.file-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  line-height: 1.2; 
 }
