@@ -410,3 +410,80 @@ body {
   margin: 0;
   line-height: 1.2; 
 }
+
+
+
+
+
+/* The White Paper logic only */
+.document-paper {
+  background-color: white;
+  width: 100%;
+  max-width: 816px; /* Standard US Letter/A4 width in pixels */
+  min-height: 1056px; /* Standard height */
+  margin: 0 auto; /* Center the paper */
+  padding: 95px; /* Standard Google Docs margins (approx 1 inch) */
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.15), 0 4px 8px rgba(60, 64, 67, 0.1);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Internal body of the document */
+.document-body {
+  flex: 1;
+  cursor: text;
+}
+
+/* Text styling to match Google Docs */
+.document-text-lines {
+  font-family: 'Arial', sans-serif;
+  font-size: 11pt; /* Default Google Docs font size */
+  line-height: 1.5;
+  color: #202124;
+  white-space: pre-wrap; /* Keeps line breaks from the database */
+  word-wrap: break-word;
+  text-align: left;
+}
+
+/* Style for when the document is empty */
+.document-empty-state {
+  color: #70757a;
+  font-style: italic;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Document paper styles (same as before) */
+.document-paper {
+  background-color: white;
+  width: 100%;
+  max-width: 816px;
+  min-height: 1056px;
+  margin: 0 auto;
+  padding: 95px;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.15), 0 4px 8px rgba(60, 64, 67, 0.1);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.document-text-lines {
+  font-family: 'Arial', sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #202124;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Loading and Error states inside the paper */
+.document-loading, .document-error {
+  font-family: 'Arial', sans-serif;
+  color: #70757a;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.document-error {
+  color: #d93025; /* Google error red */
+}
