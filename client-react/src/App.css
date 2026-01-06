@@ -570,3 +570,17 @@ body {
   /* מרווח בין החץ לשם */
   gap: 10px; 
 }
+
+.document-editor-textarea {
+  width: 100%;
+  min-height: 800px; /* Adjust to fit the paper */
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Arial', sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #202124;
+  background: transparent;
+  padding: 0;
+}

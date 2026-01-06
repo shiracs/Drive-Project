@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import DocumentPaper from '../components/DocumentPaper';
+import { DOC_BUTTONS } from '../consts/DocumentBottons';
 
 const DocumentViewPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Extracting the file object passed from FileCard
   const file = location.state?.file;
+
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const paperRef = useRef();
 
   if (!file) {
     return (
@@ -17,39 +20,77 @@ const DocumentViewPage = () => {
     );
   }
 
+  const handleSave = async () => {
+    if (paperRef.current) {
+      await paperRef.current.saveToServer();
+      setIsEditing(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (paperRef.current) {
+      paperRef.current.cancelChanges();
+      setIsEditing(false);
+    }
+  };
+
   return (
     <div className="document-view-container">
-      {/* Header bar with RTL logic from your CSS */}
+      {/* סרגל כותרת עליון */}
       <div className="document-header">
         
-        {/* Right Group: Name + Arrow (Corrected Order) */}
+        {/* right group: back arrow and file name */}
         <div className="header-right-group">
-        {/* 1. החץ - יופיע ראשון מימין בגלל ה-RTL וה-row-reverse */}
-        <button className="back-button" onClick={() => navigate(-1)}>
+          <button className="back-button" onClick={() => navigate(-1)}>
             <span style={{ fontSize: '24px', fontWeight: 'bold' }}>➔</span>
-        </button>
+          </button>
 
-        {/* 2. שם הקובץ - יופיע משמאל לחץ */}
-        <button 
+          {/* file name as an interactive button */}
+          <button 
             className="file-name-button" 
             onClick={() => console.log("Rename clicked")}
-        >
+          >
             {file.name}
-        </button>
-        </div>
-
-        {/* Left Group: Edit Button (Matches .header-left-group) */}
-        <div className="header-left-group">
-          <button className="edit-button" onClick={() => console.log("Edit clicked")}>
-            Edit File
           </button>
         </div>
         
+        {/* left group: edit/save buttons */}
+        <div className="header-left-group">
+          {!isEditing ? (
+            <button 
+              className="edit-button" 
+              onClick={() => setIsEditing(true)}
+            >
+                {DOC_BUTTONS.EDIT}
+            </button>
+          ) : (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                className="edit-button" 
+                style={{ backgroundColor: '#34a853' }} 
+                onClick={handleSave}
+              >
+                {DOC_BUTTONS.SAVE}
+              </button>
+              <button 
+                className="edit-button" 
+                style={{ backgroundColor: '#ea4335' }} 
+                onClick={handleCancel}
+              >
+                {DOC_BUTTONS.CANCEL}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Main workspace area */}
+      {/* white paper area */}
       <div className="document-workspace">
-        <DocumentPaper fileId={file.id} />
+        <DocumentPaper 
+          ref={paperRef} 
+          fileId={file.id} 
+          isEditing={isEditing} 
+        />
       </div>
     </div>
   );
