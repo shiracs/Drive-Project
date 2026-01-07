@@ -9,33 +9,37 @@ import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import FilePage from "./pages/FilePage";
 import MainLayout from "./components/layout/MainLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { SIDEBAR_PATHS } from "./consts/Sidebar"
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Login and Register Pages */}
+        {/* Login and Registration routes - no protection needed */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Pages under MainLayout */}
-        <Route element={<MainLayout />}>
-          
+        {/* Anything inside this route requires authentication */}
+        <Route 
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} />
-          <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />{" "}
-          {/* <Route path={SIDEBAR_PATHS.SHARED} element={<SharedPage />} />
-          <Route path={SIDEBAR_PATHS.RECENT} element={<RecentPage />} />
-          <Route path={SIDEBAR_PATHS.STARRED} element={<StarredPage />} />
-          <Route path={SIDEBAR_PATHS.TRASH} element={<TrashPage />} />
-          <Route path={SIDEBAR_PATHS.STORAGE} element={<StoragePage />} /> */}
+          <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />
+          
+          {/* When user is authenticated, redirect root to home page */}
           <Route
             path="/"
             element={<Navigate to={SIDEBAR_PATHS.HOME} replace />}
           />
         </Route>
 
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* When user is NOT authenticated, redirect all unknown routes to login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );
