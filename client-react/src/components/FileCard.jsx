@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
+import { getTokenHeader } from '../utils/auth';
 import '../App.css';
 
 const FileCard = ({ file, onNavigate }) => {
@@ -24,28 +25,22 @@ const FileCard = ({ file, onNavigate }) => {
       
       const fetchPreview = async () => {
         try {
-          const token = localStorage.getItem('userToken');
+          const auth = getTokenHeader();
+
           // fetch file content from server
           const response = await fetch(`${API_BASE_URL}/files/${id}`, {
             method: 'GET',
-            headers: {
-              'Authorization': token 
-            }
+            headers: auth
           });
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           
-          const text = await response.text();
+          const data = await response.json();
           
           if (isMounted) {
-            try {
-              const jsonData = JSON.parse(text);
-              setFileContent(jsonData.content || text.substring(0, 100));
-            } catch (e) {
-              setFileContent(text.substring(0, 100));
-            }
+            setFileContent(data.content ? data.content.substring(0, 2000) : "");
           }
 
         } catch (err) {
