@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
+import { clearAuthData } from "../../utils/auth";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const username = localStorage.getItem("username") || "אורח";
 
   const handleLogout = () => {
-    localStorage.clear();
+    clearAuthData();
     navigate("/login");
   };
 
