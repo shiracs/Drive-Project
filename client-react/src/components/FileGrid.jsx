@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { GENERAL } from "../consts/General";
 import FileCard from "./FileCard";
 import ImageModal from "./ImageModal";  
@@ -14,6 +14,7 @@ const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loadin
   return (
     <div className="file-page-container" style={{ padding: "20px 40px", direction: "rtl" }}>
       <div className="d-flex align-items-center gap-3 mb-4">
+        {/* Header with optional back button */}
         {showBackButton && (
           <button className="back-button" onClick={onBack}><span className="back-arrow"></span></button>
         )}
@@ -24,6 +25,7 @@ const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loadin
         <div className="t-text-main">{GENERAL.NO_CONTENT}</div>
       ) : (
         <>
+        {/* Folder area */}
           {folders.length > 0 && (
             <section className="drive-section mb-5">
               <h6 className="t-text-sub mb-3">{GENERAL.FOLDERS}</h6>
@@ -35,6 +37,7 @@ const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loadin
             </section>
           )}
 
+          {/* File & Image area */}
           {files.length > 0 && (
             <section className="drive-section">
               <h6 className="t-text-sub mb-3">{GENERAL.FILES}</h6>
@@ -47,6 +50,7 @@ const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loadin
           )}
         </>
       )}
+      {/* Image Modal to view images */}
       {selectedImageId && <ImageModal fileId={selectedImageId} onClose={() => setSelectedImageId(null)} />}
     </div>
   );

@@ -30,7 +30,6 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {/* <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} /> */}
           <Route
             path={`/${SIDEBAR_PATHS.HOME}/:folderId?`}
             element={<FilePage />}
