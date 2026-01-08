@@ -65,15 +65,13 @@ const FileCard = ({ file, onNavigate }) => {
     }
   }, [id, isFolder]);
 
-  // TODO: handle click event 
   const handleClick = (e) => {
     if (e.target.closest('.folder-menu-dots')) return;
 
     if (isFolder && onNavigate) {
       onNavigate(id);
     } else {
-      // TODO: for files, maybe open or download
-      navigate('/test-view', { state: { file } });
+      navigate(`/files/${file.id}`, { state: { file } });
     }
   };
 

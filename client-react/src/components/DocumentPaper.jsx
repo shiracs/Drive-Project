@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
 
 const DocumentPaper = forwardRef(({ fileId, isEditing }, ref) => {
@@ -15,7 +15,7 @@ const DocumentPaper = forwardRef(({ fileId, isEditing }, ref) => {
     if (!fileId) return;
     try {
       const token = localStorage.getItem('userToken');
-      const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/files/${fileId}`, {
         headers: { 'Authorization': token }
       });
       
@@ -36,7 +36,7 @@ const DocumentPaper = forwardRef(({ fileId, isEditing }, ref) => {
       try {
         const token = localStorage.getItem('userToken');
         
-        const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/files/${fileId}`, {
           method: 'PATCH',
           headers: { 
             'Authorization': token,

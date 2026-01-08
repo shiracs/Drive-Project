@@ -1,24 +1,17 @@
 import React, { useState, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import DocumentPaper from '../components/DocumentPaper';
 import { DOC_BUTTONS } from '../consts/DocumentBottons';
 
 const DocumentViewPage = () => {
-  const location = useLocation();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const file = location.state?.file;
-
-  const [isEditing, setIsEditing] = useState(false);
+  const location = useLocation();
   
+  // Get file from state, but don't crash if it's missing
+  const file = location.state?.file;
+  const [isEditing, setIsEditing] = useState(false);
   const paperRef = useRef();
-
-  if (!file) {
-    return (
-      <div className="document-workspace">
-        <div className="document-error">No file selected.</div>
-      </div>
-    );
-  }
 
   const handleSave = async () => {
     if (paperRef.current) {
@@ -38,29 +31,30 @@ const DocumentViewPage = () => {
     <div className="document-view-container">
       <div className="document-header">
         
-        {/* right group: back arrow and file name */}
+        {/* Right group: contains the navigation and file identification */}
         <div className="header-right-group">
+          {/* Back button: positioned far right due to CSS row-reverse */}
           <button className="back-button" onClick={() => navigate(-1)}>
             <span style={{ fontSize: '24px', fontWeight: 'bold' }}>➔</span>
           </button>
 
-          {/* file name as an interactive button */}
+          {/* File name: interactive button for potential rename actions */}
           <button 
             className="file-name-button" 
             onClick={() => console.log("Rename clicked")}
           >
-            {file.name}
+            {file?.name || "Loading..."}
           </button>
         </div>
         
-        {/* left group: edit/save buttons */}
+        {/* Left group: contains action buttons for editing and saving */}
         <div className="header-left-group">
           {!isEditing ? (
             <button 
               className="edit-button" 
               onClick={() => setIsEditing(true)}
             >
-                {DOC_BUTTONS.EDIT}
+              {DOC_BUTTONS.EDIT}
             </button>
           ) : (
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -83,11 +77,11 @@ const DocumentViewPage = () => {
         </div>
       </div>
 
-      {/* white paper area */}
+      {/* Main workspace: renders the document content area */}
       <div className="document-workspace">
         <DocumentPaper 
           ref={paperRef} 
-          fileId={file.id} 
+          fileId={id}
           isEditing={isEditing} 
         />
       </div>

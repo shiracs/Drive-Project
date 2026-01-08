@@ -5,7 +5,6 @@ import {
   Navigate,
 } from "react-router-dom";
 
-// Import your pages
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
@@ -18,17 +17,15 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Test route for the white paper - no layout wrappers */}
-        <Route path="/test-view" element={<DocumentViewPage />} />
+        <Route path="/files/:id" element={<DocumentViewPage />} />
 
-        {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Dashboard Routes with Sidebar */}
         <Route element={<MainLayout />}>
           <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} />
           <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />
+          
           <Route
             path="/"
             element={<Navigate to={SIDEBAR_PATHS.HOME} replace />}
@@ -36,7 +33,7 @@ function App() {
         </Route>
 
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );
