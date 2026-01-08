@@ -410,3 +410,8 @@ body {
   margin: 0;
   line-height: 1.2; 
 }
+
+.no-reveal::-ms-reveal,
+.no-reveal::-ms-clear {
+    display: none !important;
+}
