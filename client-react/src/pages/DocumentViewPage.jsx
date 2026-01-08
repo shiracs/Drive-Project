@@ -1,75 +1,153 @@
-import React, { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import DocumentPaper from '../components/DocumentPaper';
 import { DOC_BUTTONS } from '../consts/DocumentBottons';
+import { API_BASE_URL } from '../consts/Urls';
+import { getTokenHeader } from '../utils/auth';
 
 const DocumentViewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Get file from state, but don't crash if it's missing
-  const file = location.state?.file;
+
+  const [content, setContent] = useState("");
+  const [originalContent, setOriginalContent] = useState("");
+  const [fileName, setFileName] = useState(location.state?.file?.name || "Loading...");
   const [isEditing, setIsEditing] = useState(false);
-  const paperRef = useRef();
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchFile = async () => {
+      try {
+        const auth = getTokenHeader();
+        const response = await fetch(`${API_BASE_URL}/files/${id}`, { headers: auth });
+        if (!response.ok) {
+          setError("Failed to fetch file data.");
+          return;
+        }
+        const data = await response.json();
+        setContent(data.content || "");
+        setOriginalContent(data.content || "");
+        setFileName(data.name);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    fetchFile();
+  }, [id]);
+
+  const splitFileName = (fullname) => {
+    if (!fullname || typeof fullname !== 'string') return { name: "", ext: "" };
+    
+    const lastDotIndex = fullname.lastIndexOf('.');
+    if (lastDotIndex === -1) return { name: fullname, ext: "" };
+    
+    return {
+        name: fullname.substring(0, lastDotIndex),
+        ext: fullname.substring(lastDotIndex)
+    };
+    };
+
+    const handleRename = async (newNameFromInput) => {
+    const { ext } = splitFileName(fileName || "");
+
+    if (!newNameFromInput.trim() || !newNameFromInput) {
+        setError("File name cannot be empty.");
+        setIsEditingName(false);
+        return;
+    }
+    
+    const finalName = (ext && !newNameFromInput.endsWith(ext)) 
+        ? `${newNameFromInput}${ext}` 
+        : newNameFromInput;
+
+    try {
+      const auth = getTokenHeader();
+      const response = await fetch(`${API_BASE_URL}/files/${id}`, {
+        method: 'PATCH',
+        headers: { ...auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: finalName })
+      });
+
+      if (!response.ok) {
+        setError("Failed to rename file.");
+        return;
+      }
+
+      setFileName(finalName);
+    
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsEditingName(false);
+    }
+  };
 
   const handleSave = async () => {
-    if (paperRef.current) {
-      await paperRef.current.saveToServer();
+    setLoading(true);
+    try {
+      const auth = getTokenHeader();
+      const response = await fetch(`${API_BASE_URL}/files/${id}`, {
+        method: 'PATCH',
+        headers: { ...auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: content })
+      });
+      if (!response.ok) {
+        setError("Failed to save document.");
+        return;
+      }
+      const updatedFile = await response.json();
+      setContent(updatedFile.content);
+      setOriginalContent(updatedFile.content);
+      setFileName(updatedFile.name);
       setIsEditing(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    if (paperRef.current) {
-      paperRef.current.cancelChanges();
-      setIsEditing(false);
-    }
+    setContent(originalContent);
+    setIsEditing(false);
   };
 
   return (
     <div className="document-view-container">
       <div className="document-header">
-        
-        {/* Right group: contains the navigation and file identification */}
         <div className="header-right-group">
-          {/* Back button: positioned far right due to CSS row-reverse */}
-          <button className="back-button" onClick={() => navigate(-1)}>
-            <span style={{ fontSize: '24px', fontWeight: 'bold' }}>➔</span>
-          </button>
-
-          {/* File name: interactive button for potential rename actions */}
-          <button 
-            className="file-name-button" 
-            onClick={() => console.log("Rename clicked")}
-          >
-            {file?.name || "Loading..."}
-          </button>
+          <button className="back-button" onClick={() => navigate(-1)}><span className="back-arrow"></span></button>
+          {isEditingName ? (
+            <input
+              className="file-name-input"
+              defaultValue={fileName}
+              onBlur={(e) => handleRename(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleRename(e.target.value)}
+              autoFocus
+            />
+          ) : (
+            <span 
+              className="file-name-button" 
+              onClick={() => setIsEditingName(true)}
+              style={{ cursor: 'pointer' }}
+            >
+              {fileName}
+            </span>
+          )}
         </div>
         
-        {/* Left group: contains action buttons for editing and saving */}
         <div className="header-left-group">
           {!isEditing ? (
-            <button 
-              className="edit-button" 
-              onClick={() => setIsEditing(true)}
-            >
-              {DOC_BUTTONS.EDIT}
-            </button>
+            <button className="edit-button" onClick={() => setIsEditing(true)}>{DOC_BUTTONS.EDIT}</button>
           ) : (
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
-                className="edit-button" 
-                style={{ backgroundColor: '#34a853' }} 
-                onClick={handleSave}
-              >
-                {DOC_BUTTONS.SAVE}
+              <button className="edit-button" style={{ backgroundColor: '#34a853' }} onClick={handleSave}>
+                {loading ? "Saving..." : DOC_BUTTONS.SAVE}
               </button>
-              <button 
-                className="edit-button" 
-                style={{ backgroundColor: '#ea4335' }} 
-                onClick={handleCancel}
-              >
+              <button className="edit-button" style={{ backgroundColor: '#ea4335' }} onClick={handleCancel}>
                 {DOC_BUTTONS.CANCEL}
               </button>
             </div>
@@ -77,11 +155,11 @@ const DocumentViewPage = () => {
         </div>
       </div>
 
-      {/* Main workspace: renders the document content area */}
       <div className="document-workspace">
+        {/* sending data and update function as Props */}
         <DocumentPaper 
-          ref={paperRef} 
-          fileId={id}
+          content={content} 
+          setContent={setContent} 
           isEditing={isEditing} 
         />
       </div>

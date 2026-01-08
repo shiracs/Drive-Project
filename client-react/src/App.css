@@ -310,25 +310,6 @@ body {
   margin: 0 !important;
 }                                                   
 
-.back-button-container {
-    margin-bottom: 20px;
-}
-
-.back-button {
-    background: none;
-    border: 1px solid #dadce0;
-    border-radius: 4px;
-    padding: 8px 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.back-button:hover {
-    background-color: #f1f3f4;
-}
-
 .file-info-area {
   padding: 8px 12px; 
   background-color: white;
@@ -404,17 +385,19 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  color: #5f6368;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  padding: 8px;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-  font-size: 20px;
+  justify-content: center;
+  transition: background-color 0
 }
 
-.back-button:hover {
-  background-color: #f1f3f4;
+.back-button::before {
+  border-left: 3px solid #5f6368;
+  border-bottom: 3px solid #5f6368;
+  transform: rotate(45deg);
 }
 
 .file-name-button {
@@ -446,20 +429,25 @@ body {
 }
 
 .edit-button {
-  background-color: #1a73e8;
-  color: white;
-  border: none;
-  padding: 8px 24px;
-  border-radius: 4px;
-  font-family: 'Google Sans', Arial, sans-serif;
+  font-family: inherit;      
+  font-size: 14px;
   font-weight: 500;
+  letter-spacing: 0.3px;
+
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+
   cursor: pointer;
-  transition: background-color 0.2s;
+  color: white;
+
+  background-color: #1a73e8;
+
+  transition: background-color 0.2s, opacity 0.2s;
 }
 
 .edit-button:hover {
-  background-color: #1765cc;
-  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3);
+  opacity: 0.9;
 }
 
 .document-workspace {
@@ -595,3 +583,35 @@ body {
   border-top: 1px solid #f1f3f4;
   flex-shrink: 0; 
 }
+
+.back-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #f1f3f4;
+}
+
+.back-arrow {
+  width: 12px;
+  height: 12px;
+
+  border-left: 3px solid #5f6368;
+  border-bottom: 3px solid #5f6368;
+
+  transform: rotate(-135deg);
+}
+
+
