@@ -48,16 +48,15 @@ const SearchPage = () => {
       className="file-page-container"
       style={{ padding: "20px 40px", minHeight: "100vh", direction: "rtl" }}
     >
-      <h4 className="mb-4 t-text-main">תוצאות חיפוש עבור: "{query}"</h4>
+      <h4 className="mb-4 t-text-main">{SEARCH.SEARCH_RESULTS}"{query}"</h4>
 
       {loading ? (
-        <div className="t-text-main">מחפש...</div>
+        <div className="t-text-main">{SEARCH.LOADING}</div>
       ) : results.length > 0 ? (
         <>
           {/* Folder area */}
           {folders.length > 0 && (
             <section className="drive-section">
-              <h6 className="t-text-sub mb-3">תיקיות</h6>
               <div className="drive-grid">
                 {folders.map((folder) => (
                   <FileCard
@@ -73,7 +72,6 @@ const SearchPage = () => {
           {/* File area */}
           {files.length > 0 && (
             <section className="drive-section" style={{ marginTop: "30px" }}>
-              <h6 className="t-text-sub mb-3">קבצים</h6>
               <div className="drive-grid">
                 {files.map((file) => (
                   <FileCard key={file.id} file={file} />
