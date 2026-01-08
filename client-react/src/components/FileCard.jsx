@@ -100,7 +100,7 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
               // File Card
               <div className="file-paper-preview t-bg-surface">
                 <div className="preview-text-content t-text-sub">
-                  {fileContent.substring(0, 100)}
+                  {fileContent.substring(0, 2000)}
                 </div>
               </div>
             )}
@@ -111,7 +111,7 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
             <div className="file-header-row">
               <div className="file-name-container">
                 <div className="file-icon-small">{isImage ? '🖼️' : '📄'}</div>
-                <div className="file-name-text t-text-main">{name}.txt</div>
+                <div className="file-name-text t-text-main">{`${name}${isImage ? '.png' : '.txt'}`}</div>
               </div>
               <div className="folder-menu-dots t-text-sub">⋮</div>
             </div>

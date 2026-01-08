@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '../consts/Urls';  
 import { getTokenHeader } from '../utils/auth';
 import FileGrid from '../components/FileGrid';
+import { GENERAL } from '../consts/General';
 
 
 const FilePage = () => {
@@ -11,7 +12,7 @@ const FilePage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     
-    // שליפת התיקייה מה-URL
+    // get folderId from URL params
     const folderId = searchParams.get('folderId');
 
     const fetchResources = useCallback(async (id) => {
@@ -28,7 +29,7 @@ const FilePage = () => {
         finally { setLoading(false); }
     }, []);
 
-    // רץ בכל פעם שה-URL משתנה (כולל כשחוזרים אחורה בדפדפן!)
+    // this effect runs every time folderId changes, to reload the appropriate files
     useEffect(() => {
         fetchResources(folderId);
     }, [folderId, fetchResources]);
@@ -37,9 +38,9 @@ const FilePage = () => {
         <FileGrid 
             resources={resources} 
             loading={loading}
-            title={folderId ? "תוכן תיקייה" : "הקבצים שלי"}
+            title={folderId ? GENERAL.GO_BACK : GENERAL.MY_FILES}
             onNavigate={(id) => setSearchParams({ folderId: id })}
-            onBack={() => navigate(-1)} // חוזר צעד אחד אחורה בהיסטוריה של ה-URL
+            onBack={() => navigate(-1)}
             showBackButton={!!folderId}
         />
     );

@@ -3,31 +3,32 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../consts/Urls";
 import FileGrid from "../components/FileGrid";
 import { SEARCH } from "../consts/Search";
+import { GENERAL } from "../consts/General";
 import { getTokenHeader } from "../utils/auth";
 
 const SearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     
-    // שליפת הפרמטרים מה-URL
+    // get search query and current folderId from URL
     const query = searchParams.get('q');
-    const currentFolderId = searchParams.get('folderId'); // ה-ID של התיקייה שבה אנחנו "מטיילים" כרגע
+    const currentFolderId = searchParams.get('folderId'); 
     
     const [resources, setResources] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // פונקציית טעינה: אם יש folderId טוענים תיקייה, אם אין - מבצעים חיפוש ראשוני
+    // load data every time query or folderId changes
     const loadData = useCallback(async () => {
         setLoading(true);
         const auth = getTokenHeader();
         try {
             let data;
             if (currentFolderId) {
-                // אנחנו בתוך תיקייה שהגענו אליה מהחיפוש
+                // if we want to see contents of a specific folder from the search results
                 const response = await fetch(`${API_BASE_URL}/files?parentId=${currentFolderId}`, { headers: auth });
                 data = await response.json();
             } else if (query) {
-                // אנחנו בדף תוצאות החיפוש הראשי
+                // we are on the main search results page
                 const response = await fetch(`${API_BASE_URL}/search/${encodeURIComponent(query)}`, { headers: auth });
                 data = await response.json();
             }
@@ -43,25 +44,15 @@ const SearchPage = () => {
         loadData();
     }, [loadData]);
 
-    const handleNavigate = (folderId) => {
-        // מעדכנים את ה-URL: שומרים על ה-q הקיים ומוסיפים/מעדכנים את ה-folderId
-        setSearchParams({ q: query, folderId: folderId });
-    };
-
-    const handleBack = () => {
-        // חוזר צעד אחד אחורה בהיסטוריה (בין תיקיות או חזרה לקובץ)
-        navigate(-1);
-    };
-
     return (
         <FileGrid 
             resources={resources} 
             loading={loading}
-            onNavigate={handleNavigate}
-            onBack={handleBack}
-            // מציגים חץ חזור אם אנחנו בתוך תיקייה (folderId קיים)
+            onNavigate={(folderId) => setSearchParams({ q: query, folderId })}
+            onBack={() => navigate(-1)}
+            // show the back button only if we are inside a folder = currentFolderId has a value
             showBackButton={!!currentFolderId} 
-            title={currentFolderId ? "תוכן תיקייה" : `${SEARCH.RESULTS} "${query}"`} 
+            title={currentFolderId ? GENERAL.GO_BACK : `${SEARCH.RESULTS} "${query}"`} 
         />
     );
 };

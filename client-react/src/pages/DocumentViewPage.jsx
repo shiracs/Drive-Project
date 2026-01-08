@@ -43,45 +43,45 @@ const DocumentViewPage = () => {
     const response = await fetch(`${API_BASE_URL}/files/${id}`, {
         method: 'PATCH',
         headers: { ...auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-        const error = new Error("Failed to update file.");
-        throw error;
+      const error = new Error("Failed to update file.");
+      throw error;
     }
-};
+  };
 
-const handleRename = async (newNameFromInput) => {
+  const handleRename = async (newNameFromInput) => {
     if (!newNameFromInput.trim() || !newNameFromInput) {
-        setError("File name cannot be empty.");
-        setIsEditingName(false);
-        return;
+      setError("File name cannot be empty.");
+      setIsEditingName(false);
+      return;
     }
 
     try {
-        await patchFile({ name: newNameFromInput });
-        setFileName(newNameFromInput);
+      await patchFile({ name: newNameFromInput });
+      setFileName(newNameFromInput);
     } catch (err) {
-        setError(err.message);
+      setError(err.message);
     } finally {
-        setIsEditingName(false);
+      setIsEditingName(false);
     }
-};
+  };
 
-const handleSave = async () => {
+  const handleSave = async () => {
     setLoading(true);
     setError(null);
     try {
-        await patchFile({ content: content });
-        setOriginalContent(content);
-        setIsEditing(false);
+      await patchFile({ content: content });
+      setOriginalContent(content);
+      setIsEditing(false);
     } catch (err) {
-        setError(err.message);
+      setError(err.message);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
   const handleCancel = () => {
     setContent(originalContent);
@@ -95,25 +95,25 @@ const handleSave = async () => {
           <button className="back-button" onClick={() => navigate(-1)}><span className="back-arrow"></span></button>
           {isEditingName ? (
             <div className="file-name-input-container" style={{ display: 'flex', alignItems: 'center' }}>
-            <input
+              <input
                 className="file-name-input"
                 defaultValue={fileName}
                 onBlur={(e) => handleRename(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleRename(e.target.value)}
                 autoFocus
-            />
-            <span className="visual-extension">.txt</span>
+              />
+              <span className="visual-extension">.txt</span>
             </div>
-        ) : (
-            <span 
-            className="file-name-button" 
-            onClick={() => setIsEditingName(true)}
+          ) : (
+            <span
+              className="file-name-button"
+              onClick={() => setIsEditingName(true)}
             >
-            {fileName}.txt
+              {fileName}.txt
             </span>
-        )}
+          )}
         </div>
-        
+
         <div className="header-left-group">
           {!isEditing ? (
             <button className="edit-button" onClick={() => setIsEditing(true)}>{DOC_BUTTONS.EDIT}</button>
@@ -132,10 +132,10 @@ const handleSave = async () => {
 
       <div className="document-workspace">
         {/* sending data and update function as Props */}
-        <DocumentPaper 
-          content={content} 
-          setContent={setContent} 
-          isEditing={isEditing} 
+        <DocumentPaper
+          content={content}
+          setContent={setContent}
+          isEditing={isEditing}
         />
       </div>
     </div>

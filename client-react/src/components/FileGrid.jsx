@@ -15,7 +15,7 @@ const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loadin
     <div className="file-page-container" style={{ padding: "20px 40px", direction: "rtl" }}>
       <div className="d-flex align-items-center gap-3 mb-4">
         {showBackButton && (
-          <button onClick={onBack} className="btn btn-outline-secondary rounded-circle" title="חזור"> ⬅ </button>
+          <button className="back-button" onClick={onBack}><span className="back-arrow"></span></button>
         )}
         <h4 className="m-0 t-text-main">{title}</h4>
       </div>
