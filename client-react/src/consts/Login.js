@@ -6,4 +6,5 @@ export const LOG_IN = {
     PASSWORD: "סיסמה",
     SUBMIT_BUTTON: "התחבר",
     DONT_HAVE_ACCOUNT: "אין לך חשבון?",
+    LOG_OUT: "התנתק"
 }
