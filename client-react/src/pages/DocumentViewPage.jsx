@@ -50,8 +50,6 @@ const DocumentViewPage = () => {
         const error = new Error("Failed to update file.");
         throw error;
     }
-
-    return response.json();
 };
 
 const handleRename = async (newNameFromInput) => {
@@ -75,16 +73,13 @@ const handleSave = async () => {
     setLoading(true);
     setError(null);
     try {
-        const updatedFile = await patchFile({ content: content });
-        setContent(updatedFile.content);
-        setOriginalContent(updatedFile.content);
-        setFileName(updatedFile.name);
+        await patchFile({ content: content });
+        setOriginalContent(content);
         setIsEditing(false);
     } catch (err) {
         setError(err.message);
     } finally {
         setLoading(false);
-        setIsEditing(false);
     }
 };
 

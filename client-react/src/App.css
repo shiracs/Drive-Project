@@ -382,6 +382,7 @@ body {
 }
 
 .back-button {
+  width: fit-content;
   background: none;
   border: none;
   cursor: pointer;
@@ -589,7 +590,7 @@ body {
   border: none;
   cursor: pointer;
 
-  width: 40px;
+  width: fit-content;
   height: 40px;
 
   border-radius: 50%;
