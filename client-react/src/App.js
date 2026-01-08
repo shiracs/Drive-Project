@@ -24,7 +24,6 @@ function App() {
         <Route element={<MainLayout />}>
           
           <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} />
-          <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />
           <Route path="/search" element={<SearchPage />} />
           {/* <Route path={SIDEBAR_PATHS.SHARED} element={<SharedPage />} />
           <Route path={SIDEBAR_PATHS.RECENT} element={<RecentPage />} />

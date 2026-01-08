@@ -1,6 +1,7 @@
 export const RESOURCE_TYPE = {
   FILE: "FILE",
   FOLDER: "FOLDER",
+  IMAGE: "IMAGE",
 };
 
 export const isValidResourceType = (type) => {

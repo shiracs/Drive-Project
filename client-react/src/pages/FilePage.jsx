@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
-import FileCard from '../components/FileCard';
-import { UI_TEXT } from '../consts/FilePage';
+import FileGrid from '../pages/FileGrid';
 import '../App.css'; 
   
 const FilePage = () => {
@@ -13,9 +12,6 @@ const FilePage = () => {
     const [error, setError] = useState('');
     
     const navigate = useNavigate();
-    
-    const folders = useMemo(() => resources.filter(r => r.type === 'FOLDER'), [resources]);
-    const files = useMemo(() => resources.filter(r => r.type === 'FILE'), [resources]);
     
     const fetchResources = useCallback(async () => {
         setLoading(true);
@@ -90,56 +86,13 @@ const FilePage = () => {
     };
 
     return (
-        <div className="file-page-container" style={{ padding: '20px 40px', backgroundColor: '#f8f9fa', minHeight: '100vh', direction: 'rtl' }}>
-        
-        {/* go back button */}
-        {folderHistory.length > 0 && (
-        <div className="back-button-container">
-            <button 
-                onClick={handleGoBack}
-                className="back-button"
-            >
-                <span>⬅️</span> {UI_TEXT.BACK_BUTTON}
-            </button>
-        </div>
-        )}
-    
-        {/* file zone header */}
-        {folders.length > 0 && (
-            <section className="drive-section">
-                <div className="drive-grid">
-                    {folders.map(folder => (
-                        <FileCard 
-                            key={folder.id} 
-                            file={folder} 
-                            onNavigate={handleNavigate}
-                        />
-                    ))}
-                </div>
-            </section>
-        )}
-
-        {/* file zone files - always below folders */}
-        {files.length > 0 && (
-            <section className="drive-section" style={{ marginTop: '20px' }}>
-                <div className="drive-grid">
-                    {files.map(file => (
-                        <FileCard 
-                            key={file.id} 
-                            file={file} 
-                            onNavigate={handleNavigate}
-                        />
-                    ))}
-                </div>
-            </section>
-        )}
-        {/* when no files or folders */}
-        {!loading && resources.length === 0 && (
-            <div className="empty-folder-message">
-                {UI_TEXT.EMPTY_FOLDER}
-            </div>
-        )}
-        </div>
+        <FileGrid 
+        resources={resources} 
+        title={"הקבצים שלי"}
+        onNavigate={handleNavigate}
+        onBack={handleGoBack} 
+        showBackButton={folderHistory.length > 0} 
+    />
     );
 };
 
