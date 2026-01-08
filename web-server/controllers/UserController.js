@@ -1,4 +1,7 @@
 import UserModel from "../models/UserModel.js";
+import jwt from "jsonwebtoken";
+const key = process.env.JWT_SECRET || "fallback_key_for_local_dev";
+
 /**
  * Register a new user
  * @param {*} req
@@ -28,12 +31,10 @@ const registerUser = (req, res) => {
     profilePic,
   });
 
-  // return the user data that was created without the password
-  const { password: _, ...userResponse } = newUser;
+  const token = jwt.sign({ username: newUser.username, id: newUser.id }, key);
   res.status(201).json({
-    message: "User registered successfully",
-    id: newUser.id, //todo: change to real token
     username: newUser.username,
+    token: token,
   });
 };
 
@@ -73,14 +74,19 @@ const generateToken = (req, res) => {
       .json({ error: "Username and password are required" });
   }
 
-  // Find user by username and validate password
   const user = UserModel.findByUsername(username);
-  if (!user || user.password !== password) {
-    return res.status(401).json({ error: "Invalid username or password" });
-  }
+  if (user && user.password === password) {
+    // create a token
+    const data = { username: user.username, id: user.id };
+    const token = jwt.sign(data, key);
 
-  //todo: The token is simply the user ID for now
-  res.status(200).json({ id: user.id });
+    res.status(200).json({
+      token: token,
+      username: user.username,
+    });
+  } else {
+    res.status(401).json({ error: "Invalid username or password" });
+  }
 };
 
 export default { registerUser, getUserById, generateToken };

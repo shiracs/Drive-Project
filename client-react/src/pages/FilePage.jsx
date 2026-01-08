@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
 import FileCard from '../components/FileCard';
 import { UI_TEXT } from '../consts/FilePage';
+import { getTokenHeader } from '../utils/auth';     
 import '../App.css'; 
   
 const FilePage = () => {
@@ -16,20 +17,21 @@ const FilePage = () => {
     
     const folders = useMemo(() => resources.filter(r => r.type === 'FOLDER'), [resources]);
     const files = useMemo(() => resources.filter(r => r.type === 'FILE'), [resources]);
+
+    // check auth on mount
+    useEffect(() => {
+        const auth = getTokenHeader();
+        if (!auth.Authorization) {
+            navigate('/login');
+        }
+    }, [navigate]);
     
     const fetchResources = useCallback(async () => {
-        setLoading(true);
-        setError('');
-        
-        // check authentication token 
-        const token = localStorage.getItem('userToken');
-        
-        // if no token, redirect to login
-        if (!token) {
-            navigate('/login');
-            return;
-        }
+        const auth = getTokenHeader();
+        if (!auth.Authorization) return;
 
+        setLoading(true);
+        setError('');        
         try {
             // build URL with current folder if applicable
             let url = `${API_BASE_URL}/files`;
@@ -41,7 +43,7 @@ const FilePage = () => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token 
+                    ...auth
                 }
             });
 

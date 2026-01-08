@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { REGISTER } from "../consts/Register";
 import { USER_API_URL } from "../consts/Urls";
+import { saveAuthData } from "../utils/auth";
 import "../App.css";
+
 
 const RegisterForm = ({ onRegisterSuccess }) => {
   const [formData, setFormData] = useState({
@@ -30,8 +32,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
 
     if (response.ok) {
       // save token and username to localStorage
-      localStorage.setItem("userToken", data.id);
-      localStorage.setItem("username", data.username);
+      saveAuthData(data.token, data.username);
       onRegisterSuccess(); 
     } else {
       setError(data.error || "Registration failed");

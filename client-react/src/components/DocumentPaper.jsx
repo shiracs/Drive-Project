@@ -1,5 +1,6 @@
 import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
+import { getTokenHeader } from '../utils/auth';
 
 const DocumentPaper = forwardRef(({ fileId, isEditing }, ref) => {
   const [content, setContent] = useState("");
@@ -14,9 +15,10 @@ const DocumentPaper = forwardRef(({ fileId, isEditing }, ref) => {
   const fetchFileContent = async () => {
     if (!fileId) return;
     try {
-      const token = localStorage.getItem('userToken');
-      const response = await fetch(`${API_BASE_URL}/api/files/${fileId}`, {
-        headers: { 'Authorization': token }
+        const auth = getTokenHeader();
+
+      const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
+        headers: auth
       });
       
       const data = await response.json();
@@ -34,12 +36,12 @@ const DocumentPaper = forwardRef(({ fileId, isEditing }, ref) => {
     saveToServer: async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('userToken');
+        const auth = getTokenHeader();
         
-        const response = await fetch(`${API_BASE_URL}/api/files/${fileId}`, {
+        const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
           method: 'PATCH',
           headers: { 
-            'Authorization': token,
+            ...auth,
             'Content-Type': 'application/json' 
           },
           body: JSON.stringify({
