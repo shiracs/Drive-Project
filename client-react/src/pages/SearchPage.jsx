@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { API_BASE_URL } from "../consts/Urls";
 import FileCard from "../components/FileCard";
 import { SEARCH } from "../consts/Search";
+import { getTokenHeader } from "../utils/auth";
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
@@ -26,10 +27,9 @@ const SearchPage = () => {
       if (!query) return;
       setLoading(true);
       try {
-        //TODO: add authorization header
-        const token = localStorage.getItem("userToken");
+        const auth = getTokenHeader();
         const response = await fetch(`${API_BASE_URL}/search/${query}`, {
-          headers: { Authorization: token },
+          headers: auth,
         });
         const data = await response.json();
         setResults(data);

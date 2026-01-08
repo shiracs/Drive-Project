@@ -7,7 +7,7 @@ import { LOG_IN } from "../../consts/Login";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const username = localStorage.getItem("username") || "אורח";
+  const username = localStorage.getItem("username");
 
   const handleLogout = () => {
     clearAuthData();
