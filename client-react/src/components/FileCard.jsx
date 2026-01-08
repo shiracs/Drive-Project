@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
 import '../App.css';
 
-const FileCard = ({ file, onNavigate }) => {
-  const {
-    id,
-    name,
-    type,
-  } = file;
+const FileCard = ({ file, onNavigate, onOpenImage }) => {
+  const { id, name, type } = file;
 
   const navigate = useNavigate();
   
   const isFolder = type === 'FOLDER';
+  const isImage = type === 'IMAGE';
   
   const [fileContent, setFileContent] = useState("Loading...");
   
@@ -40,7 +37,7 @@ const FileCard = ({ file, onNavigate }) => {
           const data = await response.json();
           
           if (isMounted) {
-            setFileContent(data.content ? data.content.substring(0, 2000) : "");
+            setFileContent(data.content ? data.content : "");
           }
 
         } catch (err) {
@@ -65,6 +62,8 @@ const FileCard = ({ file, onNavigate }) => {
 
     if (isFolder && onNavigate) {
       onNavigate(id);
+    } else if(isImage) {
+      onOpenImage(id);
     } else {
       navigate(`/files/${file.id}`, { state: { file } });
     }
@@ -73,35 +72,48 @@ const FileCard = ({ file, onNavigate }) => {
   return (
     <>
       {isFolder ? (
-        /* Folder UI */
-        <div className="drive-folder-card" onClick={handleClick} title={name}>
+        // Folder Card  
+        <div className="drive-folder-card t-bg-surface t-border" onClick={handleClick} title={name}>
           <div className="folder-content-right">
             <span className="folder-icon">📁</span>
-            <span className="folder-name">{name}</span>
+            <span className="folder-name t-text-main">{name}</span>
           </div>
-          <div className="folder-menu-dots">⋮</div>
+          <div className="folder-menu-dots t-text-sub">⋮</div>
         </div>
       ) : (
-        /* File UI */
-        <div className="drive-file-card" onClick={handleClick} title={name}>
-          <div className="file-preview-container">
-            <div className="file-paper-preview">
-              <div className="preview-text-content">
-                {fileContent}
+        // Image Card
+        <div className="drive-file-card t-bg-surface t-border" onClick={handleClick} title={name}>
+          <div className="file-preview-container t-bg-page" style={isImage ? { padding: 0, overflow: 'hidden' } : {}}>
+            {isImage ? (
+              <img 
+                src={fileContent} 
+                alt={name} 
+                style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover', 
+                    display: 'block' 
+                }}
+                onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Image+Error'; }}
+              />
+            ) : (
+              // File Card
+              <div className="file-paper-preview t-bg-surface">
+                <div className="preview-text-content t-text-sub">
+                  {fileContent.substring(0, 2000)}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          <div className="file-info-area">
+          {/* File/Image info area */}
+          <div className="file-info-area t-bg-surface t-border">
             <div className="file-header-row">
-              {/* Right side: icon and file name */}
               <div className="file-name-container">
-                <div className="file-icon-small">📄</div>
-                <div className="file-name-text">{name}.txt</div>
+                <div className="file-icon-small">{isImage ? '🖼️' : '📄'}</div>
+                <div className="file-name-text t-text-main">{`${name}${isImage ? '.png' : '.txt'}`}</div>
               </div>
-              
-              {/* Left side: options button */}
-              <div className="folder-menu-dots">⋮</div>
+              <div className="folder-menu-dots t-text-sub">⋮</div>
             </div>
           </div>
         </div>

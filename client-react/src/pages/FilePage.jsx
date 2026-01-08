@@ -1,149 +1,49 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../consts/Urls';
-import FileCard from '../components/FileCard';
-import { UI_TEXT } from '../consts/FilePage';
-import { getTokenHeader } from '../utils/auth';     
-import '../App.css'; 
-  
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { API_BASE_URL } from '../consts/Urls';  
+import { getTokenHeader } from '../utils/auth';
+import FileGrid from '../components/FileGrid';
+import { GENERAL } from '../consts/General';
+
+
 const FilePage = () => {
     const [resources, setResources] = useState([]);
-    const [currentFolderId, setCurrentFolderId] = useState(null);
-    const [folderHistory, setFolderHistory] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     
-    const folders = useMemo(() => resources.filter(r => r.type === 'FOLDER'), [resources]);
-    const files = useMemo(() => resources.filter(r => r.type === 'FILE'), [resources]);
+    // get folderId from URL params
+    const folderId = searchParams.get('folderId');
 
-    // check auth on mount
-    useEffect(() => {
-        const auth = getTokenHeader();
-        if (!auth.Authorization) {
-            navigate('/login');
-        }
-    }, [navigate]);
-    
-    const fetchResources = useCallback(async () => {
-        const auth = getTokenHeader();
-        if (!auth.Authorization) return;
-
+    const fetchResources = useCallback(async (id) => {
         setLoading(true);
-        setError('');        
         try {
-            // build URL with current folder if applicable
+            const auth = getTokenHeader();
             let url = `${API_BASE_URL}/files`;
-            if (currentFolderId) {
-                url += `?parentId=${currentFolderId}`;
-            }
-
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...auth
-                }
-            });
-
-            if (response.status === 401 || response.status === 403) {
-                // unauthorized, redirect to login
-                localStorage.removeItem('userToken');
-                navigate('/login');
-                return;
-            }
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch files');
-            }
-
+            if (id) url += `?parentId=${id}`;
+            
+            const response = await fetch(url, { headers: auth });
             const data = await response.json();
             setResources(data);
+        } catch (err) { console.error(err); } 
+        finally { setLoading(false); }
+    }, []);
 
-        } catch (err) {
-            console.error(err);
-            setError('Error loading files. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    }, [currentFolderId, navigate]);
-
-    // call server whenever current folder changes
+    // this effect runs every time folderId changes, to reload the appropriate files
     useEffect(() => {
-        fetchResources();
-    }, [currentFolderId]);
-
-    // navigate into folder
-    const handleNavigate = (folderId) => {
-        setFolderHistory((prev) => [...prev, currentFolderId]); 
-        setCurrentFolderId(folderId);
-    };
-
-    // go back up one folder
-    const handleGoBack = () => {
-        if (folderHistory.length === 0) return;
-        
-        const newHistory = [...folderHistory];
-        const prevFolderId = newHistory.pop();
-        
-        setFolderHistory(newHistory);
-        setCurrentFolderId(prevFolderId);
-    };
+        fetchResources(folderId);
+    }, [folderId, fetchResources]);
 
     return (
-        <div className="file-page-container" style={{ padding: '20px 40px', backgroundColor: '#f8f9fa', minHeight: '100vh', direction: 'rtl' }}>
-        
-        {/* go back button */}
-        {folderHistory.length > 0 && (
-        <div className="back-button-container">
-            <button 
-                onClick={handleGoBack}
-                className="back-button"
-            >
-                <span>⬅️</span> {UI_TEXT.BACK_BUTTON}
-            </button>
-        </div>
-        )}
-    
-        {/* file zone header */}
-        {folders.length > 0 && (
-            <section className="drive-section">
-                <div className="drive-grid">
-                    {folders.map(folder => (
-                        <FileCard 
-                            key={folder.id} 
-                            file={folder} 
-                            onNavigate={handleNavigate}
-                        />
-                    ))}
-                </div>
-            </section>
-        )}
-
-        {/* file zone files - always below folders */}
-        {files.length > 0 && (
-            <section className="drive-section" style={{ marginTop: '20px' }}>
-                <div className="drive-grid">
-                    {files.map(file => (
-                        <FileCard 
-                            key={file.id} 
-                            file={file} 
-                            onNavigate={handleNavigate}
-                        />
-                    ))}
-                </div>
-            </section>
-        )}
-        {/* when no files or folders */}
-        {!loading && resources.length === 0 && (
-            <div className="empty-folder-message">
-                {UI_TEXT.EMPTY_FOLDER}
-            </div>
-        )}
-        </div>
+        <FileGrid 
+            resources={resources} 
+            loading={loading}
+            title={folderId ? GENERAL.GO_BACK : GENERAL.MY_FILES}
+            onNavigate={(id) => setSearchParams({ folderId: id })}
+            onBack={() => navigate(-1)}
+            showBackButton={!!folderId}
+        />
     );
 };
-
 
 export default FilePage;
