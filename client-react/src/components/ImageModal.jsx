@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
+import { GENERAL } from '../consts/General';
 
 const ImageModal = ({ fileId, onClose }) => {
     const [imageData, setImageData] = useState(null);
@@ -35,7 +36,7 @@ const ImageModal = ({ fileId, onClose }) => {
             <div className="viewer-header" onClick={e => e.stopPropagation()}>
                 <div className="header-left">
                     <button className="icon-btn close-btn" onClick={onClose}>✕</button>
-                    <span className="viewer-filename">{imageData?.name || 'טוען...'}</span>
+                    <span className="viewer-filename">{imageData?.name || GENERAL.LOADING}</span>
                 </div>
                 <div className="header-right">
                     {imageData?.content && (
@@ -46,7 +47,7 @@ const ImageModal = ({ fileId, onClose }) => {
 
             <div className="viewer-body">
                 {loading ? (
-                    <div className="t-text-main">טוען...</div>
+                    <div className="t-text-main">{GENERAL.LOADING}</div>
                 ) : (
                     <div className="image-wrapper" onClick={e => e.stopPropagation()}>
                         <img src={imageData?.content} alt="" className="full-res-image" />
