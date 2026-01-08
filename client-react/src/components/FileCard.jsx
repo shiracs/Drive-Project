@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
+import { getTokenHeader } from '../utils/auth';
 import '../App.css';
 
 const FileCard = ({ file, onNavigate, onOpenImage }) => {
   const { id, name, type } = file;
 
+  const navigate = useNavigate();
+  
   const isFolder = type === 'FOLDER';
   const isImage = type === 'IMAGE';
   
@@ -19,28 +22,22 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
       
       const fetchPreview = async () => {
         try {
-          const token = localStorage.getItem('userToken');
+          const auth = getTokenHeader();
+
           // fetch file content from server
           const response = await fetch(`${API_BASE_URL}/files/${id}`, {
             method: 'GET',
-            headers: {
-              'Authorization': token 
-            }
+            headers: auth
           });
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           
-          const text = await response.text();
+          const data = await response.json();
           
           if (isMounted) {
-            try {
-              const jsonData = JSON.parse(text);
-              setFileContent(jsonData.content || text.substring(0, 100));
-            } catch (e) {
-              setFileContent(text.substring(0, 100));
-            }
+            setFileContent(data.content ? data.content : "");
           }
 
         } catch (err) {
@@ -60,7 +57,6 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
     }
   }, [id, isFolder]);
 
-  // TODO: handle click event 
   const handleClick = (e) => {
     if (e.target.closest('.folder-menu-dots')) return;
 
@@ -68,10 +64,8 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
       onNavigate(id);
     } else if(isImage) {
       onOpenImage(id);
-    }
-    else {
-      // TODO: for files, maybe open or download
-      console.log("Opening file:", name);
+    } else {
+      navigate(`/files/${file.id}`, { state: { file } });
     }
   };
 
@@ -117,7 +111,7 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
             <div className="file-header-row">
               <div className="file-name-container">
                 <div className="file-icon-small">{isImage ? '🖼️' : '📄'}</div>
-                <div className="file-name-text t-text-main">{name}</div>
+                <div className="file-name-text t-text-main">{name}.txt</div>
               </div>
               <div className="folder-menu-dots t-text-sub">⋮</div>
             </div>

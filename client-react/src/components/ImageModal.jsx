@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
 import { GENERAL } from '../consts/General';
+import { getTokenHeader } from '../utils/auth';
 
 const ImageModal = ({ fileId, onClose }) => {
     const [imageData, setImageData] = useState(null);
@@ -9,9 +10,9 @@ const ImageModal = ({ fileId, onClose }) => {
     useEffect(() => {
         const fetchImage = async () => {
             try {
-                const token = localStorage.getItem('userToken');
+                const auth = getTokenHeader();
                 const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
-                    headers: { 'Authorization': token }
+                    headers: auth
                 });
                 const data = await response.json();
                 setImageData(data);

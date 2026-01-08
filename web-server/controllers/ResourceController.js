@@ -10,7 +10,7 @@ import { RESOURCE_TYPE, isValidResourceType } from "../enums/ResourceType.js";
  * Returns a list of resources the user has permission to view in the specified folder (or root if none specified)
  */
 const getUserResourcesInDir = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const parentId = req.query.parentId || null;
 
   if (!UserModel.isValidId(userId))
@@ -32,7 +32,7 @@ const getUserResourcesInDir = async (req, res) => {
  * Creates records of the resource here and sends file content to C++ server
  */
 const uploadResource = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const {
     name,
     content = "",
@@ -102,7 +102,7 @@ const uploadResource = async (req, res) => {
  * IF FOLDER: Returns array of its children.
  */
 const getResourceContent = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const { id } = req.params;
 
   if (!UserModel.isValidId(userId)) {
@@ -139,7 +139,7 @@ const getResourceContent = async (req, res) => {
  * Updates existing resource's name and/or content
  */
 const updateResource = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const { id } = req.params;
   const { name, content } = req.body;
 
@@ -189,7 +189,7 @@ const updateResource = async (req, res) => {
  * Uses Flat Deletion logic for folders (using Path) to delete all descendants
  */
 const deleteResource = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const { id } = req.params;
 
   if (!UserModel.isValidId(userId)) {
@@ -237,7 +237,7 @@ const deleteResource = async (req, res) => {
  * Searches resources by name or content containing the query string 
  */
 const searchResourcesByQuery = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const { query } = req.params;
 
   // check user authorization - every user must be authorized
