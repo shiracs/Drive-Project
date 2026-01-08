@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import FilePage from "./pages/FilePage";
 import DocumentViewPage from "./pages/DocumentViewPage";
 import MainLayout from "./components/layout/MainLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { SIDEBAR_PATHS } from "./consts/Sidebar"
 import SearchPage from "./pages/SearchPage";
 
@@ -18,27 +19,28 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/files/:id" element={<DocumentViewPage />} />
-
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/files/:id" element={<DocumentViewPage />} />
 
-        <Route element={<MainLayout />}>
+        {/* Anything inside this route requires authentication */}
+        <Route 
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} />
           <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />
           <Route path="/search" element={<SearchPage />} />
-          {/* <Route path={SIDEBAR_PATHS.SHARED} element={<SharedPage />} />
-          <Route path={SIDEBAR_PATHS.RECENT} element={<RecentPage />} />
-          <Route path={SIDEBAR_PATHS.STARRED} element={<StarredPage />} />
-          <Route path={SIDEBAR_PATHS.TRASH} element={<TrashPage />} />
-          <Route path={SIDEBAR_PATHS.STORAGE} element={<StoragePage />} /> */}
           <Route
             path="/"
             element={<Navigate to={SIDEBAR_PATHS.HOME} replace />}
           />
         </Route>
 
-        {/* Fallback */}
+        {/* When user is NOT authenticated, redirect all unknown routes to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
