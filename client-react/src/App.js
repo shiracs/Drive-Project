@@ -4,21 +4,24 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import FilePage from "./pages/FilePage";
+import DocumentViewPage from "./pages/DocumentViewPage";
 import MainLayout from "./components/layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SIDEBAR_PATHS } from "./consts/Sidebar"
+import SearchPage from "./pages/SearchPage";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Login and Registration routes - no protection needed */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/files/:id" element={<DocumentViewPage />} />
 
         {/* Anything inside this route requires authentication */}
         <Route 
@@ -30,8 +33,7 @@ function App() {
         >
           <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} />
           <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />
-          
-          {/* When user is authenticated, redirect root to home page */}
+          <Route path="/search" element={<SearchPage />} />
           <Route
             path="/"
             element={<Navigate to={SIDEBAR_PATHS.HOME} replace />}

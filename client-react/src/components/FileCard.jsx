@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
+import { getTokenHeader } from '../utils/auth';
 import '../App.css';
 
 const FileCard = ({ file, onNavigate }) => {
@@ -9,6 +11,8 @@ const FileCard = ({ file, onNavigate }) => {
     type,
   } = file;
 
+  const navigate = useNavigate();
+  
   const isFolder = type === 'FOLDER';
   
   const [fileContent, setFileContent] = useState("Loading...");
@@ -21,28 +25,22 @@ const FileCard = ({ file, onNavigate }) => {
       
       const fetchPreview = async () => {
         try {
-          const token = localStorage.getItem('userToken');
+          const auth = getTokenHeader();
+
           // fetch file content from server
           const response = await fetch(`${API_BASE_URL}/files/${id}`, {
             method: 'GET',
-            headers: {
-              'Authorization': token 
-            }
+            headers: auth
           });
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           
-          const text = await response.text();
+          const data = await response.json();
           
           if (isMounted) {
-            try {
-              const jsonData = JSON.parse(text);
-              setFileContent(jsonData.content || text.substring(0, 100));
-            } catch (e) {
-              setFileContent(text.substring(0, 100));
-            }
+            setFileContent(data.content ? data.content.substring(0, 2000) : "");
           }
 
         } catch (err) {
@@ -62,15 +60,13 @@ const FileCard = ({ file, onNavigate }) => {
     }
   }, [id, isFolder]);
 
-  // TODO: handle click event 
   const handleClick = (e) => {
     if (e.target.closest('.folder-menu-dots')) return;
 
     if (isFolder && onNavigate) {
       onNavigate(id);
     } else {
-      // TODO: for files, maybe open or download
-      console.log("Opening file:", name);
+      navigate(`/files/${file.id}`, { state: { file } });
     }
   };
 
@@ -101,7 +97,7 @@ const FileCard = ({ file, onNavigate }) => {
               {/* Right side: icon and file name */}
               <div className="file-name-container">
                 <div className="file-icon-small">📄</div>
-                <div className="file-name-text">{name}</div>
+                <div className="file-name-text">{name}.txt</div>
               </div>
               
               {/* Left side: options button */}
