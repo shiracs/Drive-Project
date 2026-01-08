@@ -38,60 +38,55 @@ const DocumentViewPage = () => {
     fetchFile();
   }, [id]);
 
-    const handleRename = async (newNameFromInput) => {
-    const finalName = newNameFromInput.trim() || fileName;
+  const patchFile = async (data) => {
+    const auth = getTokenHeader();
+    const response = await fetch(`${API_BASE_URL}/files/${id}`, {
+        method: 'PATCH',
+        headers: { ...auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
 
-    if (!finalName || finalName === fileName) {
+    if (!response.ok) {
+        const error = new Error("Failed to update file.");
+        throw error;
+    }
+
+    return response.json();
+};
+
+const handleRename = async (newNameFromInput) => {
+    if (!newNameFromInput.trim() || !newNameFromInput) {
+        setError("File name cannot be empty.");
         setIsEditingName(false);
         return;
     }
 
     try {
-      const auth = getTokenHeader();
-      const response = await fetch(`${API_BASE_URL}/files/${id}`, {
-        method: 'PATCH',
-        headers: { ...auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: finalName })
-      });
-
-      if (!response.ok) {
-        setError("Failed to rename file.");
-        return;
-      }
-
-      setFileName(finalName);
-    
+        await patchFile({ name: newNameFromInput });
+        setFileName(newNameFromInput);
     } catch (err) {
-      setError(err.message);
+        setError(err.message);
     } finally {
-      setIsEditingName(false);
+        setIsEditingName(false);
     }
-  };
+};
 
-  const handleSave = async () => {
+const handleSave = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const auth = getTokenHeader();
-      const response = await fetch(`${API_BASE_URL}/files/${id}`, {
-        method: 'PATCH',
-        headers: { ...auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content })
-      });
-      if (!response.ok) {
-        setError("Failed to save document.");
-        return;
-      }
-      const updatedFile = await response.json();
-      setContent(updatedFile.content);
-      setOriginalContent(updatedFile.content);
-      setFileName(updatedFile.name);
-      setIsEditing(false);
+        const updatedFile = await patchFile({ content: content });
+        setContent(updatedFile.content);
+        setOriginalContent(updatedFile.content);
+        setFileName(updatedFile.name);
+        setIsEditing(false);
     } catch (err) {
-      setError(err.message);
+        setError(err.message);
     } finally {
-      setLoading(false);
+        setLoading(false);
+        setIsEditing(false);
     }
-  };
+};
 
   const handleCancel = () => {
     setContent(originalContent);
