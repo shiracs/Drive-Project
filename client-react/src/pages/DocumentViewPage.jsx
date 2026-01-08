@@ -38,30 +38,13 @@ const DocumentViewPage = () => {
     fetchFile();
   }, [id]);
 
-  const splitFileName = (fullname) => {
-    if (!fullname || typeof fullname !== 'string') return { name: "", ext: "" };
-    
-    const lastDotIndex = fullname.lastIndexOf('.');
-    if (lastDotIndex === -1) return { name: fullname, ext: "" };
-    
-    return {
-        name: fullname.substring(0, lastDotIndex),
-        ext: fullname.substring(lastDotIndex)
-    };
-    };
-
     const handleRename = async (newNameFromInput) => {
-    const { ext } = splitFileName(fileName || "");
+    const finalName = newNameFromInput.trim() || fileName;
 
-    if (!newNameFromInput.trim() || !newNameFromInput) {
-        setError("File name cannot be empty.");
+    if (!finalName || finalName === fileName) {
         setIsEditingName(false);
         return;
     }
-    
-    const finalName = (ext && !newNameFromInput.endsWith(ext)) 
-        ? `${newNameFromInput}${ext}` 
-        : newNameFromInput;
 
     try {
       const auth = getTokenHeader();
@@ -121,22 +104,24 @@ const DocumentViewPage = () => {
         <div className="header-right-group">
           <button className="back-button" onClick={() => navigate(-1)}><span className="back-arrow"></span></button>
           {isEditingName ? (
+            <div className="file-name-input-container" style={{ display: 'flex', alignItems: 'center' }}>
             <input
-              className="file-name-input"
-              defaultValue={fileName}
-              onBlur={(e) => handleRename(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleRename(e.target.value)}
-              autoFocus
+                className="file-name-input"
+                defaultValue={fileName}
+                onBlur={(e) => handleRename(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleRename(e.target.value)}
+                autoFocus
             />
-          ) : (
+            <span className="visual-extension">.txt</span>
+            </div>
+        ) : (
             <span 
-              className="file-name-button" 
-              onClick={() => setIsEditingName(true)}
-              style={{ cursor: 'pointer' }}
+            className="file-name-button" 
+            onClick={() => setIsEditingName(true)}
             >
-              {fileName}
+            {fileName}.txt
             </span>
-          )}
+        )}
         </div>
         
         <div className="header-left-group">

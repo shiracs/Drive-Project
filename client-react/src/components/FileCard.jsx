@@ -97,7 +97,7 @@ const FileCard = ({ file, onNavigate }) => {
               {/* Right side: icon and file name */}
               <div className="file-name-container">
                 <div className="file-icon-small">📄</div>
-                <div className="file-name-text">{name}</div>
+                <div className="file-name-text">{name}.txt</div>
               </div>
               
               {/* Left side: options button */}

@@ -11,12 +11,8 @@ import Dashboard from "./pages/Dashboard";
 import FilePage from "./pages/FilePage";
 import DocumentViewPage from "./pages/DocumentViewPage";
 import MainLayout from "./components/layout/MainLayout";
-<<<<<<< HEAD
-import { SIDEBAR_PATHS } from "./consts/Sidebar";
-=======
 import { SIDEBAR_PATHS } from "./consts/Sidebar"
 import SearchPage from "./pages/SearchPage";
->>>>>>> 22f3b0f8fb2ae11cf146c300c12c496653f5eaae
 
 function App() {
   return (
