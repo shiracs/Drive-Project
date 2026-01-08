@@ -370,6 +370,7 @@ body {
   line-height: 1.2; 
 }
 
+<<<<<<< HEAD
 .document-view-container {
   display: flex;
   flex-direction: column;
@@ -615,3 +616,22 @@ body {
 }
 
 
+=======
+.search-results-container {
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.search-item {
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    color: var(--text-main);
+}
+
+.search-item:hover {
+    background-color: var(--hover-gray);
+}
+>>>>>>> 22f3b0f8fb2ae11cf146c300c12c496653f5eaae

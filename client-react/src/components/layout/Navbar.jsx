@@ -1,5 +1,9 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAuthData } from "../../utils/auth";
+import { SEARCH } from "../../consts/Search";
+import SearchBar from "../SearchBar";
+import { LOG_IN } from "../../consts/Login";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -23,13 +27,7 @@ const Navbar = () => {
         </span>
       </div>
 
-      <div className="flex-grow-1 mx-5" style={{ maxWidth: "720px" }}>
-        <input
-          type="text"
-          className="google-search-input"
-          placeholder="חיפוש ב-Drive"
-        />
-      </div>
+      <SearchBar />
 
       <div className="d-flex align-items-center gap-3">
         <span className="text-muted small fw-bold">שלום, {username}</span>
@@ -37,7 +35,7 @@ const Navbar = () => {
           onClick={handleLogout}
           className="btn btn-outline-danger btn-sm rounded-pill px-3"
         >
-          התנתק
+          {LOG_IN.LOG_OUT}
         </button>
       </div>
     </nav>

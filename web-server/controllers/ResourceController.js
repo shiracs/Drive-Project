@@ -266,7 +266,7 @@ const searchResourcesByQuery = async (req, res) => {
       file.name.includes(query) || contentMatchIds.includes(file.id)
     );
 
-    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name }));
+    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name, type: f.type }));
     return res.status(200).json(finalResponse);
 
   } catch (error) {
