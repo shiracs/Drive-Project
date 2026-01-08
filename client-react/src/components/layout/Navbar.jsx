@@ -1,8 +1,24 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { SEARCH } from "../../consts/Search";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const username = localStorage.getItem("username") || "אורח";
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      const trimmedQuery = searchQuery.trim();
+
+      if (!trimmedQuery) {
+        setSearchQuery("");
+        navigate("/dashboard");
+      } else {
+        navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+      }
+    }
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -26,7 +42,10 @@ const Navbar = () => {
         <input
           type="text"
           className="google-search-input"
-          placeholder="חיפוש ב-Drive"
+          placeholder={SEARCH.PLACEHOLDER}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
       </div>
 
