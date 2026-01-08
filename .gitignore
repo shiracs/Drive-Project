@@ -231,3 +231,4 @@ server/client_app
 server/run_tests
 server/libcore_logic.a
 server/CTestTestfile.cmake
+.env

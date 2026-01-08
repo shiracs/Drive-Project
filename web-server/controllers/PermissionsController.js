@@ -8,7 +8,7 @@ import { ROLES } from "../enums/Roles.js";
  * Returns all permission records for a specific file - only for the OWNER
  */
 const getResourcePermissions = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const { id: resourceId } = req.params;
 
   if (!UserModel.isValidId(userId)) {
@@ -29,7 +29,7 @@ const getResourcePermissions = async (req, res) => {
  * Grants a permission to a user for a specific file / folder and all its descendants
  */
 const grantPermission = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const { id: fileId } = req.params;
   const { targetUserId, role } = req.body;
 
@@ -68,7 +68,7 @@ const grantPermission = async (req, res) => {
  * Updates a specific user's role for a file
  */
 const updatePermission = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const { id: fileId, pId } = req.params;
   const { role: newRole } = req.body;
 
@@ -91,7 +91,7 @@ const updatePermission = async (req, res) => {
  * deletes a specific user's permission for a file / folder and all its descendants
  */
 const deletePermission = async (req, res) => {
-  const userId = req.headers["authorization"];
+  const userId = req.userId;
   const { id: fileId, pId } = req.params;
 
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
