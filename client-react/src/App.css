@@ -370,6 +370,10 @@ body {
   line-height: 1.2; 
 }
 
+.no-reveal::-ms-reveal,
+.no-reveal::-ms-clear {
+    display: none !important;
+}
 .document-view-container {
   display: flex;
   flex-direction: column;
