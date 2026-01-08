@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { LOGIN_API_URL } from "../consts/Urls";
 import { LOG_IN } from "../consts/Login";
+import { saveAuthData } from "../utils/auth";
 import "../App.css";
 
 const LoginForm = ({ onLoginSuccess }) => {
@@ -8,7 +9,7 @@ const LoginForm = ({ onLoginSuccess }) => {
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
@@ -23,8 +24,7 @@ const LoginForm = ({ onLoginSuccess }) => {
 
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem("userToken", data.id);
-        localStorage.setItem("username", formData.username);
+        saveAuthData(data.token, data.username);
         onLoginSuccess();
       } else {
         setError(data.error || LOG_IN.LOG_IN_FAIL);
@@ -58,7 +58,9 @@ const LoginForm = ({ onLoginSuccess }) => {
       <button type="submit" className="google-btn w-100 mt-2">
         {LOG_IN.SUBMIT_BUTTON}
       </button>
-      {error && <div className="text-danger mt-3 text-center small">{error}</div>}
+      {error && (
+        <div className="text-danger mt-3 text-center small">{error}</div>
+      )}
     </form>
   );
 };

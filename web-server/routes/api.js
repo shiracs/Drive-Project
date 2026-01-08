@@ -2,6 +2,7 @@ import express from 'express';
 import UserController from '../controllers/UserController.js';
 import ResourceController from '../controllers/ResourceController.js';
 import PermissionsController from '../controllers/PermissionsController.js'; 
+import {isLoggedIn} from '../middleware/AuthMiddleware.js';
 
 const router = express.Router();
 
@@ -11,17 +12,17 @@ router.get('/users/:id', UserController.getUserById);
 router.post('/tokens', UserController.generateToken);
 
 // File Routes
-router.get('/files', ResourceController.getUserResourcesInDir);         
-router.post('/files', ResourceController.uploadResource);     
-router.get('/files/:id', ResourceController.getResourceContent); 
-router.patch('/files/:id', ResourceController.updateResource);
-router.delete('/files/:id', ResourceController.deleteResource);
-router.get('/search/:query', ResourceController.searchResourcesByQuery);
+router.get('/files', isLoggedIn, ResourceController.getUserResourcesInDir);         
+router.post('/files', isLoggedIn, ResourceController.uploadResource);     
+router.get('/files/:id', isLoggedIn, ResourceController.getResourceContent); 
+router.patch('/files/:id', isLoggedIn, ResourceController.updateResource);
+router.delete('/files/:id', isLoggedIn, ResourceController.deleteResource);
+router.get('/search/:query', isLoggedIn, ResourceController.searchResourcesByQuery);
 
 // Permissions Routes
-router.get('/files/:id/permissions', PermissionsController.getResourcePermissions);
-router.post('/files/:id/permissions', PermissionsController.grantPermission);
-router.patch('/files/:id/permissions/:pId', PermissionsController.updatePermission);
-router.delete('/files/:id/permissions/:pId', PermissionsController.deletePermission);
+router.get('/files/:id/permissions', isLoggedIn, PermissionsController.getResourcePermissions);
+router.post('/files/:id/permissions', isLoggedIn, PermissionsController.grantPermission);
+router.patch('/files/:id/permissions/:pId', isLoggedIn, PermissionsController.updatePermission);
+router.delete('/files/:id/permissions/:pId', isLoggedIn, PermissionsController.deletePermission);
 
 export default router; 

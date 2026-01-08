@@ -4,10 +4,12 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import FilePage from "./pages/FilePage";
+import DocumentViewPage from "./pages/DocumentViewPage";
 import MainLayout from "./components/layout/MainLayout";
 import { SIDEBAR_PATHS } from "./consts/Sidebar"
 import SearchPage from "./pages/SearchPage";
@@ -16,13 +18,12 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Login and Register Pages */}
+        <Route path="/files/:id" element={<DocumentViewPage />} />
+
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Pages under MainLayout */}
         <Route element={<MainLayout />}>
-          
           <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} />
           <Route path={SIDEBAR_PATHS.MY_DRIVE} element={<Dashboard />} />
           <Route path="/search" element={<SearchPage />} />
@@ -37,7 +38,8 @@ function App() {
           />
         </Route>
 
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

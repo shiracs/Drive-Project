@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { clearAuthData } from "../../utils/auth";
 import { SEARCH } from "../../consts/Search";
 import SearchBar from "../SearchBar";
 import { LOG_IN } from "../../consts/Login";
@@ -9,7 +10,7 @@ const Navbar = () => {
   const username = localStorage.getItem("username") || "אורח";
 
   const handleLogout = () => {
-    localStorage.clear();
+    clearAuthData();
     navigate("/login");
   };
 
