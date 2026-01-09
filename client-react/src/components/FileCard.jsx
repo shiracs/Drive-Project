@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
+import { DELETE } from '../consts/Delete';
 import '../App.css';
 
 const FileCard = ({ file, onNavigate, onOpenImage }) => {
@@ -14,9 +15,11 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
   
   const [fileContent, setFileContent] = useState("Loading...");
   const [showMenu, setShowMenu] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
   
   // load preview content for files
   useEffect(() => {
+    if (isDeleted) return null;
     // only for files, not folders
     if (!isFolder && id) {
       let isMounted = true;
@@ -78,36 +81,36 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
     setShowMenu(!showMenu);
   };
 
-  // const handleDelete = async (e) => {
-  //   e.stopPropagation();
-  //   setShowMenu(false);
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    setShowMenu(false);
     
-  //   if (window.confirm(`האם למחוק את ${name}?`)) {
-  //     try {
-  //       const auth = getTokenHeader();
-  //       const response = await fetch(`${API_BASE_URL}/files/${id}`, {
-  //         method: 'DELETE',
-  //         headers: auth
-  //       });
-  //       if (response.ok) {
-  //         if (onDeleteSuccess) onDeleteSuccess(id);
-  //       }
-  //     } catch (err) {
-  //       console.error("Delete failed", err);
-  //     }
-  //   }
-  // };
+    if (window.confirm(`${DELETE.CONFIRM_MESSAGE} ${name}?`)) {
+      try {
+        const auth = getTokenHeader();
+        const response = await fetch(`${API_BASE_URL}/files/${id}`, {
+          method: 'DELETE',
+          headers: auth
+        });
+        if (response.ok) {
+          setIsDeleted(true);
+        } else {
+          console.error("Delete failed with status:", response.status);
+        }
+      } catch (err) {
+        console.error("Delete failed", err);
+      }
+    }
+  };
 
-  // הפונקציה שמרכזת את התפריט עבור כולם
   const renderActionMenu = () => (
     <div className="menu-container">
       <div className="folder-menu-dots t-text-sub" onClick={toggleMenu}>⋮</div>
       {showMenu && (
         <div className="delete-dropdown">
-          <button className="delete-button" >
-          {/* <button className="delete-button" onClick={handleDelete}> */}
+          <button className="delete-button" onClick={handleDelete}>
             <span>🗑️</span>
-            <span>מחיקה</span>
+            <span>{DELETE.DELETE_BUTTON}</span>
           </button>
         </div>
       )}
