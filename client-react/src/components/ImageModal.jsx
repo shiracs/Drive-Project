@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { API_BASE_URL } from "../consts/Urls";
+import { RESOURCE_API_URL, API_BASE_URL } from "../consts/Urls";
+import FileUploader from "./FileUploader";
 import { GENERAL } from "../consts/General";
 import { getTokenHeader } from "../utils/auth";
 
@@ -35,6 +36,38 @@ const ImageModal = ({ fileId, onClose }) => {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [fileId, onClose]);
 
+  const handleImageUpdate = async (fileData) => {
+    try {
+      const auth = getTokenHeader();
+      const cleanBase64 = fileData.base64.split(",")[1];
+
+      const response = await fetch(`${RESOURCE_API_URL}/${fileId}`, {
+        method: "PATCH",
+        headers: {
+          ...auth,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: fileData.name,
+          content: cleanBase64,
+        }),
+      });
+
+      if (response.ok) {
+        setImageData((prev) => ({
+          ...prev,
+          content: fileData.base64,
+          name: fileData.name,
+        }));
+        alert("התמונה עודכנה בהצלחה!");
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "שגיאה בעדכון");
+      }
+    } catch (err) {
+      alert("שגיאה: " + err.message);
+    }
+  };
   if (!fileId) return null;
 
   return (
@@ -48,6 +81,11 @@ const ImageModal = ({ fileId, onClose }) => {
             {imageData?.name || GENERAL.LOADING}
           </span>
         </div>
+        <FileUploader
+          onFileSelected={handleImageUpdate}
+          accept="image/*"
+          label="החלף תמונה"
+        />
         <div className="header-right">
           {imageData?.content && (
             <a

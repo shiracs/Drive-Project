@@ -47,6 +47,7 @@ const FilePage = () => {
             onBack={() => navigate(-1)}
             showBackButton={!!folderId}
             onDeleteSuccess={handleDeleteSuccess}
+            onRefresh={fetchResources}
         />
     );
 };
