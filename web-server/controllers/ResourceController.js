@@ -262,9 +262,11 @@ const searchResourcesByQuery = async (req, res) => {
     }
 
     // Filter resources that match by name or content
-    const foundResources = allUsersResources.filter(file => 
-      file.name.includes(query) || contentMatchIds.includes(file.id)
-    );
+    const foundResources = allUsersResources.filter(file => {
+      const nameMatch = file.name.includes(query);
+      const contentMatch = file.type !== 'IMAGE' && contentMatchIds.includes(file.id);
+      return nameMatch || contentMatch;
+    });
 
     const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name, type: f.type }));
     return res.status(200).json(finalResponse);
