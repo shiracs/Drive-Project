@@ -69,11 +69,23 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
     }
   };
 
+  const getPreviewSrc = () => {
+    if (!fileContent) return null;
+    if (fileContent.startsWith("data:")) return fileContent;
+    return `data:image/png;base64,${fileContent}`;
+  };
+
+  const previewSrc = isImage ? getPreviewSrc() : null;
+
   return (
     <>
       {isFolder ? (
-        // Folder Card  
-        <div className="drive-folder-card t-bg-surface t-border" onClick={handleClick} title={name}>
+        // Folder Card
+        <div
+          className="drive-folder-card t-bg-surface t-border"
+          onClick={handleClick}
+          title={name}
+        >
           <div className="folder-content-right">
             <span className="folder-icon">📁</span>
             <span className="folder-name t-text-main">{name}</span>
@@ -82,20 +94,25 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
         </div>
       ) : (
         // Image Card
-        <div className="drive-file-card t-bg-surface t-border" onClick={handleClick} title={name}>
-          <div className="file-preview-container t-bg-page" style={isImage ? { padding: 0, overflow: 'hidden' } : {}}>
+        <div
+          className="drive-file-card t-bg-surface t-border"
+          onClick={handleClick}
+          title={name}
+        >
+          <div
+            className="file-preview-container t-bg-page"
+            style={isImage ? { padding: 0, overflow: "hidden" } : {}}
+          >
             {isImage ? (
-              <img 
-                src={fileContent} 
-                alt={name} 
-                style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover', 
-                    display: 'block' 
-                }}
-                onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Image+Error'; }}
-              />
+              previewSrc ? (
+                <img
+                  src={previewSrc}
+                  alt={name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <div>🖼️</div>
+              )
             ) : (
               // File Card
               <div className="file-paper-preview t-bg-surface">
@@ -110,8 +127,8 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
           <div className="file-info-area t-bg-surface t-border">
             <div className="file-header-row">
               <div className="file-name-container">
-                <div className="file-icon-small">{isImage ? '🖼️' : '📄'}</div>
-                <div className="file-name-text t-text-main">{`${name}${isImage ? '.png' : '.txt'}`}</div>
+                <div className="file-icon-small">{isImage ? "🖼️" : "📄"}</div>
+                <div className="file-name-text t-text-main">{name}</div>
               </div>
               <div className="folder-menu-dots t-text-sub">⋮</div>
             </div>

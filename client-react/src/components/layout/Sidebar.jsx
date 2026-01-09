@@ -1,4 +1,4 @@
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation, Link } from "react-router-dom";
 import { SIDEBAR_MENU, SIDEBAR_PATHS } from "../../consts/Sidebar";
 import { RESOURCE_API_URL } from "../../consts/Urls";
 import { getTokenHeader } from "../../utils/auth";
@@ -30,28 +30,16 @@ const Sidebar = () => {
     });
 
     if (!response.ok) {
-      // אם השרת החזיר שגיאה, ננסה לקרוא אותה כטקסט כדי לא להתרסק
-      const errorText = await response.text();
-      throw new Error(errorText || `Failed to create ${name}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Server error: ${response.status}`);
     }
-
-    const data = await response.json();
-
-    // וודאי שהשרת מחזיר אובייקט שיש בו שדה id (למשל resourceRecord.id)
-    if (!data || !data.id) {
-      throw new Error(
-        "Server created the resource but didn't return an ID in the response body"
-      );
-    }
-
-    return data.id;
+    return await response.json();
   };
 
-  const handleUpload = async (data) => {
+  const handleUpload = async (uploadData) => {
     try {
-      if (data.isFolder) {
-        // מיון קבצים לפי עומק הנתיב
-        const sortedFiles = [...data.files].sort(
+      if (uploadData.isFolder) {
+        const sortedFiles = [...uploadData.files].sort(
           (a, b) =>
             a.webkitRelativePath.split("/").length -
             b.webkitRelativePath.split("/").length
@@ -70,35 +58,52 @@ const Sidebar = () => {
               ? `${runningPath}/${folderName}`
               : folderName;
             if (!folderIdMap[currentPath]) {
-              // התיקון כאן: השרת שלך משתמש ב-RESOURCE_TYPE.FOLDER/FILE (מילים גדולות)
-              const newId = await createResource(
+              const newFolder = await createResource(
                 folderName,
                 "FOLDER",
                 "",
                 lastParentId
               );
-              folderIdMap[currentPath] = newId;
+              folderIdMap[currentPath] = newFolder.id;
             }
             lastParentId = folderIdMap[currentPath];
             runningPath = currentPath;
           }
 
           const base64 = await fileToBase64(file);
-          // שליחת תוכן הקובץ ללא הקידומת data:image/png;base64, אם השרת לא מטפל בזה
-          const cleanBase64 = base64.split(",")[1] || base64;
-          await createResource(fileName, "FILE", cleanBase64, lastParentId);
+          const isImage = file.type.startsWith("image/");
+          const contentToSend = isImage ? base64.split(",")[1] : base64;
+          const resourceType = isImage ? "IMAGE" : "FILE";
+
+          await createResource(
+            fileName,
+            resourceType,
+            contentToSend,
+            lastParentId
+          );
         }
       } else {
-        const cleanBase64 = data.base64.split(",")[1] || data.base64;
-        await createResource(data.name, "FILE", cleanBase64, currentFolderId);
+        const cleanBase64 =
+          uploadData.base64.split(",")[1] || uploadData.base64;
+        const resourceType = uploadData.type?.startsWith("image/")
+          ? "IMAGE"
+          : "FILE";
+
+        await createResource(
+          uploadData.name,
+          resourceType,
+          cleanBase64,
+          currentFolderId
+        );
       }
       alert("העלאה הושלמה בהצלחה!");
       window.location.reload();
     } catch (err) {
-      console.error("Upload error details:", err);
+      console.error("Upload failed:", err);
       alert("שגיאה בהעלאה: " + err.message);
     }
   };
+
   const menuItems = [
     {
       name: SIDEBAR_MENU.HOME,
@@ -106,9 +111,9 @@ const Sidebar = () => {
       path: SIDEBAR_PATHS.HOME,
     },
     {
-      name: SIDEBAR_MENU.MY_DRIVE,
+      name: SIDEBAR_MENU.MY_STORAGE,
       icon: "bi-hdd-stack",
-      path: SIDEBAR_PATHS.MY_DRIVE,
+      path: SIDEBAR_PATHS.MY_STORAGE,
     },
     {
       name: SIDEBAR_MENU.SHARED,

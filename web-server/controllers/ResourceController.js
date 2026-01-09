@@ -76,14 +76,14 @@ const uploadResource = async (req, res) => {
 
     // HANDLE FOLDERS: folders are virtual, no C++ storage needed
     if (type === RESOURCE_TYPE.FOLDER) {
-      return res.status(201).location(resourceUrl).send();
+      return res.status(201).location(resourceUrl).json(resourceRecord);
     } 
     // HANDLE FILES: send content to C++
     else {
       const cppResponse = await sendToCpp(`POST ${resourceRecord.id} ${content}`);
 
       if (cppResponse.includes("201 Created")) {
-        return res.status(201).location(resourceUrl).send();
+        return res.status(201).location(resourceUrl).json(resourceRecord);
       }
 
       // Rollback records if C++ storage fails
