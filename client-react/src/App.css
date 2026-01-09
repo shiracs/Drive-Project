@@ -455,6 +455,40 @@ body {
   opacity: 0.9;
 }
 
+.document-tabs {
+  display: flex;
+  gap: 0;
+  background-color: #fff;
+  border-bottom: 2px solid #e0e0e0;
+  padding: 0 20px;
+}
+
+.tab-button {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #5f6368;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+  bottom: -2px;
+}
+
+.tab-button:hover {
+  background-color: #f8f9fa;
+  color: #202124;
+}
+
+.tab-button.active {
+  color: #1a73e8;
+  border-bottom-color: #1a73e8;
+  font-weight: 600;
+}
+
 .document-workspace {
   flex: 1;
   background-color: #f1f3f4;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import DocumentPaper from '../components/DocumentPaper';
+import PermissionsResource from '../components/PermissionsForm';
 import { DOC_BUTTONS } from '../consts/DocumentBottons';
 import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
@@ -16,7 +17,8 @@ const DocumentViewPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null)
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('content'); // 'content' or 'permissions'
 
   useEffect(() => {
     const fetchFile = async () => {
@@ -130,13 +132,34 @@ const DocumentViewPage = () => {
         </div>
       </div>
 
+      <div className="document-tabs">
+        <button 
+          className={`tab-button ${activeTab === 'content' ? 'active' : ''}`}
+          onClick={() => setActiveTab('content')}
+        >
+          תוכן המסמך
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'permissions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('permissions')}
+        >
+          הרשאות
+        </button>
+      </div>
+
       <div className="document-workspace">
-        {/* sending data and update function as Props */}
-        <DocumentPaper
-          content={content}
-          setContent={setContent}
-          isEditing={isEditing}
-        />
+        {activeTab === 'content' ? (
+          <DocumentPaper
+            content={content}
+            setContent={setContent}
+            isEditing={isEditing}
+          />
+        ) : (
+          <PermissionsResource 
+            resourceId={id}
+            resourceName={fileName}
+          />
+        )}
       </div>
     </div>
   );
