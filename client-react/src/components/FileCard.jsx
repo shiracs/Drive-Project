@@ -13,6 +13,7 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
   const isImage = type === 'IMAGE';
   
   const [fileContent, setFileContent] = useState("Loading...");
+  const [showMenu, setShowMenu] = useState(false);
   
   // load preview content for files
   useEffect(() => {
@@ -69,16 +70,60 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
     }
   };
 
+
+
+
+  const toggleMenu = (e) => {
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  };
+
+  // const handleDelete = async (e) => {
+  //   e.stopPropagation();
+  //   setShowMenu(false);
+    
+  //   if (window.confirm(`האם למחוק את ${name}?`)) {
+  //     try {
+  //       const auth = getTokenHeader();
+  //       const response = await fetch(`${API_BASE_URL}/files/${id}`, {
+  //         method: 'DELETE',
+  //         headers: auth
+  //       });
+  //       if (response.ok) {
+  //         if (onDeleteSuccess) onDeleteSuccess(id);
+  //       }
+  //     } catch (err) {
+  //       console.error("Delete failed", err);
+  //     }
+  //   }
+  // };
+
+  // הפונקציה שמרכזת את התפריט עבור כולם
+  const renderActionMenu = () => (
+    <div className="menu-container">
+      <div className="folder-menu-dots t-text-sub" onClick={toggleMenu}>⋮</div>
+      {showMenu && (
+        <div className="delete-dropdown">
+          <button className="delete-button" >
+          {/* <button className="delete-button" onClick={handleDelete}> */}
+            <span>🗑️</span>
+            <span>מחיקה</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <>
       {isFolder ? (
         // Folder Card  
+        <div className="menu-container">      
         <div className="drive-folder-card t-bg-surface t-border" onClick={handleClick} title={name}>
           <div className="folder-content-right">
             <span className="folder-icon">📁</span>
             <span className="folder-name t-text-main">{name}</span>
-          </div>
-          <div className="folder-menu-dots t-text-sub">⋮</div>
+          </div>{renderActionMenu()}</div>
         </div>
       ) : (
         // Image Card
@@ -105,7 +150,6 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
               </div>
             )}
           </div>
-
           {/* File/Image info area */}
           <div className="file-info-area t-bg-surface t-border">
             <div className="file-header-row">
@@ -113,7 +157,7 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
                 <div className="file-icon-small">{isImage ? '🖼️' : '📄'}</div>
                 <div className="file-name-text t-text-main">{`${name}${isImage ? '.png' : '.txt'}`}</div>
               </div>
-              <div className="folder-menu-dots t-text-sub">⋮</div>
+              {renderActionMenu()}
             </div>
           </div>
         </div>
