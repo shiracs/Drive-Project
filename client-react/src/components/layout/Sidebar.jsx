@@ -1,40 +1,156 @@
-import { Link, useLocation } from 'react-router-dom';
-import { SIDEBAR_MENU, SIDEBAR_PATHS } from '../../consts/Sidebar';
+import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { SIDEBAR_MENU, SIDEBAR_PATHS } from "../../consts/Sidebar";
+import { RESOURCE_API_URL } from "../../consts/Urls";
+import { getTokenHeader } from "../../utils/auth";
+import NewMenu from "../NewMenu";
 
 const Sidebar = () => {
+  const [searchParams] = useSearchParams();
   const location = useLocation();
+  const currentFolderId = searchParams.get("folderId") || null;
 
+  const fileToBase64 = (file) =>
+    new Promise((res, rej) => {
+      const r = new FileReader();
+      r.readAsDataURL(file);
+      r.onload = () => res(r.result);
+      r.onerror = (e) => rej(e);
+    });
+
+  const createResource = async (name, type, content = "", parentId = null) => {
+    const auth = getTokenHeader();
+
+    const response = await fetch(RESOURCE_API_URL, {
+      method: "POST",
+      headers: {
+        ...auth,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, type, content, parentId }),
+    });
+
+    if (!response.ok) {
+      // אם השרת החזיר שגיאה, ננסה לקרוא אותה כטקסט כדי לא להתרסק
+      const errorText = await response.text();
+      throw new Error(errorText || `Failed to create ${name}`);
+    }
+
+    const data = await response.json();
+
+    // וודאי שהשרת מחזיר אובייקט שיש בו שדה id (למשל resourceRecord.id)
+    if (!data || !data.id) {
+      throw new Error(
+        "Server created the resource but didn't return an ID in the response body"
+      );
+    }
+
+    return data.id;
+  };
+
+  const handleUpload = async (data) => {
+    try {
+      if (data.isFolder) {
+        // מיון קבצים לפי עומק הנתיב
+        const sortedFiles = [...data.files].sort(
+          (a, b) =>
+            a.webkitRelativePath.split("/").length -
+            b.webkitRelativePath.split("/").length
+        );
+
+        const folderIdMap = { "": currentFolderId };
+
+        for (const file of sortedFiles) {
+          const parts = file.webkitRelativePath.split("/");
+          const fileName = parts.pop();
+          let runningPath = "";
+          let lastParentId = currentFolderId;
+
+          for (const folderName of parts) {
+            const currentPath = runningPath
+              ? `${runningPath}/${folderName}`
+              : folderName;
+            if (!folderIdMap[currentPath]) {
+              // התיקון כאן: השרת שלך משתמש ב-RESOURCE_TYPE.FOLDER/FILE (מילים גדולות)
+              const newId = await createResource(
+                folderName,
+                "FOLDER",
+                "",
+                lastParentId
+              );
+              folderIdMap[currentPath] = newId;
+            }
+            lastParentId = folderIdMap[currentPath];
+            runningPath = currentPath;
+          }
+
+          const base64 = await fileToBase64(file);
+          // שליחת תוכן הקובץ ללא הקידומת data:image/png;base64, אם השרת לא מטפל בזה
+          const cleanBase64 = base64.split(",")[1] || base64;
+          await createResource(fileName, "FILE", cleanBase64, lastParentId);
+        }
+      } else {
+        const cleanBase64 = data.base64.split(",")[1] || data.base64;
+        await createResource(data.name, "FILE", cleanBase64, currentFolderId);
+      }
+      alert("העלאה הושלמה בהצלחה!");
+      window.location.reload();
+    } catch (err) {
+      console.error("Upload error details:", err);
+      alert("שגיאה בהעלאה: " + err.message);
+    }
+  };
   const menuItems = [
-    { name: SIDEBAR_MENU.HOME, icon: "bi-house-door", path: SIDEBAR_PATHS.HOME },
-    { name: SIDEBAR_MENU.MY_DRIVE, icon: "bi-hdd-stack", path: SIDEBAR_PATHS.MY_DRIVE },
-    { name: SIDEBAR_MENU.SHARED, icon: "bi-people", path: SIDEBAR_PATHS.SHARED },
-    { name: SIDEBAR_MENU.RECENT, icon: "bi-clock-history", path: SIDEBAR_PATHS.RECENT },
-    { name: SIDEBAR_MENU.STARRED, icon: "bi-star", path: SIDEBAR_PATHS.STARRED },
+    {
+      name: SIDEBAR_MENU.HOME,
+      icon: "bi-house-door",
+      path: SIDEBAR_PATHS.HOME,
+    },
+    {
+      name: SIDEBAR_MENU.MY_DRIVE,
+      icon: "bi-hdd-stack",
+      path: SIDEBAR_PATHS.MY_DRIVE,
+    },
+    {
+      name: SIDEBAR_MENU.SHARED,
+      icon: "bi-people",
+      path: SIDEBAR_PATHS.SHARED,
+    },
+    {
+      name: SIDEBAR_MENU.RECENT,
+      icon: "bi-clock-history",
+      path: SIDEBAR_PATHS.RECENT,
+    },
+    {
+      name: SIDEBAR_MENU.STARRED,
+      icon: "bi-star",
+      path: SIDEBAR_PATHS.STARRED,
+    },
     { name: SIDEBAR_MENU.TRASH, icon: "bi-trash3", path: SIDEBAR_PATHS.TRASH },
-    { name: SIDEBAR_MENU.STORAGE, icon: "bi-cloud-check", path: SIDEBAR_PATHS.STORAGE },
+    {
+      name: SIDEBAR_MENU.STORAGE,
+      icon: "bi-cloud-check",
+      path: SIDEBAR_PATHS.STORAGE,
+    },
   ];
 
   return (
-    <div className="bg-white pt-4" style={{ width: "250px", minHeight: "100vh" }} dir="rtl">
+    <div
+      className="bg-white pt-4"
+      style={{ width: "250px", minHeight: "100vh", position: "relative" }}
+      dir="rtl"
+    >
       <div className="px-3 mb-4">
-        <button className="google-new-btn">
-          <svg width="24" height="24" viewBox="0 0 36 36">
-            <path fill="#34A853" d="M16 16v14h4V20z" />
-            <path fill="#4285F4" d="M30 16H20l-4 4h14z" />
-            <path fill="#FBBC05" d="M6 16v4h10l4-4z" />
-            <path fill="#EA4335" d="M20 16V6h-4v14z" />
-            <path fill="none" d="M0 0h36v36H0z" />
-          </svg>
-          <span className="fw-medium ms-2">{SIDEBAR_MENU.NEW_BTN}</span>
-        </button>
+        <NewMenu onUpload={handleUpload} />
       </div>
 
       <ul className="list-unstyled pe-0">
         {menuItems.map((item, index) => (
           <li key={index} className="mb-1">
-            <Link 
-              to={item.path} 
-              className={`sidebar-item text-decoration-none ${location.pathname === item.path ? 'active' : ''}`}
+            <Link
+              to={item.path}
+              className={`sidebar-item text-decoration-none ${
+                location.pathname === item.path ? "active" : ""
+              }`}
             >
               <i className={`bi ${item.icon}`}></i>
               <span>{item.name}</span>
@@ -48,7 +164,7 @@ const Sidebar = () => {
           <div className="progress-bar" style={{ width: "45%" }}></div>
         </div>
         <small className="text-secondary" style={{ fontSize: "12px" }}>
-           6.7GB מתוך 15GB בשימוש
+          6.7GB מתוך 15GB בשימוש
         </small>
       </div>
     </div>
