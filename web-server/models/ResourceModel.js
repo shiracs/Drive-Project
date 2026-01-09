@@ -14,23 +14,7 @@ import { RESOURCE_TYPE } from "../enums/ResourceType.js";
  *  path: STRING (e.g., ",parent_id,child_id,")
  * }
  */
-//TODOL remove hardcoded data
-let RESOURCES = [
-  {
-    id: "file_shared_id",
-    name: "shared_file.txt",
-    type: "FILE",
-    ownerId: "user_a_id", // שייך למשתמש א'
-    parentId: null
-  },
-  {
-    id: "file_private_id",
-    name: "private_file.txt",
-    type: "FILE",
-    ownerId: "user_a_id", // שייך למשתמש א'
-    parentId: null
-  }
-];
+const RESOURCES = [];
 
 /**
  * Returns a resource object by its ID
@@ -138,17 +122,6 @@ const renameResource = (id, newName) => {
   return false;
 };
 
-/**
- * Returns all resources shared with the user (where user is NOT the owner)
- */
-const getSharedResourcesByUserId = (userId) => {
-  const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
-  return RESOURCES.filter(r => 
-      permittedIds.includes(r.id) && 
-      r.ownerId !== userId
-  );
-};
-
 export default { 
   createResourceRecord, 
   getResourcesByUserId, 
@@ -157,6 +130,5 @@ export default {
   getDescendants,
   getAllResourcesByUser,
   validateParent,
-  renameResource,
-  getSharedResourcesByUserId
+  renameResource
 };

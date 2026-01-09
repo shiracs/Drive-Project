@@ -1,6 +1,6 @@
 export const SIDEBAR_MENU = {
   HOME: "דף הבית",
-  MY_STORAGE: "האחסון שלי",
+  MY_DRIVE: "האחסון שלי",
   SHARED: "פריטים ששותפו איתי",
   RECENT: "לאחרונה",
   STARRED: "מסומן בכוכב",
@@ -15,7 +15,7 @@ export const SIDEBAR_MENU = {
 
 export const SIDEBAR_PATHS = {
   HOME: "/dashboard",
-  MY_STORAGE: "my-storage",
+  MY_DRIVE: "/my-drive",
   SHARED: "/shared",
   RECENT: "/recent",
   STARRED: "/starred",

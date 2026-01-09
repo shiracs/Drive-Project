@@ -10,15 +10,7 @@ import { ROLES, isValidRole } from "../enums/Roles.js";
  *   userId: USER_ID,
  *   role: READER | WRITER | OWNER
  */
-//TODO remove hardcoded data
-let PERMISSIONS = [
-  // הרשאות בעלות של משתמש א' על הקבצים שלו
-  { resourceId: "file_shared_id", userId: "user_a_id", role: "OWNER" },
-  { resourceId: "file_private_id", userId: "user_a_id", role: "OWNER" },
-  
-  // השיתוף: משתמש ב' מקבל גישת קריאה לקובץ הראשון בלבד
-  { resourceId: "file_shared_id", userId: "user_b_id", role: "READER" }
-];
+const PERMISSIONS = [];
 
 /**
  * Creates a new permission record for a user on a specific resource

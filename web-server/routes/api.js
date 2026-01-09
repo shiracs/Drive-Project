@@ -17,7 +17,6 @@ router.post('/files', isLoggedIn, ResourceController.uploadResource);
 router.get('/files/:id', isLoggedIn, ResourceController.getResourceContent); 
 router.patch('/files/:id', isLoggedIn, ResourceController.updateResource);
 router.delete('/files/:id', isLoggedIn, ResourceController.deleteResource);
-router.get('/shared', isLoggedIn, ResourceController.getSharedResources);
 router.get('/search/:query', isLoggedIn, ResourceController.searchResourcesByQuery);
 
 // Permissions Routes
