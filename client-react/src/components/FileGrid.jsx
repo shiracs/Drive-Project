@@ -3,7 +3,7 @@ import { GENERAL } from "../consts/General";
 import FileCard from "./FileCard";
 import ImageModal from "./ImageModal";  
 
-const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loading }) => {
+const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loading, onDeleteSuccess }) => {
   const [selectedImageId, setSelectedImageId] = useState(null);
 
   const safeResources = Array.isArray(resources) ? resources : [];
@@ -31,7 +31,7 @@ const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loadin
               <h6 className="t-text-sub mb-3">{GENERAL.FOLDERS}</h6>
               <div className="drive-grid">
                 {folders.map((folder) => (
-                  <FileCard key={folder.id} file={folder} onNavigate={onNavigate} />
+                  <FileCard key={folder.id} file={folder} onNavigate={onNavigate} onDeleteSuccess={onDeleteSuccess} />
                 ))}
               </div>
             </section>
@@ -43,7 +43,7 @@ const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loadin
               <h6 className="t-text-sub mb-3">{GENERAL.FILES}</h6>
               <div className="drive-grid">
                 {files.map((file) => (
-                  <FileCard key={file.id} file={file} onOpenImage={setSelectedImageId} />
+                  <FileCard key={file.id} file={file} onOpenImage={setSelectedImageId} onDeleteSuccess={onDeleteSuccess} />
                 ))}
               </div>
             </section>

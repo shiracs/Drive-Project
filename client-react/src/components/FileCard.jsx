@@ -5,7 +5,7 @@ import { getTokenHeader } from '../utils/auth';
 import { DELETE } from '../consts/Delete';
 import '../App.css';
 
-const FileCard = ({ file, onNavigate, onOpenImage }) => {
+const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
   const { id, name, type } = file;
 
   const navigate = useNavigate();
@@ -73,9 +73,6 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
     }
   };
 
-
-
-
   const toggleMenu = (e) => {
     e.stopPropagation();
     setShowMenu(!showMenu);
@@ -94,6 +91,7 @@ const FileCard = ({ file, onNavigate, onOpenImage }) => {
         });
         if (response.ok) {
           setIsDeleted(true);
+          onDeleteSuccess && onDeleteSuccess(id);
         } else {
           console.error("Delete failed with status:", response.status);
         }

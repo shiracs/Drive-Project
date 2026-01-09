@@ -34,6 +34,10 @@ const FilePage = () => {
         fetchResources(folderId);
     }, [folderId, fetchResources]);
 
+    const handleDeleteSuccess = (deletedId) => {
+        setResources(prev => prev.filter(item => item.id !== deletedId));
+    };
+
     return (
         <FileGrid 
             resources={resources} 
@@ -42,6 +46,7 @@ const FilePage = () => {
             onNavigate={(id) => setSearchParams({ folderId: id })}
             onBack={() => navigate(-1)}
             showBackButton={!!folderId}
+            onDeleteSuccess={handleDeleteSuccess}
         />
     );
 };
