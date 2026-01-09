@@ -6,11 +6,11 @@ import ImageModal from "./ImageModal";
 const FileGrid = ({ resources, onNavigate, onBack, title, showBackButton, loading }) => {
   const [selectedImageId, setSelectedImageId] = useState(null);
 
-  const folders = useMemo(() => resources.filter((r) => r.type === "FOLDER"), [resources]);
-  const files = useMemo(() => resources.filter((r) => r.type === "FILE" || r.type === "IMAGE"), [resources]);
+  const safeResources = Array.isArray(resources) ? resources : [];
+  const folders = useMemo(() => safeResources.filter((r) => r.type === "FOLDER"), [safeResources]);
+  const files = useMemo(() => safeResources.filter((r) => r.type === "FILE" || r.type === "IMAGE"), [safeResources]);
 
-  if (loading && resources.length === 0) return <div className="p-5 t-text-main">{GENERAL.LOADING}</div>;
-
+  if (loading && safeResources.length === 0) return <div className="p-5 t-text-main">{GENERAL.LOADING}</div>;
   return (
     <div className="file-page-container" style={{ padding: "20px 40px", direction: "rtl" }}>
       <div className="d-flex align-items-center gap-3 mb-4">
