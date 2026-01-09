@@ -23,7 +23,6 @@ export const sendToCpp = (command) => {
     let commandSent = false;
 
     client.on("connect", () => {
-      // שולחים את הפקודה האמיתית
       client.write(command + "\n");
       commandSent = true;
     });
@@ -31,16 +30,12 @@ export const sendToCpp = (command) => {
     client.on("data", (data) => {
       responseData += data.toString();
 
-      // בשרת ה-C++, התגובה מסתיימת ב-\n
-      // ברגע שקיבלנו תגובה שלמה לפקודה שלנו, אנחנו שולחים 'exit'
       if (responseData.includes("\n")) {
         client.write("exit\n");
-        // אנחנו לא סוגרים ידנית, אלא מחכים שהשרת יסגור את הצד שלו
       }
     });
 
     client.on("end", () => {
-      // כאן ה-C++ סגר את הסוקט מרצונו אחרי ה-exit
       resolve(responseData.trim());
     });
 
