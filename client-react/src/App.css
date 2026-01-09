@@ -762,3 +762,67 @@ body {
   letter-spacing: .25px;
   color: #3c4043;
 }
+
+
+
+
+
+
+/* הכרטיסים של הקבצים והתיקיות - חשוב לאפשר להם להציג תוכן שיוצא מהגבולות */
+.drive-file-card, .drive-folder-card {
+  position: relative; /* עוגן עבור ה-container */
+  overflow: visible !important; /* קריטי! מאפשר לתפריט לצוף מעל הכרטיס */
+}
+
+/* האבא של הנקודות והתפריט */
+.menu-container {
+  position: relative;
+  display: inline-block;
+  z-index: 10; /* שכבה גבוהה יותר מתוכן הכרטיס */
+}
+
+/* התפריט הצף - "מעל" הקומפוננטה */
+.delete-dropdown {
+  position: absolute;
+  top: 15px; 
+  right: 100%;
+  margin-right: -5px;
+
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  /* צל חזק יותר כדי לתת תחושת "ציפה" מעל הקומפוננטה */
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+  
+  z-index: 9999 !important; /* מוודא שזה מעל כל תמונה או טקסט */
+  min-width: 100px;
+  padding: 4px 0;
+}
+
+/* מניעת חיתוך באזור המידע של הקובץ */
+.file-info-area {
+  overflow: visible !important;
+}
+
+.delete-button {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  color: #d93025; 
+  text-align: right;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  direction: rtl;
+  
+  /* ביטול המסגרת השחורה בלחיצה */
+  outline: none; 
+}
+
+/* אפשר גם לוודא שהיא לא מופיעה במצב focus */
+.delete-button:focus {
+  outline: none;
+}
