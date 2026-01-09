@@ -1,4 +1,4 @@
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation, Link } from "react-router-dom";
 import { SIDEBAR_MENU, SIDEBAR_PATHS } from "../../consts/Sidebar";
 import { RESOURCE_API_URL } from "../../consts/Urls";
 import { getTokenHeader } from "../../utils/auth";
@@ -30,107 +30,81 @@ const Sidebar = () => {
     });
 
     if (!response.ok) {
-      // אם השרת החזיר שגיאה, ננסה לקרוא אותה כטקסט כדי לא להתרסק
-      const errorText = await response.text();
-      throw new Error(errorText || `Failed to create ${name}`);
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.error || `Failed to create ${name} (Status: ${response.status})`);
     }
 
-    const data = await response.json();
 
-    // וודאי שהשרת מחזיר אובייקט שיש בו שדה id (למשל resourceRecord.id)
-    if (!data || !data.id) {
-      throw new Error(
-        "Server created the resource but didn't return an ID in the response body"
+    const locationHeader = response.headers.get("Location");
+    if (!locationHeader) {
+      throw new Error("Server created resource but Location header is missing or blocked by CORS");
+    }
+
+    const newId = locationHeader.split("/").pop();
+    return newId;
+  };
+
+ const handleUpload = async (uploadData) => {
+  try {
+    if (uploadData.isFolder) {
+      const sortedFiles = [...uploadData.files].sort(
+        (a, b) =>
+          a.webkitRelativePath.split("/").length -
+          b.webkitRelativePath.split("/").length
       );
-    }
 
-    return data.id;
-  };
+      const folderIdMap = { "": currentFolderId };
 
-  const handleUpload = async (data) => {
-    try {
-      if (data.isFolder) {
-        // מיון קבצים לפי עומק הנתיב
-        const sortedFiles = [...data.files].sort(
-          (a, b) =>
-            a.webkitRelativePath.split("/").length -
-            b.webkitRelativePath.split("/").length
-        );
+      for (const file of sortedFiles) {
+        const parts = file.webkitRelativePath.split("/");
+        const fileName = parts.pop();
+        let runningPath = "";
+        let lastParentId = currentFolderId;
 
-        const folderIdMap = { "": currentFolderId };
-
-        for (const file of sortedFiles) {
-          const parts = file.webkitRelativePath.split("/");
-          const fileName = parts.pop();
-          let runningPath = "";
-          let lastParentId = currentFolderId;
-
-          for (const folderName of parts) {
-            const currentPath = runningPath
-              ? `${runningPath}/${folderName}`
-              : folderName;
-            if (!folderIdMap[currentPath]) {
-              // התיקון כאן: השרת שלך משתמש ב-RESOURCE_TYPE.FOLDER/FILE (מילים גדולות)
-              const newId = await createResource(
-                folderName,
-                "FOLDER",
-                "",
-                lastParentId
-              );
-              folderIdMap[currentPath] = newId;
-            }
-            lastParentId = folderIdMap[currentPath];
-            runningPath = currentPath;
+        for (const folderName of parts) {
+          const currentPath = runningPath
+            ? `${runningPath}/${folderName}`
+            : folderName;
+          if (!folderIdMap[currentPath]) {
+            const newFolderId = await createResource(
+              folderName,
+              "FOLDER",
+              "",
+              lastParentId
+            );
+            folderIdMap[currentPath] = newFolderId;
           }
-
-          const base64 = await fileToBase64(file);
-          // שליחת תוכן הקובץ ללא הקידומת data:image/png;base64, אם השרת לא מטפל בזה
-          const cleanBase64 = base64.split(",")[1] || base64;
-          await createResource(fileName, "FILE", cleanBase64, lastParentId);
+          lastParentId = folderIdMap[currentPath];
+          runningPath = currentPath;
         }
-      } else {
-        const cleanBase64 = data.base64.split(",")[1] || data.base64;
-        await createResource(data.name, "FILE", cleanBase64, currentFolderId);
+
+        const base64 = await fileToBase64(file);
+        const cleanBase64 = base64.split(",")[1] || base64;
+        
+        const resourceType = file.type.startsWith("image/") ? "IMAGE" : "FILE";
+        
+        await createResource(fileName, resourceType, cleanBase64, lastParentId);
       }
-      alert("העלאה הושלמה בהצלחה!");
-      window.location.reload();
-    } catch (err) {
-      console.error("Upload error details:", err);
-      alert("שגיאה בהעלאה: " + err.message);
+    } else {
+      const cleanBase64 = uploadData.base64.split(",")[1] || uploadData.base64;
+      const resourceType = uploadData.type?.startsWith("image/") ? "IMAGE" : "FILE";
+      await createResource(uploadData.name, resourceType, cleanBase64, currentFolderId);
     }
-  };
+    alert("העלאה הושלמה בהצלחה!");
+    window.location.reload();
+  } catch (err) {
+    console.error("Upload error details:", err);
+    alert("שגיאה בהעלאה: " + err.message);
+  }
+};
   const menuItems = [
-    {
-      name: SIDEBAR_MENU.HOME,
-      icon: "bi-house-door",
-      path: SIDEBAR_PATHS.HOME,
-    },
-    {
-      name: SIDEBAR_MENU.MY_DRIVE,
-      icon: "bi-hdd-stack",
-      path: SIDEBAR_PATHS.MY_DRIVE,
-    },
-    {
-      name: SIDEBAR_MENU.SHARED,
-      icon: "bi-people",
-      path: SIDEBAR_PATHS.SHARED,
-    },
-    {
-      name: SIDEBAR_MENU.RECENT,
-      icon: "bi-clock-history",
-      path: SIDEBAR_PATHS.RECENT,
-    },
-    {
-      name: SIDEBAR_MENU.STARRED,
-      icon: "bi-star",
-      path: SIDEBAR_PATHS.STARRED,
-    },
+    { name: SIDEBAR_MENU.HOME, icon: "bi-house-door", path: SIDEBAR_PATHS.HOME },
+    { name: SIDEBAR_MENU.MY_STORAGE, icon: "bi-hdd-stack", path: SIDEBAR_PATHS.MY_STORAGE },
+    { name: SIDEBAR_MENU.SHARED, icon: "bi-people", path: SIDEBAR_PATHS.SHARED },
+    { name: SIDEBAR_MENU.RECENT, icon: "bi-clock-history", path: SIDEBAR_PATHS.RECENT },
+    { name: SIDEBAR_MENU.STARRED, icon: "bi-star", path: SIDEBAR_PATHS.STARRED },
     { name: SIDEBAR_MENU.TRASH, icon: "bi-trash3", path: SIDEBAR_PATHS.TRASH },
-    {
-      name: SIDEBAR_MENU.STORAGE,
-      icon: "bi-cloud-check",
-      path: SIDEBAR_PATHS.STORAGE,
-    },
+    { name: SIDEBAR_MENU.STORAGE, icon: "bi-cloud-check", path: SIDEBAR_PATHS.STORAGE },
   ];
 
   return (
