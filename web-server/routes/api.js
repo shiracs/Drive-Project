@@ -20,6 +20,7 @@ router.delete('/files/:id', isLoggedIn, ResourceController.deleteResource);
 
 router.get('/shared', isLoggedIn, ResourceController.getSharedResources);
 router.get('/owned', isLoggedIn, ResourceController.getOwnedResources);
+router.get('/recent', isLoggedIn, ResourceController.getRecentResources);
 
 router.get('/search/:query', isLoggedIn, ResourceController.searchResourcesByQuery);
 

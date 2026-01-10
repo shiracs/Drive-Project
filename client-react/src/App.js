@@ -7,14 +7,13 @@ import {
 
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import SharedPage from "./pages/SharedPage";
 import FilePage from "./pages/FilePage";
 import DocumentViewPage from "./pages/DocumentViewPage";
 import MainLayout from "./components/layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { SIDEBAR_PATHS } from "./consts/Sidebar";
 import SearchPage from "./pages/SearchPage";
-import MyStoragePage from "./pages/MyStoragePage";
+import { SIDEBAR_MENU, SIDEBAR_PATHS } from "./consts/Sidebar";
+import { SHARED_API_URL, OWNED_API_URL, RECENT_API_URL } from "./consts/Urls";
 
 function App() {
   return (
@@ -31,11 +30,43 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path={`/${SIDEBAR_PATHS.HOME}/:folderId?`} element={<FilePage />} />
-          <Route path={SIDEBAR_PATHS.SHARED} element={<SharedPage />} />
-          <Route path={SIDEBAR_PATHS.MY_STORAGE} element={<MyStoragePage />} />
+          <Route
+            path={SIDEBAR_PATHS.HOME}
+            element={<FilePage />}
+          />
+          <Route
+            path="/shared"
+            element={
+              <FilePage
+                customUrl={SHARED_API_URL}
+                title={SIDEBAR_MENU.SHARED}
+              />
+            }
+          />
+          <Route
+            path="/my-storage"
+            element={
+              <FilePage
+                customUrl={OWNED_API_URL}
+                title={SIDEBAR_MENU.MY_STORAGE}
+              />
+            }
+          />
+          <Route
+            path="/recent"
+            element={
+              <FilePage
+                customUrl={RECENT_API_URL}
+                title={SIDEBAR_MENU.RECENT}
+                subTitle = {"מציג 5 אחרונים ששונו"}
+              />
+            }
+          />
           <Route path="/search" element={<SearchPage />} />
-          <Route path="/" element={<Navigate to={SIDEBAR_PATHS.HOME} replace />} />
+          <Route
+            path="/"
+            element={<Navigate to={SIDEBAR_PATHS.HOME} replace />}
+          />
         </Route>
 
         <Route

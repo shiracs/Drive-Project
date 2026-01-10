@@ -158,9 +158,12 @@ const updateResource = async (req, res) => {
   }
 
   try {
+    let isChanged = false;
+
     // Rename if needed
     if (name && name !== resourceRecord.name) {
       ResourceModel.renameResource(id, name);
+      isChanged = true;
     }
     // C++ server AddCommand prevents overwriting, so we delete first, then post the new version
     if (content !== undefined) {
@@ -176,7 +179,13 @@ const updateResource = async (req, res) => {
       if (!cppResponse.includes("201 Created")) {
             return res.status(500).json({ error: "Content update failed", detail: cppResponse });
       }
+      isChanged = true;
     }
+
+    if (isChanged) {
+      ResourceModel.updateTimestamp(id); 
+    }
+
     return res.status(204).send();
     
   } catch (error) {
@@ -278,16 +287,19 @@ const searchResourcesByQuery = async (req, res) => {
 }
 
 /**
- * GET /api/files/shared
+ * GET /api/shared
  * returns only resources that were shared with userId
  */
 const getSharedResources = async (req, res) => {
   const userId = req.userId;
+  const parentId = req.query.parentId || null;
+
 
   if (!UserModel.isValidId(userId))
     return res.status(401).json({ error: "Unauthorized" });
 
-  const sharedResources = ResourceModel.getSharedResourcesByUserId(userId);
+  // Get resources only for this specific level (right now we use null for root)
+  const sharedResources = ResourceModel.getSharedResourcesByUserId(userId, parentId);
   
   res.json(sharedResources.map((r) => ({ 
       id: r.id, 
@@ -297,15 +309,33 @@ const getSharedResources = async (req, res) => {
 };
 
 /**
- * GET /api/files/owned
+ * GET /api/owned
  * returns resources owned by userId
  */
 const getOwnedResources = async (req, res) => {
   const userId = req.userId;
+  const parentId = req.query.parentId || null;
+
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
-  const resources = ResourceModel.getOwnedResources(userId);
+  const resources = ResourceModel.getOwnedResources(userId, parentId);
   res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type })));
+};
+
+/**
+ * GET /api/recent
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+const getRecentResources = async (req, res) => {
+    const userId = req.userId;
+    const parentId = req.query.parentId || null;
+
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const resources = ResourceModel.getRecentResources(userId, parentId);
+    res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type })));
 };
 
 export default {
@@ -316,5 +346,6 @@ export default {
   deleteResource,
   searchResourcesByQuery,
   getSharedResources,
-  getOwnedResources
+  getOwnedResources,
+  getRecentResources
 };

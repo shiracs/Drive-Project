@@ -8,6 +8,7 @@ const FileGrid = ({
   onNavigate,
   onBack,
   title,
+  subTitle,
   showBackButton,
   loading,
   onDeleteSuccess,
@@ -40,6 +41,7 @@ const FileGrid = ({
           </button>
         )}
         <h4 className="m-0 t-text-main">{title}</h4>
+        <h6 className="m-0 t-text-main">{subTitle}</h6>
       </div>
 
       {resources.length === 0 && !loading ? (

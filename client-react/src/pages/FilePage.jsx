@@ -1,55 +1,67 @@
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
-import { API_BASE_URL } from '../consts/Urls';  
-import { getTokenHeader } from '../utils/auth';
-import FileGrid from '../components/FileGrid';
-import { GENERAL } from '../consts/General';
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { RESOURCE_API_URL } from "../consts/Urls";
+import { getTokenHeader } from "../utils/auth";
+import FileGrid from "../components/FileGrid";
+import { GENERAL } from "../consts/General";
 
+const FilePage = ({ customUrl, title, subTitle }) => {
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-const FilePage = () => {
-    const [resources, setResources] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [searchParams, setSearchParams] = useSearchParams();
-    const navigate = useNavigate();
-    
-    // get folderId from URL params
-    const folderId = searchParams.get('folderId');
+  // get folderId from URL params
+  const folderId = searchParams.get("folderId");
 
-    const fetchResources = useCallback(async (id) => {
-        setLoading(true);
-        try {
-            const auth = getTokenHeader();
-            let url = `${API_BASE_URL}/files`;
-            if (id) url += `?parentId=${id}`;
-            
-            const response = await fetch(url, { headers: auth });
-            const data = await response.json();
-            setResources(data);
-        } catch (err) { console.error(err); } 
-        finally { setLoading(false); }
-    }, []);
+  const fetchResources = useCallback(
+    async (parentId) => {
+      setLoading(true);
+      try {
+        const auth = getTokenHeader();
 
-    // this effect runs every time folderId changes, to reload the appropriate files
-    useEffect(() => {
-        fetchResources(folderId);
-    }, [folderId, fetchResources]);
+        let baseUrl = customUrl || RESOURCE_API_URL;
+        let finalUrl = parentId ? `${baseUrl}?parentId=${parentId}` : baseUrl;
 
-    const handleDeleteSuccess = (deletedId) => {
-        setResources(prev => prev.filter(item => item.id !== deletedId));
-    };
+        const response = await fetch(finalUrl, { headers: auth });
 
-    return (
-        <FileGrid 
-            resources={resources} 
-            loading={loading}
-            title={folderId ? GENERAL.GO_BACK : GENERAL.MY_FILES}
-            onNavigate={(id) => setSearchParams({ folderId: id })}
-            onBack={() => navigate(-1)}
-            showBackButton={!!folderId}
-            onDeleteSuccess={handleDeleteSuccess}
-            onRefresh={fetchResources}
-        />
-    );
+        if (!response.ok) throw new Error("Failed to fetch resources");
+
+        const data = await response.json();
+        setResources(data);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setResources([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [customUrl]
+  );
+
+  useEffect(() => {
+    fetchResources(folderId);
+  }, [folderId, fetchResources]);
+
+  const handleDeleteSuccess = (deletedId) => {
+    setResources((prev) => prev.filter((item) => item.id !== deletedId));
+  };
+
+  const displayTitle = folderId ? GENERAL.GO_BACK : title || GENERAL.MY_FILES;
+
+  return (
+    <FileGrid
+      resources={resources}
+      loading={loading}
+      title={displayTitle}
+      subTitle={subTitle}
+      onNavigate={(id) => setSearchParams({ folderId: id })}
+      onBack={() => navigate(-1)}
+      showBackButton={!!folderId}
+      onDeleteSuccess={handleDeleteSuccess}
+      onRefresh={() => fetchResources(folderId)}
+    />
+  );
 };
 
 export default FilePage;
