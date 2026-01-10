@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
 import { PERMISSIONS } from '../consts/Permissions';
+import { getRoleDisplay, getRoleColor } from '../enums/PermissionEnum';
 import "../App.css";
 
-const PermissionsResource = ({ resourceId, resourceName, editable = false }) => {
+const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
   const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -75,24 +76,6 @@ const PermissionsResource = ({ resourceId, resourceName, editable = false }) => 
     fetchPermissions();
   }, [resourceId]);
 
-  const getRoleDisplay = (role) => {
-    const roleMap = {
-      'OWNER': PERMISSIONS.ROLE_OWNER,
-      'WRITER': PERMISSIONS.ROLE_WRITER,
-      'READER': PERMISSIONS.ROLE_READER
-    };
-    return roleMap[role] || role;
-  };
-
-  const getRoleColor = (role) => {
-    const colorMap = {
-      'OWNER': '#ff9800',
-      'WRITER': '#2196f3',
-      'READER': '#4caf50'
-    };
-    return colorMap[role] || '#757575';
-  };
-
   return (
     <div className="permissions-container">
       <div className="permissions-header">
@@ -158,4 +141,4 @@ const PermissionsResource = ({ resourceId, resourceName, editable = false }) => 
   );
 };
 
-export default PermissionsResource;
+export default PermissionsPage;

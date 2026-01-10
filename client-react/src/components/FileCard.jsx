@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
 import { DELETE } from '../consts/Delete';
 import { PERMISSIONS } from '../consts/Permissions';
-import PermissionsResource from './PermissionsResource';
+import PermissionsPage from './PermissionsPage';
 import '../App.css';
 
 const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
@@ -194,7 +194,7 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
         <div className="permissions-modal-overlay" onClick={() => setShowPermissions(false)}>
           <div className="permissions-modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="permissions-modal-close" onClick={() => setShowPermissions(false)}>✕</button>
-            <PermissionsResource resourceId={id} resourceName={name} />
+            <PermissionsPage resourceId={id} resourceName={name} />
           </div>
         </div>
       )}
