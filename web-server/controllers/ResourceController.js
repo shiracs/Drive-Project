@@ -277,11 +277,28 @@ const searchResourcesByQuery = async (req, res) => {
   }
 }
 
+const getSharedResources = async (req, res) => {
+  const userId = req.userId;
+
+  if (!UserModel.isValidId(userId))
+    return res.status(401).json({ error: "Unauthorized" });
+
+  const sharedResources = ResourceModel.getSharedResourcesByUserId(userId);
+  
+  res.json(sharedResources.map((r) => ({ 
+      id: r.id, 
+      name: r.name, 
+      type: r.type 
+  })));
+};
+
+
 export default {
   getUserResourcesInDir,
   uploadResource,
   getResourceContent,
   updateResource,
   deleteResource,
-  searchResourcesByQuery
+  searchResourcesByQuery,
+  getSharedResources
 };

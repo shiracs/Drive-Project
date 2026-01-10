@@ -7,7 +7,7 @@ import {
 
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import Dashboard from "./pages/Dashboard";
+import SharedPage from "./pages/SharedPage";
 import FilePage from "./pages/FilePage";
 import DocumentViewPage from "./pages/DocumentViewPage";
 import MainLayout from "./components/layout/MainLayout";
@@ -30,15 +30,10 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route
-            path={`/${SIDEBAR_PATHS.HOME}/:folderId?`}
-            element={<FilePage />}
-          />
+          <Route path={`/${SIDEBAR_PATHS.HOME}/:folderId?`} element={<FilePage />} />
+          <Route path={SIDEBAR_PATHS.SHARED} element={<SharedPage />} />
           <Route path="/search" element={<SearchPage />} />
-          <Route
-            path="/"
-            element={<Navigate to={SIDEBAR_PATHS.HOME} replace />}
-          />
+          <Route path="/" element={<Navigate to={SIDEBAR_PATHS.HOME} replace />} />
         </Route>
 
         <Route

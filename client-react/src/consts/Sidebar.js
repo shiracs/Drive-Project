@@ -15,7 +15,7 @@ export const SIDEBAR_MENU = {
 
 export const SIDEBAR_PATHS = {
   HOME: "/dashboard",
-  MY_STORAGE: "/my-drive",
+  MY_STORAGE: "/my-storage",
   SHARED: "/shared",
   RECENT: "/recent",
   STARRED: "/starred",

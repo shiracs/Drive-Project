@@ -10,7 +10,11 @@ import { ROLES, isValidRole } from "../enums/Roles.js";
  *   userId: USER_ID,
  *   role: READER | WRITER | OWNER
  */
-const PERMISSIONS = [];
+let PERMISSIONS = [
+  { resourceId: "file_shared_id", userId: "user_a_id", role: "OWNER" },
+  { resourceId: "file_private_id", userId: "user_a_id", role: "OWNER" },
+  { resourceId: "file_shared_id", userId: "user_b_id", role: "READER" },
+];
 
 /**
  * Creates a new permission record for a user on a specific resource
