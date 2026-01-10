@@ -1,0 +1,59 @@
+/* DocumentPaper styles */
+.document-paper {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 816px;
+  min-height: 1056px;
+  padding: 95px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.30),
+              0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  margin-bottom: 80px;
+}
+
+.document-body {
+  flex: 1;
+  cursor: text;
+}
+
+.document-text-lines {
+  font-family: 'Arial', sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #202124;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+.document-empty-state {
+  color: #b8bbbe;
+  font-style: italic;
+  font-family: 'Arial', sans-serif;
+}
+
+.document-loading, .document-error {
+  font-family: 'Arial', sans-serif;
+  color: #70757a;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.document-error {
+  color: #d93025;
+}
+
+.document-editor-textarea {
+  width: 100%;
+  min-height: 800px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Arial', sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #202124;
+  background: transparent;
+  padding: 0;
+}
+

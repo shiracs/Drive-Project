@@ -1,0 +1,19 @@
+/* SearchPage styles */
+.search-results-container {
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.search-item {
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    color: var(--text-main);
+}
+
+.search-item:hover {
+    background-color: var(--hover-gray);
+}
+

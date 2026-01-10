@@ -2,7 +2,7 @@ import { useState } from "react";
 import { LOGIN_API_URL } from "../consts/Urls";
 import { LOG_IN } from "../consts/Login";
 import { saveAuthData } from "../utils/auth";
-import "../App.css";
+import "./styles/LoginForm.css";
 
 const LoginForm = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({ username: "", password: "" });

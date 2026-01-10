@@ -5,6 +5,7 @@ import FileGrid from "../components/FileGrid";
 import { SEARCH } from "../consts/Search";
 import { GENERAL } from "../consts/General";
 import { getTokenHeader } from "../utils/auth";
+import './styles/SearchPage.css';
 
 const SearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();

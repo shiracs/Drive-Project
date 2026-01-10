@@ -1,3 +1,5 @@
+import './styles/Dashboard.css';
+
 const Dashboard = () => {
   return (
     <div className="container-fluid">

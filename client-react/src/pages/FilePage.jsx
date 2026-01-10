@@ -4,15 +4,13 @@ import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
 import FileGrid from '../components/FileGrid';
 import { GENERAL } from '../consts/General';
-
-
+import './styles/FilePage.css';
+    
 const FilePage = () => {
     const [resources, setResources] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
-    
-    // get folderId from URL params
     const folderId = searchParams.get('folderId');
 
     const fetchResources = useCallback(async (id) => {
