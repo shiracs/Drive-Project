@@ -433,6 +433,23 @@ body {
   background-color: white;
 }
 
+.file-name-readonly {
+  background: none;
+  border: 1px solid transparent;
+  font-family: 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+  user-select: text;
+}
+
 .edit-button {
   font-family: inherit;      
   font-size: 14px;
@@ -1136,4 +1153,60 @@ body {
     height: 40px;
     font-size: 0.875rem;
   }
+}
+
+/* Document View Page Styles */
+.file-name-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.file-name-input {
+  font-family: 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+  padding: 2px 8px;
+  border: 2px solid #1a73e8;
+  border-radius: 4px;
+  outline: none;
+  background-color: white;
+}
+
+.visual-extension {
+  font-family: 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+  margin-right: 2px;
+}
+
+.readonly-warning-banner {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 12px 24px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid #ffeaa7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.save-cancel-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.save-button {
+  background-color: #34a853;
+}
+
+.cancel-button {
+  background-color: #ea4335;
 }

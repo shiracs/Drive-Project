@@ -45,8 +45,7 @@ const PermissionsResource = ({ resourceId, resourceName, editable = false }) => 
         setPermissions(data);
         setIsOwner(true);
 
-        // שליפת פרטי משתמשים
-        const userIds = [...new Set(data.map(p => p.userId))]; // רשימת משתמשים ייחודיים
+        const userIds = [...new Set(data.map(p => p.userId))];
         const usersMap = {};
         
         for (const userId of userIds) {
@@ -95,49 +94,32 @@ const PermissionsResource = ({ resourceId, resourceName, editable = false }) => 
     return colorMap[role] || '#757575';
   };
 
-  if (loading) {
-    return (
-      <div className="permissions-container">
-        <div className="permissions-header">
-          <h3>{PERMISSIONS.HEADER_TITLE} {resourceName}</h3>
-        </div>
-        <div className="permissions-loading">{PERMISSIONS.LOADING_MESSAGE}</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="permissions-container">
-        <div className="permissions-header">
-          <h3>{PERMISSIONS.HEADER_TITLE} {resourceName}</h3>
-        </div>
-        <div className="permissions-error">{error}</div>
-      </div>
-    );
-  }
-
-  if (!isOwner) {
-    return (
-      <div className="permissions-container">
-        <div className="permissions-header">
-          <h3>{PERMISSIONS.HEADER_TITLE} {resourceName}</h3>
-        </div>
-        <div className="permissions-info">{PERMISSIONS.NO_PERMISSION_MESSAGE}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="permissions-container">
       <div className="permissions-header">
         <h3>{PERMISSIONS.HEADER_TITLE} {resourceName}</h3>
-        <span className="permissions-count">{permissions.length} {PERMISSIONS.PERMISSIONS_COUNT}</span>
+        {!loading && !error && isOwner && (
+          <span className="permissions-count">{permissions.length} {PERMISSIONS.PERMISSIONS_COUNT}</span>
+        )}
       </div>
       
-      {permissions.length === 0 ? (
+      {loading && (
+        <div className="permissions-loading">{PERMISSIONS.LOADING_MESSAGE}</div>
+      )}
+
+      {error && (
+        <div className="permissions-error">{error}</div>
+      )}
+
+      {!loading && !error && !isOwner && (
+        <div className="permissions-info">{PERMISSIONS.NO_PERMISSION_MESSAGE}</div>
+      )}
+
+      {!loading && !error && isOwner && permissions.length === 0 && (
         <div className="permissions-empty">{PERMISSIONS.EMPTY_MESSAGE}</div>
-      ) : (
+      )}
+
+      {!loading && !error && isOwner && permissions.length > 0 && (
         <div className="permissions-list">
           {permissions.map((permission) => {
             const user = usersData[permission.userId];

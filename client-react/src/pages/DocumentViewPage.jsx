@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import DocumentPaper from '../components/DocumentPaper';
 import { DOC_BUTTONS } from '../consts/DocumentBottons';
+import { DOC_VIEW_MESSAGES } from '../consts/DocumentView';
 import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
 
@@ -17,6 +18,7 @@ const DocumentViewPage = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [canEdit, setCanEdit] = useState(true); // Start with true, will check on first save
 
   useEffect(() => {
     const fetchFile = async () => {
@@ -24,7 +26,7 @@ const DocumentViewPage = () => {
         const auth = getTokenHeader();
         const response = await fetch(`${API_BASE_URL}/files/${id}`, { headers: auth });
         if (!response.ok) {
-          setError("Failed to fetch file data.");
+          setError(DOC_VIEW_MESSAGES.FETCH_ERROR);
           return;
         }
         const data = await response.json();
@@ -46,15 +48,20 @@ const DocumentViewPage = () => {
       body: JSON.stringify(data),
     });
 
+    if (response.status === 403) {
+      setCanEdit(false);
+      throw new Error(DOC_VIEW_MESSAGES.PERMISSION_ERROR);
+    }
+
     if (!response.ok) {
-      const error = new Error("Failed to update file.");
+      const error = new Error(DOC_VIEW_MESSAGES.UPDATE_ERROR);
       throw error;
     }
   };
 
   const handleRename = async (newNameFromInput) => {
     if (!newNameFromInput.trim() || !newNameFromInput) {
-      setError("File name cannot be empty.");
+      setError(DOC_VIEW_MESSAGES.FILE_NAME_EMPTY_ERROR);
       setIsEditingName(false);
       return;
     }
@@ -93,8 +100,8 @@ const DocumentViewPage = () => {
       <div className="document-header">
         <div className="header-right-group">
           <button className="back-button" onClick={() => navigate(-1)}><span className="back-arrow"></span></button>
-          {isEditingName ? (
-            <div className="file-name-input-container" style={{ display: 'flex', alignItems: 'center' }}>
+          {canEdit && isEditingName ? (
+            <div className="file-name-input-container">
               <input
                 className="file-name-input"
                 defaultValue={fileName}
@@ -106,8 +113,8 @@ const DocumentViewPage = () => {
             </div>
           ) : (
             <span
-              className="file-name-button"
-              onClick={() => setIsEditingName(true)}
+              className={canEdit ? "file-name-button" : "file-name-readonly"}
+              onClick={canEdit ? () => setIsEditingName(true) : undefined}
             >
               {fileName}.txt
             </span>
@@ -115,18 +122,18 @@ const DocumentViewPage = () => {
         </div>
 
         <div className="header-left-group">
-          {!isEditing ? (
+          {canEdit && !isEditing ? (
             <button className="edit-button" onClick={() => setIsEditing(true)}>{DOC_BUTTONS.EDIT}</button>
-          ) : (
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button className="edit-button" style={{ backgroundColor: '#34a853' }} onClick={handleSave}>
-                {loading ? "Saving..." : DOC_BUTTONS.SAVE}
+          ) : canEdit && isEditing ? (
+            <div className="save-cancel-buttons">
+              <button className="edit-button save-button" onClick={handleSave}>
+                {loading ? DOC_VIEW_MESSAGES.SAVING : DOC_BUTTONS.SAVE}
               </button>
-              <button className="edit-button" style={{ backgroundColor: '#ea4335' }} onClick={handleCancel}>
+              <button className="edit-button cancel-button" onClick={handleCancel}>
                 {DOC_BUTTONS.CANCEL}
               </button>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -137,6 +144,12 @@ const DocumentViewPage = () => {
           isEditing={isEditing}
         />
       </div>
+      
+      {!canEdit && (
+        <div className="readonly-warning-banner">
+          ⚠️ {DOC_VIEW_MESSAGES.NO_EDIT_PERMISSION}
+        </div>
+      )}
     </div>
   );
 };

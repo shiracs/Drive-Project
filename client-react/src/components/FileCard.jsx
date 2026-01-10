@@ -181,7 +181,7 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
             <div className="file-header-row">
               <div className="file-name-container">
                 <div className="file-icon-small">{isImage ? "🖼️" : "📄"}</div>
-                <div className="file-name-text t-text-main">{name}</div>
+                <div className="file-name-text t-text-main">{isImage ? `${name}.png` : `${name}.txt`}</div>
               </div>
               {renderActionMenu()}
             </div>
