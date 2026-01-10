@@ -81,12 +81,11 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
       return;
     }
 
-    console.log('[DEBUG] Adding user:', newUsername.trim());
+    console.log('Adding user:', newUsername.trim());
     setActionLoading(true);
     try {
       const auth = getTokenHeader();
       
-      // Search for user by username via API
       let targetUserId = null;
       try {
         const userResponse = await fetch(`${API_BASE_URL}/users/username/${newUsername.trim()}`, {
@@ -97,16 +96,16 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
         if (userResponse.ok) {
           const userData = await userResponse.json();
           targetUserId = userData.id;
-          console.log('[DEBUG] Found user:', userData);
+          console.log('Found user:', userData);
         } else {
-          console.log('[DEBUG] User not found in API');
+          console.log('User not found in API');
         }
       } catch (err) {
-        console.error('[DEBUG] Error fetching user:', err);
+        console.error('Error fetching user:', err);
       }
       
       if (!targetUserId) {
-        console.log('[DEBUG] User not found!');
+        console.log('User not found!');
         alert(PERMISSIONS.USER_NOT_FOUND_HINT);
         setActionLoading(false);
         return;
@@ -133,7 +132,6 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
       setNewUserRole('READER');
       setShowAddUserModal(false);
       
-      // Reload permissions
       await fetchPermissions();
 
     } catch (err) {
@@ -145,7 +143,6 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
   };
 
   const handleChangeRole = async (permissionId, currentRole) => {
-    // Only toggle between READER and WRITER (not OWNER)
     const nextRole = currentRole === 'READER' ? 'WRITER' : 'READER';
 
     setActionLoading(true);
@@ -164,7 +161,6 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
         throw new Error(PERMISSIONS.CHANGE_ROLE_ERROR);
       }
 
-      // Reload permissions
       await fetchPermissions();
 
     } catch (err) {
@@ -195,7 +191,6 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
         throw new Error(PERMISSIONS.DELETE_PERMISSION_ERROR);
       }
 
-      // Reload permissions
       await fetchPermissions();
 
     } catch (err) {
