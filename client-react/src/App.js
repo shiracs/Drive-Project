@@ -18,7 +18,8 @@ import {
   OWNED_API_URL,
   RECENT_API_URL,
   STARRED_API_URL,
-  TRASH_API_URL
+  TRASH_API_URL,
+  SPAM_API_URL
 } from "./consts/Urls";
 
 function App() {
@@ -82,6 +83,15 @@ function App() {
                   title={SIDEBAR_MENU.TRASH}
                 />
             }
+          />
+          <Route 
+              path="/spam" 
+              element={
+                  <FilePage 
+                      customUrl={SPAM_API_URL} 
+                      title={SIDEBAR_MENU.SPAM} 
+                  />
+              } 
           />
           <Route path="/search" element={<SearchPage />} />
           <Route

@@ -12,7 +12,7 @@ const FileCard = ({
   onDeleteSuccess,
   onRefresh,
 }) => {
-  const { id, name, type, isStarred, isDeleted: isSoftDeleted } = file;
+  const { id, name, type, isStarred, isDeleted: isSoftDeleted, isSpam } = file;
 
   const navigate = useNavigate();
 
@@ -149,6 +149,21 @@ const FileCard = ({
     }
   };
 
+  const handleSpamToggle = async (e) => {
+    e.stopPropagation();
+    setShowMenu(false);
+    try {
+        const auth = getTokenHeader();
+        const response = await fetch(`${RESOURCE_API_URL}/spam/${id}`, {
+            method: "PATCH",
+            headers: auth,
+        });
+        if (response.ok && onRefresh) onRefresh();
+    } catch (err) {
+        console.error("Spam toggle failed", err);
+    }
+};
+
   const renderActionMenu = () => (
     <div className="menu-container">
       <div className="folder-menu-dots t-text-sub" onClick={toggleMenu}>
@@ -163,6 +178,10 @@ const FileCard = ({
             <div className="menu-divider"></div>
             </>
           )}
+          {!isSoftDeleted && (<><button className="delete-button" onClick={handleSpamToggle}>
+              <span>{file.isSpam ? "לא ספאם" : "דווח כספאם"}</span>
+          </button>
+          <div className="menu-divider"></div></>)}
           <button className="delete-button" onClick={handleDelete}>
             <span>{isSoftDeleted ? DELETE.PERMANENT_DELETE : DELETE.DELETE_BUTTON}</span>
           </button>

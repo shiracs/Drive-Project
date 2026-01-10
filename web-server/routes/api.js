@@ -14,6 +14,7 @@ router.post('/tokens', UserController.generateToken);
 router.patch('/files/star/:id', isLoggedIn, ResourceController.toggleStarred);
 router.post('/files/restore/:id', isLoggedIn, ResourceController.restoreResource);
 router.delete('/files/permanent-delete/:id', isLoggedIn, ResourceController.deleteResource);
+router.patch('/files/spam/:id', isLoggedIn, ResourceController.toggleSpam);
 
 // File Routes
 router.get('/files', isLoggedIn, ResourceController.getUserResourcesInDir);         
@@ -27,6 +28,7 @@ router.get('/owned', isLoggedIn, ResourceController.getOwnedResources);
 router.get('/recent', isLoggedIn, ResourceController.getRecentResources);
 router.get('/starred', isLoggedIn, ResourceController.getStarredResources);
 router.get('/trash', isLoggedIn, ResourceController.getTrashResources);
+router.get('/spam', isLoggedIn, ResourceController.getSpamResources);
 
 router.get('/search/:query', isLoggedIn, ResourceController.searchResourcesByQuery);
 

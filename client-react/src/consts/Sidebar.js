@@ -5,7 +5,7 @@ export const SIDEBAR_MENU = {
   RECENT: "לאחרונה",
   STARRED: "מסומן בכוכב",
   TRASH: "אשפה",
-  STORAGE: "אחסון",
+  SPAM: "ספאם",
   NEW_BTN: "חדש",
   NEW_FILE: "קובץ חדש",
   NEW_FOLDER: "תיקייה חדשה",
@@ -21,4 +21,5 @@ export const SIDEBAR_PATHS = {
   STARRED: "/starred",
   TRASH: "/trash",
   STORAGE: "/storage",
+  SPAM: '/spam'
 };

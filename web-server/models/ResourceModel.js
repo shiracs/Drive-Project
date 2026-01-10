@@ -22,7 +22,8 @@ let RESOURCES = [
     ownerId: "user_a_id",
     parentId: null,
     isStarred: true,
-    isDeleted: true
+    isDeleted: true,
+    isSpam: false
   },
   {
     id: "file_private_id",
@@ -31,7 +32,8 @@ let RESOURCES = [
     ownerId: "user_a_id",
     parentId: null,
     isStarred: false,
-    isDeleted: false
+    isDeleted: false,
+    isSpam:true
   },
 ];
 
@@ -70,7 +72,8 @@ const createResourceRecord = (
     path,
     updatedAt: new Date().toISOString(),
     isStarred: false,
-    isDeleted: false
+    isDeleted: false,
+    isSpam: false
   };
 
   RESOURCES.push(record);
@@ -101,7 +104,7 @@ const updateTimestamp = (id) => {
 const getResourcesByUserId = (userId, parentId = null) => {
   const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
   return RESOURCES.filter(
-    (r) => permittedIds.includes(r.id) && r.parentId === parentId && !r.isDeleted
+    (r) => permittedIds.includes(r.id) && r.parentId === parentId && !r.isDeleted && !r.isSpam
   );
 };
 
@@ -120,7 +123,7 @@ const getDescendants = (folderId) => {
  */
 const getAllResourcesByUser = (userId) => {
   const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
-  return RESOURCES.filter((r) => permittedIds.includes(r.id) && !r.isDeleted);
+  return RESOURCES.filter((r) => permittedIds.includes(r.id) && !r.isDeleted && !r.isSpam);
 };
 
 /**
@@ -176,7 +179,7 @@ const getSharedResourcesByUserId = (userId, parentId = null) => {
       permittedIds.includes(r.id) &&
       r.ownerId !== userId &&
       r.parentId === parentId && 
-      !r.isDeleted
+      !r.isDeleted && !r.isSpam
   );
 };
 
@@ -184,7 +187,7 @@ const getSharedResourcesByUserId = (userId, parentId = null) => {
  * returns all resources owned by user
  */
 const getOwnedResources = (userId, parentId = null) => {
-  return RESOURCES.filter((r) => r.ownerId === userId && r.parentId === parentId && !r.isDeleted);
+  return RESOURCES.filter((r) => r.ownerId === userId && r.parentId === parentId && !r.isDeleted && !r.isSpam);
 };
 
 /**
@@ -210,13 +213,13 @@ const getStarredResources = (userId, parentId = null) => {
   // if we have parentId - it means user is inside a starred folder,so we want to display ALL its contents
   if (parentId) {
     return RESOURCES.filter(
-      (r) => permittedIds.includes(r.id) && r.parentId === parentId && !r.isDeleted
+      (r) => permittedIds.includes(r.id) && r.parentId === parentId && !r.isDeleted && !r.isSpam
     );
   }
   // else - we are in the root of the starred page, and we want to display ALL STARRED resources no matter their parent
   else{
     return RESOURCES.filter(
-      (r) => permittedIds.includes(r.id) && r.isStarred === true && !r.isDeleted
+      (r) => permittedIds.includes(r.id) && r.isStarred === true && !r.isDeleted && !r.isSpam
     );
   }
 };
@@ -276,6 +279,33 @@ const getTrashResources = (userId, parentId) => {
   }
 };
 
+const toggleSpam = (id) => {
+    const resource = RESOURCES.find(r => r.id === id);
+    if (resource) {
+        resource.isSpam = !resource.isSpam;
+        resource.updatedAt = new Date().toISOString();
+        return resource;
+    }
+    return null;
+};
+
+const getSpamResources = (userId, parentId) => {
+    const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
+
+    // if we have parentId - it means user is inside a spam folder,so we want to display ALL its contents
+    if (parentId) {
+      return RESOURCES.filter(
+        (r) => permittedIds.includes(r.id) && r.parentId === parentId
+      );
+    }
+    // else - we are in the root of the spam page, and we want to display ALL spam resources no matter their parent
+    else{
+      return RESOURCES.filter(
+        (r) => permittedIds.includes(r.id) && r.isSpam === true && !r.isDeleted
+      );
+    }
+};
+
 
 export default {
   createResourceRecord,
@@ -295,5 +325,7 @@ export default {
   softDeleteResource,
   restoreResource,
   getTrashResources,
-  softDeleteResource
+  softDeleteResource,
+  toggleSpam,
+  getSpamResources
 };

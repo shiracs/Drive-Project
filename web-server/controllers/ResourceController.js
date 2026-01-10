@@ -25,7 +25,8 @@ const getUserResourcesInDir = async (req, res) => {
       name: r.name, 
       type: r.type,
       isStarred: r.isStarred,
-      isDeleted: r.isDeleted
+      isDeleted: r.isDeleted,
+      isSpam: r.isSpam
   })));
 };
 
@@ -279,7 +280,7 @@ const searchResourcesByQuery = async (req, res) => {
       return nameMatch || contentMatch;
     });
 
-    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name, type: f.type, isStarred: f.isStarred, isDeleted: f.isDeleted }));
+    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name, type: f.type, isStarred: f.isStarred, isDeleted: f.isDeleted, isSpam: f.isSpam }));
     return res.status(200).json(finalResponse);
 
   } catch (error) {
@@ -308,7 +309,8 @@ const getSharedResources = async (req, res) => {
       name: r.name, 
       type: r.type,
       isStarred: r.isStarred,
-      isDeleted: r.isDeleted
+      isDeleted: r.isDeleted,
+      isSpam: r.isSpam
   })));
 };
 
@@ -323,7 +325,7 @@ const getOwnedResources = async (req, res) => {
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
   const resources = ResourceModel.getOwnedResources(userId, parentId);
-  res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted })));
+  res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
 };
 
 /**
@@ -339,7 +341,7 @@ const getRecentResources = async (req, res) => {
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     const resources = ResourceModel.getRecentResources(userId, parentId);
-    res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted })));
+    res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
 };
 
 const getStarredResources = async (req, res) => {
@@ -357,8 +359,9 @@ const getStarredResources = async (req, res) => {
             id: r.id, 
             name: r.name, 
             type: r.type, 
-            isStarred: r.isStarred ,
-            isDeleted: r.isDeleted
+            isStarred: r.isStarred,
+            isDeleted: r.isDeleted, 
+            isSpam: r.isSpam
         })));
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -387,8 +390,9 @@ export const getTrashResources = async (req, res) => {
             id: r.id, 
             name: r.name, 
             type: r.type, 
-            isStarred: r.isStarred ,
-            isDeleted: r.isDeleted
+            isStarred: r.isStarred,
+            isDeleted: r.isDeleted, 
+            isSpam: r.isSpam
         })));
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -436,6 +440,30 @@ const softDeleteResource = async (req, res) => {
   }
 };
 
+const getSpamResources = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const parentId = req.query.parentId || null;
+
+         if (!UserModel.isValidId(userId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const resources = ResourceModel.getSpamResources(userId, parentId);
+        res.json(resources.map(r => ({ 
+            id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const toggleSpam = async (req, res) => {
+    const { id } = req.params;
+    const updated = ResourceModel.toggleSpam(id);
+    if (!updated) return res.status(404).json({ error: "Resource not found" });
+    res.json(updated);
+};
+
 export default {
   getUserResourcesInDir,
   uploadResource,
@@ -450,5 +478,7 @@ export default {
   toggleStarred,
   getTrashResources,
   restoreResource,
-  softDeleteResource
+  softDeleteResource,
+  getSpamResources,
+  toggleSpam
 };
