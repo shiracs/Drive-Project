@@ -14,6 +14,7 @@ import MainLayout from "./components/layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SIDEBAR_PATHS } from "./consts/Sidebar";
 import SearchPage from "./pages/SearchPage";
+import MyStoragePage from "./pages/MyStoragePage";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         >
           <Route path={`/${SIDEBAR_PATHS.HOME}/:folderId?`} element={<FilePage />} />
           <Route path={SIDEBAR_PATHS.SHARED} element={<SharedPage />} />
+          <Route path={SIDEBAR_PATHS.MY_STORAGE} element={<MyStoragePage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/" element={<Navigate to={SIDEBAR_PATHS.HOME} replace />} />
         </Route>

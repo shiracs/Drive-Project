@@ -1,45 +1,47 @@
 import { useState, useEffect, useCallback } from 'react';
-import { SHARED_API_URL } from '../consts/Urls';  
+import { OWNED_API_URL } from '../consts/Urls';  
 import { getTokenHeader } from '../utils/auth';
 import FileGrid from '../components/FileGrid';
 import { SIDEBAR_MENU } from '../consts/Sidebar';
 
-const SharedPage = () => {
+const MyStoragePage = () => {
     const [resources, setResources] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    const fetchSharedResources = useCallback(async () => {
+    const fetchOwnedResources = useCallback(async () => {
         setLoading(true);
         try {
             const auth = getTokenHeader();
-            const response = await fetch(SHARED_API_URL, { headers: auth });
-            
+            const response = await fetch(OWNED_API_URL, { 
+                headers: auth 
+            });
+
             if (!response.ok) {
-                throw new Error("Failed to fetch shared resources");
+                throw new Error("Failed to fetch owned resources");
             }
 
             const data = await response.json();
             setResources(data);
         } catch (err) { 
-            console.error("Error fetching shared resources:", err); 
+            console.error("Error fetching my storage:", err); 
         } finally { 
             setLoading(false); 
         }
     }, []);
 
     useEffect(() => {
-        fetchSharedResources();
-    }, [fetchSharedResources]);
+        fetchOwnedResources();
+    }, [fetchOwnedResources]);
 
     return (
         <FileGrid 
             resources={resources} 
             loading={loading}
-            title={SIDEBAR_MENU.SHARED}
+            title={SIDEBAR_MENU.MY_STORAGE}
             showBackButton={false}
-            onRefresh={fetchSharedResources} 
+            onRefresh={fetchOwnedResources} 
         />
     );
 };
 
-export default SharedPage;
+export default MyStoragePage;

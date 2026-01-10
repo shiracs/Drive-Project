@@ -277,6 +277,10 @@ const searchResourcesByQuery = async (req, res) => {
   }
 }
 
+/**
+ * GET /api/files/shared
+ * returns only resources that were shared with userId
+ */
 const getSharedResources = async (req, res) => {
   const userId = req.userId;
 
@@ -292,6 +296,17 @@ const getSharedResources = async (req, res) => {
   })));
 };
 
+/**
+ * GET /api/files/owned
+ * returns resources owned by userId
+ */
+const getOwnedResources = async (req, res) => {
+  const userId = req.userId;
+  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+
+  const resources = ResourceModel.getOwnedResources(userId);
+  res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type })));
+};
 
 export default {
   getUserResourcesInDir,
@@ -300,5 +315,6 @@ export default {
   updateResource,
   deleteResource,
   searchResourcesByQuery,
-  getSharedResources
+  getSharedResources,
+  getOwnedResources
 };

@@ -148,6 +148,10 @@ const getSharedResourcesByUserId = (userId) => {
   );
 };
 
+const getOwnedResources = (userId) => {
+  return RESOURCES.filter(r => r.ownerId === userId);
+};
+
 export default { 
   createResourceRecord, 
   getResourcesByUserId, 
@@ -157,5 +161,6 @@ export default {
   getAllResourcesByUser,
   validateParent,
   renameResource,
-  getSharedResourcesByUserId
+  getSharedResourcesByUserId,
+  getOwnedResources
 };
