@@ -59,6 +59,26 @@ const getUserById = (req, res) => {
 };
 
 /**
+ * Get user by username
+ * @param {*} req
+ * @param {*} res
+ * @returns the user data or error message
+ */
+const getUserByUsername = (req, res) => {
+  const { username } = req.params;
+
+  // Find user by username
+  const user = UserModel.findByUsername(username);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  // return the user data without the password
+  const { password: _, ...userResponse } = user;
+  res.status(200).json(userResponse);
+};
+
+/**
  * Generate a token for a user
  * @param {*} req
  * @param {*} res
@@ -89,4 +109,4 @@ const generateToken = (req, res) => {
   }
 };
 
-export default { registerUser, getUserById, generateToken };
+export default { registerUser, getUserById, getUserByUsername, generateToken };
