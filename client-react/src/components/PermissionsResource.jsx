@@ -31,7 +31,6 @@ const PermissionsResource = ({ resourceId, resourceName, editable = false }) => 
         });
 
         if (response.status === 403) {
-          // User is not the owner - can't view permissions
           setIsOwner(false);
           setError(PERMISSIONS.FORBIDDEN_MESSAGE);
           return;

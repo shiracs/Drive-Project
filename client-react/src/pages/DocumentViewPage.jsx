@@ -18,7 +18,7 @@ const DocumentViewPage = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [canEdit, setCanEdit] = useState(true); // Start with true, will check on first save
+  const [canEdit, setCanEdit] = useState(null); // null = checking, true = can edit, false = cannot
 
   useEffect(() => {
     const fetchFile = async () => {
@@ -33,6 +33,24 @@ const DocumentViewPage = () => {
         setContent(data.content || "");
         setOriginalContent(data.content || "");
         setFileName(data.name);
+
+        try {
+          const testResponse = await fetch(`${API_BASE_URL}/files/${id}`, {
+            method: 'PATCH',
+            headers: { ...auth, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: data.content || "" })
+          });
+          
+          if (testResponse.status === 403) {
+            setCanEdit(false);
+          } else if (testResponse.ok || testResponse.status === 204) {
+            setCanEdit(true);
+          } else {
+            setCanEdit(false);
+          }
+        } catch {
+          setCanEdit(false);
+        }
       } catch (err) {
         setError(err.message);
       }
@@ -50,7 +68,7 @@ const DocumentViewPage = () => {
 
     if (response.status === 403) {
       setCanEdit(false);
-      throw new Error(DOC_VIEW_MESSAGES.PERMISSION_ERROR);
+      return;
     }
 
     if (!response.ok) {
@@ -144,12 +162,6 @@ const DocumentViewPage = () => {
           isEditing={isEditing}
         />
       </div>
-      
-      {!canEdit && (
-        <div className="readonly-warning-banner">
-          ⚠️ {DOC_VIEW_MESSAGES.NO_EDIT_PERMISSION}
-        </div>
-      )}
     </div>
   );
 };
