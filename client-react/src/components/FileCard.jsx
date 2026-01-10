@@ -4,6 +4,11 @@ import { API_BASE_URL, RESOURCE_API_URL } from "../consts/Urls";
 import { getTokenHeader } from "../utils/auth";
 import { DELETE } from "../consts/Delete";
 import "../App.css";
+import { PERMISSIONS } from '../consts/Permissions';
+import { RENAME } from '../consts/Rename';
+import PermissionsPage from './PermissionsPage';
+import UpdateName from './UpdateName';
+import '../App.css';
 
 const FileCard = ({
   file,
@@ -22,6 +27,35 @@ const FileCard = ({
   const [fileContent, setFileContent] = useState("Loading...");
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
+  const [showPermissions, setShowPermissions] = useState(false);
+  const [showUpdateName, setShowUpdateName] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  
+  // see usrer role for this file/folder
+  useEffect(() => {
+    if (isDeleted || !id) return;
+    
+    const fetchUserRole = async () => {
+      try {
+        const auth = getTokenHeader();
+        const response = await fetch(`${API_BASE_URL}/files/${id}/permissions`, {
+          method: 'GET',
+          headers: auth
+        });
+
+        if (response.ok) {
+          setUserRole('OWNER');
+        } else if (response.status === 403) {
+          setUserRole('READER');
+        }
+      } catch (err) {
+        console.error("Failed to fetch user role", err);
+        setUserRole('READER');
+      }
+    };
+
+    fetchUserRole();
+  }, [id, isDeleted]);
   
   // load preview content for files
   useEffect(() => {
@@ -163,6 +197,24 @@ const FileCard = ({
         console.error("Spam toggle failed", err);
     }
 };
+  const handleShowPermissions = (e) => {
+    e.stopPropagation();
+    setShowMenu(false);
+    setShowPermissions(true);
+  };
+
+  const handleShowUpdateName = (e) => {
+    e.stopPropagation();
+    setShowMenu(false);
+    setShowUpdateName(true);
+  };
+
+  const handleUpdateNameSuccess = (newName) => {
+    file.name = newName;
+  };
+
+  const canEdit = userRole === 'OWNER' || userRole === 'WRITER';
+  const isOwner = userRole === 'OWNER';
 
   const renderActionMenu = () => (
     <div className="menu-container">
@@ -182,6 +234,19 @@ const FileCard = ({
               <span>{file.isSpam ? "לא ספאם" : "דווח כספאם"}</span>
           </button>
           <div className="menu-divider"></div></>)}
+          <button 
+            className={`delete-button ${isOwner ? '' : 'permissions-button-non-owner'}`}
+            onClick={handleShowPermissions}
+          >
+            <span>{PERMISSIONS.MENU_BUTTON}</span>
+          </button>
+          <button 
+            className={`delete-button ${canEdit ? 'update-name-button-enabled' : 'update-name-button-disabled'}`}
+            onClick={handleShowUpdateName}
+            disabled={!canEdit}
+          >
+            <span>{RENAME.MENU_BUTTON}</span>
+          </button>
           <button className="delete-button" onClick={handleDelete}>
             <span>{isSoftDeleted ? DELETE.PERMANENT_DELETE : DELETE.DELETE_BUTTON}</span>
           </button>
@@ -269,15 +334,14 @@ const FileCard = ({
           title={name}
         >
           <div
-            className="file-preview-container t-bg-page"
-            style={isImage ? { padding: 0, overflow: "hidden" } : {}}
+            className={`file-preview-container t-bg-page ${isImage ? 'image-preview' : ''}`}
           >
             {isImage ? (
               previewSrc ? (
                 <img
                   src={previewSrc}
                   alt={name}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  className="file-preview-image"
                 />
               ) : (
                 <div>🖼️</div>
@@ -296,13 +360,33 @@ const FileCard = ({
             <div className="file-header-row">
               <div className="file-name-container">
                 <div className="file-icon-small">{isImage ? "🖼️" : "📄"}</div>
-                <div className="file-name-text t-text-main">{name}</div>
+                <div className="file-name-text t-text-main">{isImage ? `${name}.png` : `${name}.txt`}</div>
               </div>
               {renderStar()}
               {renderActionMenu()}
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Permissions Modal */}
+      {showPermissions && (
+        <div className="permissions-modal-overlay" onClick={() => setShowPermissions(false)}>
+          <div className="permissions-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="permissions-modal-close" onClick={() => setShowPermissions(false)}>✕</button>
+            <PermissionsPage resourceId={id} resourceName={name} />
+          </div>
+        </div>
+      )}
+
+      {/* Update Name */}
+      {showUpdateName && (
+        <UpdateName
+          fileId={id}
+          fileName={name}
+          onClose={() => setShowUpdateName(false)}
+          onSuccess={handleUpdateNameSuccess}
+        />
       )}
     </>
   );
