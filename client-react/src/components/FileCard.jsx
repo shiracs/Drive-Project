@@ -24,7 +24,7 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
   const [showUpdateName, setShowUpdateName] = useState(false);
   const [userRole, setUserRole] = useState(null);
   
-  // Fetch user role/permissions for this resource
+  // see usrer role for this file/folder
   useEffect(() => {
     if (isDeleted || !id) return;
     
@@ -37,11 +37,8 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
         });
 
         if (response.ok) {
-          // If we can fetch permissions, we are the owner
           setUserRole('OWNER');
         } else if (response.status === 403) {
-          // If forbidden, we're not owner - try to determine if writer or reader
-          // by attempting a simple operation (we'll assume READER for now)
           setUserRole('READER');
         }
       } catch (err) {
