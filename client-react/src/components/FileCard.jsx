@@ -65,7 +65,7 @@ const FileCard = ({
         isMounted = false;
       };
     }
-  }, [id, isFolder]);
+  }, [id, isFolder, isDeleted]);
 
   const handleClick = (e) => {
     if (e.target.closest('.folder-menu-dots')) return;
@@ -98,7 +98,7 @@ const FileCard = ({
     if (window.confirm(`${DELETE.CONFIRM_MESSAGE} ${name}?`)) {
       try {
         const auth = getTokenHeader();
-        const response = await fetch(`${API_BASE_URL}/files/${id}`, {
+        const response = await fetch(`${RESOURCE_API_URL}/${id}`, {
           method: 'DELETE',
           headers: auth
         });
@@ -107,7 +107,7 @@ const FileCard = ({
           onDeleteSuccess && onDeleteSuccess(id);
           onRefresh()
         } else {
-          console.error("Delete failed with status:", response.status);
+          throw new Error();
         }
       } catch (err) {
         console.error("Delete failed", err);

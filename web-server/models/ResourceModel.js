@@ -109,7 +109,7 @@ const getResourcesByUserId = (userId, parentId = null) => {
 const getDescendants = (folderId) => {
   // We search for resources whose path contains ",folderId,"
   const searchPattern = `,${folderId},`;
-  return RESOURCES.filter((f) => f.path.includes(searchPattern));
+  return RESOURCES.filter((f) => f.path?.includes(searchPattern));
 };
 
 /**
