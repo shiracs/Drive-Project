@@ -22,6 +22,7 @@ let RESOURCES = [
     ownerId: "user_a_id",
     parentId: null,
     isStarred: true,
+    isDeleted: true
   },
   {
     id: "file_private_id",
@@ -30,6 +31,7 @@ let RESOURCES = [
     ownerId: "user_a_id",
     parentId: null,
     isStarred: false,
+    isDeleted: false
   },
 ];
 
@@ -68,6 +70,7 @@ const createResourceRecord = (
     path,
     updatedAt: new Date().toISOString(),
     isStarred: false,
+    isDeleted: false
   };
 
   RESOURCES.push(record);
@@ -98,7 +101,7 @@ const updateTimestamp = (id) => {
 const getResourcesByUserId = (userId, parentId = null) => {
   const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
   return RESOURCES.filter(
-    (r) => permittedIds.includes(r.id) && r.parentId === parentId
+    (r) => permittedIds.includes(r.id) && r.parentId === parentId && !r.isDeleted
   );
 };
 
@@ -109,7 +112,7 @@ const getResourcesByUserId = (userId, parentId = null) => {
 const getDescendants = (folderId) => {
   // We search for resources whose path contains ",folderId,"
   const searchPattern = `,${folderId},`;
-  return RESOURCES.filter((f) => f.path?.includes(searchPattern));
+  return RESOURCES.filter((f) => f.path?.includes(searchPattern) && !f.isDeleted);
 };
 
 /**
@@ -117,7 +120,7 @@ const getDescendants = (folderId) => {
  */
 const getAllResourcesByUser = (userId) => {
   const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
-  return RESOURCES.filter((r) => permittedIds.includes(r.id));
+  return RESOURCES.filter((r) => permittedIds.includes(r.id) && !r.isDeleted);
 };
 
 /**
@@ -172,7 +175,8 @@ const getSharedResourcesByUserId = (userId, parentId = null) => {
     (r) =>
       permittedIds.includes(r.id) &&
       r.ownerId !== userId &&
-      r.parentId === parentId
+      r.parentId === parentId && 
+      !r.isDeleted
   );
 };
 
@@ -180,7 +184,7 @@ const getSharedResourcesByUserId = (userId, parentId = null) => {
  * returns all resources owned by user
  */
 const getOwnedResources = (userId, parentId = null) => {
-  return RESOURCES.filter((r) => r.ownerId === userId && r.parentId === parentId);
+  return RESOURCES.filter((r) => r.ownerId === userId && r.parentId === parentId && !r.isDeleted);
 };
 
 /**
@@ -206,13 +210,13 @@ const getStarredResources = (userId, parentId = null) => {
   // if we have parentId - it means user is inside a starred folder,so we want to display ALL its contents
   if (parentId) {
     return RESOURCES.filter(
-      (r) => permittedIds.includes(r.id) && r.parentId === parentId
+      (r) => permittedIds.includes(r.id) && r.parentId === parentId && !r.isDeleted
     );
   }
   // else - we are in the root of the starred page, and we want to display ALL STARRED resources no matter their parent
   else{
     return RESOURCES.filter(
-      (r) => permittedIds.includes(r.id) && r.isStarred === true
+      (r) => permittedIds.includes(r.id) && r.isStarred === true && !r.isDeleted
     );
   }
 };
@@ -226,6 +230,52 @@ const toggleStarred = (id) => {
   }
   return false;
 };
+
+
+/**
+ * soft delete a resource
+ */
+const softDeleteResource = (id) => {
+    const resource = RESOURCES.find(r => r.id === id);
+    if (resource) {
+        resource.isDeleted = true;
+        return true;
+    }
+    return false;
+};
+
+/**
+ * restore a resource that wes soft deleted
+ */
+const restoreResource = (id) => {
+    const resource = RESOURCES.find(r => r.id === id);
+    if (resource) {
+        resource.isDeleted = false;
+        return true;
+    }
+    return false;
+};
+
+/**
+ * get all soft deleted resources
+ */
+const getTrashResources = (userId, parentId) => {
+  const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
+
+  // if we have parentId - it means user is inside a trashed folder,so we want to display ALL its contents
+  if (parentId) {
+    return RESOURCES.filter(
+      (r) => permittedIds.includes(r.id) && r.parentId === parentId
+    );
+  }
+  // else - we are in the root of the trash page, and we want to display ALL trashed resources no matter their parent
+  else{
+    return RESOURCES.filter(
+      (r) => permittedIds.includes(r.id) && r.isDeleted === true
+    );
+  }
+};
+
 
 export default {
   createResourceRecord,
@@ -242,4 +292,8 @@ export default {
   getRecentResources,
   getStarredResources,
   toggleStarred,
+  softDeleteResource,
+  restoreResource,
+  getTrashResources,
+  softDeleteResource
 };

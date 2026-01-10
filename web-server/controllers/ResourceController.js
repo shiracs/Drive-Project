@@ -24,7 +24,8 @@ const getUserResourcesInDir = async (req, res) => {
       id: r.id, 
       name: r.name, 
       type: r.type,
-      isStarred: r.isStarred
+      isStarred: r.isStarred,
+      isDeleted: r.isDeleted
   })));
 };
 
@@ -195,7 +196,7 @@ const updateResource = async (req, res) => {
 };
 
 /**
- * DELETE /api/files/:id
+ * DELETE /api//files/permanent-delete/:id
  * Uses Flat Deletion logic for folders (using Path) to delete all descendants
  */
 const deleteResource = async (req, res) => {
@@ -278,7 +279,7 @@ const searchResourcesByQuery = async (req, res) => {
       return nameMatch || contentMatch;
     });
 
-    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name, type: f.type, isStarred: f.isStarred }));
+    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name, type: f.type, isStarred: f.isStarred, isDeleted: f.isDeleted }));
     return res.status(200).json(finalResponse);
 
   } catch (error) {
@@ -306,7 +307,8 @@ const getSharedResources = async (req, res) => {
       id: r.id, 
       name: r.name, 
       type: r.type,
-      isStarred: r.isStarred
+      isStarred: r.isStarred,
+      isDeleted: r.isDeleted
   })));
 };
 
@@ -321,7 +323,7 @@ const getOwnedResources = async (req, res) => {
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
   const resources = ResourceModel.getOwnedResources(userId, parentId);
-  res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred })));
+  res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted })));
 };
 
 /**
@@ -337,7 +339,7 @@ const getRecentResources = async (req, res) => {
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     const resources = ResourceModel.getRecentResources(userId, parentId);
-    res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred })));
+    res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted })));
 };
 
 const getStarredResources = async (req, res) => {
@@ -355,7 +357,8 @@ const getStarredResources = async (req, res) => {
             id: r.id, 
             name: r.name, 
             type: r.type, 
-            isStarred: r.isStarred 
+            isStarred: r.isStarred ,
+            isDeleted: r.isDeleted
         })));
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -369,6 +372,70 @@ const toggleStarred = async (req, res) => {
     res.json(updated);
 };
 
+
+export const getTrashResources = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const parentId = req.query.parentId || null;
+
+        if (!UserModel.isValidId(userId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const resources = ResourceModel.getTrashResources(userId, parentId);
+        res.json(resources.map(r => ({ 
+            id: r.id, 
+            name: r.name, 
+            type: r.type, 
+            isStarred: r.isStarred ,
+            isDeleted: r.isDeleted
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+export const restoreResource = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const success = ResourceModel.restoreResource(id);
+        if (!success) return res.status(404).json({ error: "Resource not found" });
+        res.json({ message: "Resource restored" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+/**
+ * DELETE /api/files/:id
+ */
+const softDeleteResource = async (req, res) => {
+  const userId = req.userId;
+  const { id } = req.params;
+
+  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+    return res.status(403).json({ error: "Forbidden: Only owners can delete" });
+  }
+
+  try {
+    const targetResource = ResourceModel.findById(id);
+    if (!targetResource) return res.status(404).json({ error: "Resource not found" });
+
+    const descendants = ResourceModel.getDescendants(id);
+    const allToTrash = [targetResource, ...descendants];
+
+    for (const resource of allToTrash) {
+      ResourceModel.softDeleteResource(resource.id);
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export default {
   getUserResourcesInDir,
   uploadResource,
@@ -380,5 +447,8 @@ export default {
   getOwnedResources,
   getRecentResources,
   getStarredResources,
-  toggleStarred
+  toggleStarred,
+  getTrashResources,
+  restoreResource,
+  softDeleteResource
 };

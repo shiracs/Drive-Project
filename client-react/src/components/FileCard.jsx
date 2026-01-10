@@ -12,7 +12,7 @@ const FileCard = ({
   onDeleteSuccess,
   onRefresh,
 }) => {
-  const { id, name, type } = file;
+  const { id, name, type, isStarred, isDeleted: isSoftDeleted } = file;
 
   const navigate = useNavigate();
 
@@ -94,11 +94,15 @@ const FileCard = ({
   const handleDelete = async (e) => {
     e.stopPropagation();
     setShowMenu(false);
-    
+
+    const deleteUrl = isSoftDeleted ? 
+    `${RESOURCE_API_URL}/permanent-delete/${id}` : 
+    `${RESOURCE_API_URL}/${id}`;
+
     if (window.confirm(`${DELETE.CONFIRM_MESSAGE} ${name}?`)) {
       try {
         const auth = getTokenHeader();
-        const response = await fetch(`${RESOURCE_API_URL}/${id}`, {
+        const response = await fetch(deleteUrl, {
           method: 'DELETE',
           headers: auth
         });
@@ -131,14 +135,36 @@ const FileCard = ({
     }
   };
 
+  const handleRestore = async (e) => {
+    e.stopPropagation();
+    try {
+      const auth = getTokenHeader();
+      const response = await fetch(`${RESOURCE_API_URL}/restore/${id}`, {
+        method: "POST",
+        headers: auth,
+      });
+      if (response.ok && onRefresh) onRefresh();
+    } catch (err) {
+      console.error("Restore failed", err);
+    }
+  };
+
   const renderActionMenu = () => (
     <div className="menu-container">
-      <div className="folder-menu-dots t-text-sub" onClick={toggleMenu}>⋮</div>
+      <div className="folder-menu-dots t-text-sub" onClick={toggleMenu}>
+        ⋮
+      </div>
       {showMenu && (
         <div className="delete-dropdown">
+          {isSoftDeleted && (<>
+            <button className="delete-button" onClick={handleRestore} style={{ color: '#28a745' }}>
+              <span>{DELETE.RESTORE}</span>
+            </button>
+            <div className="menu-divider"></div>
+            </>
+          )}
           <button className="delete-button" onClick={handleDelete}>
-            <span>🗑️</span>
-            <span>{DELETE.DELETE_BUTTON}</span>
+            <span>{isSoftDeleted ? DELETE.PERMANENT_DELETE : DELETE.DELETE_BUTTON}</span>
           </button>
         </div>
       )}
@@ -150,11 +176,11 @@ const FileCard = ({
       onClick={handleStarToggle}
       style={{
         cursor: "pointer",
-        color: file.isStarred ? "#ffc107" : "#ccc",
+        color: isStarred ? "#ffc107" : "#ccc",
         marginLeft: "8px",
       }}
     >
-      <i className={`bi ${file.isStarred ? "bi-star-fill" : "bi-star"}`}></i>
+      <i className={`bi ${isStarred ? "bi-star-fill" : "bi-star"}`}></i>
     </span>
   );
 
@@ -172,7 +198,7 @@ const FileCard = ({
               alignItems: "center",
               justifyContent: "space-between",
               padding: "0 12px",
-              height: "48px", 
+              height: "48px",
               minWidth: "200px",
             }}
           >
@@ -206,9 +232,9 @@ const FileCard = ({
               style={{
                 display: "flex",
                 alignItems: "center",
-                flexShrink: 0, 
+                flexShrink: 0,
                 gap: "4px",
-                marginRight: "auto", 
+                marginRight: "auto",
               }}
             >
               {renderStar()}

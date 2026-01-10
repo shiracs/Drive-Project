@@ -6,3 +6,4 @@ export const SHARED_API_URL = `${API_BASE_URL}/shared`;
 export const OWNED_API_URL = `${API_BASE_URL}/owned`;
 export const RECENT_API_URL = `${API_BASE_URL}/recent`;
 export const STARRED_API_URL = `${API_BASE_URL}/starred`;
+export const TRASH_API_URL = `${API_BASE_URL}/trash`;
