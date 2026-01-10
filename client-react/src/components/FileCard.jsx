@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
 import { DELETE } from '../consts/Delete';
+import { PERMISSIONS } from '../consts/Permissions';
+import PermissionsResource from './PermissionsResource';
 import '../App.css';
 
 const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
@@ -16,6 +18,7 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
   const [fileContent, setFileContent] = useState("Loading...");
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
+  const [showPermissions, setShowPermissions] = useState(false);
   
   // load preview content for files
   useEffect(() => {
@@ -108,11 +111,21 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
     }
   };
 
+  const handleShowPermissions = (e) => {
+    e.stopPropagation();
+    setShowMenu(false);
+    setShowPermissions(true);
+  };
+
   const renderActionMenu = () => (
     <div className="menu-container">
       <div className="folder-menu-dots t-text-sub" onClick={toggleMenu}>⋮</div>
       {showMenu && (
         <div className="delete-dropdown">
+          <button className="delete-button" onClick={handleShowPermissions}>
+            <span>🔒</span>
+            <span>{PERMISSIONS.MENU_BUTTON}</span>
+          </button>
           <button className="delete-button" onClick={handleDelete}>
             <span>🗑️</span>
             <span>{DELETE.DELETE_BUTTON}</span>
@@ -172,6 +185,16 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
               </div>
               {renderActionMenu()}
             </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Permissions Modal */}
+      {showPermissions && (
+        <div className="permissions-modal-overlay" onClick={() => setShowPermissions(false)}>
+          <div className="permissions-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="permissions-modal-close" onClick={() => setShowPermissions(false)}>✕</button>
+            <PermissionsResource resourceId={id} resourceName={name} />
           </div>
         </div>
       )}
