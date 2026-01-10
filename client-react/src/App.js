@@ -13,7 +13,7 @@ import MainLayout from "./components/layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SearchPage from "./pages/SearchPage";
 import { SIDEBAR_MENU, SIDEBAR_PATHS } from "./consts/Sidebar";
-import { SHARED_API_URL, OWNED_API_URL, RECENT_API_URL } from "./consts/Urls";
+import { SHARED_API_URL, OWNED_API_URL, RECENT_API_URL, STARRED_API_URL } from "./consts/Urls";
 
 function App() {
   return (
@@ -59,6 +59,15 @@ function App() {
                 customUrl={RECENT_API_URL}
                 title={SIDEBAR_MENU.RECENT}
                 subTitle = {"מציג 5 אחרונים ששונו"}
+              />
+            }
+          />
+          <Route
+            path="/starred"
+            element={
+              <FilePage
+                customUrl={STARRED_API_URL}
+                title={SIDEBAR_MENU.STARRED}
               />
             }
           />

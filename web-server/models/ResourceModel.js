@@ -21,6 +21,7 @@ let RESOURCES = [
     type: "FILE",
     ownerId: "user_a_id",
     parentId: null,
+    isStarred: true,
   },
   {
     id: "file_private_id",
@@ -28,6 +29,7 @@ let RESOURCES = [
     type: "FILE",
     ownerId: "user_a_id",
     parentId: null,
+    isStarred: false,
   },
 ];
 
@@ -65,6 +67,7 @@ const createResourceRecord = (
     parentId,
     path,
     updatedAt: new Date().toISOString(),
+    isStarred: false,
   };
 
   RESOURCES.push(record);
@@ -196,6 +199,34 @@ const getRecentResources = (userId, parentId = null) => {
     .slice(0, 5);
 };
 
+const getStarredResources = (userId, parentId = null) => {
+  // all resources permitted for the user
+  const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
+
+  // if we have parentId - it means user is inside a starred folder,so we want to display ALL its contents
+  if (parentId) {
+    return RESOURCES.filter(
+      (r) => permittedIds.includes(r.id) && r.parentId === parentId
+    );
+  }
+  // else - we are in the root of the starred page, and we want to display ALL STARRED resources no matter their parent
+  else{
+    return RESOURCES.filter(
+      (r) => permittedIds.includes(r.id) && r.isStarred === true
+    );
+  }
+};
+
+const toggleStarred = (id) => {
+  const resource = RESOURCES.find((r) => r.id === id);
+  if (resource) {
+    resource.isStarred = !resource.isStarred;
+    resource.updatedAt = new Date().toISOString();
+    return true;
+  }
+  return false;
+};
+
 export default {
   createResourceRecord,
   getResourcesByUserId,
@@ -209,4 +240,6 @@ export default {
   getOwnedResources,
   updateTimestamp,
   getRecentResources,
+  getStarredResources,
+  toggleStarred,
 };

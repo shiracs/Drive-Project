@@ -1,18 +1,24 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../consts/Urls';
-import { getTokenHeader } from '../utils/auth';
-import { DELETE } from '../consts/Delete';
-import '../App.css';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { API_BASE_URL, RESOURCE_API_URL } from "../consts/Urls";
+import { getTokenHeader } from "../utils/auth";
+import { DELETE } from "../consts/Delete";
+import "../App.css";
 
-const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
+const FileCard = ({
+  file,
+  onNavigate,
+  onOpenImage,
+  onDeleteSuccess,
+  onRefresh,
+}) => {
   const { id, name, type } = file;
 
   const navigate = useNavigate();
-  
-  const isFolder = type === 'FOLDER';
-  const isImage = type === 'IMAGE';
-  
+
+  const isFolder = type === "FOLDER";
+  const isImage = type === "IMAGE";
+
   const [fileContent, setFileContent] = useState("Loading...");
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
@@ -99,12 +105,29 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
         if (response.ok) {
           setIsDeleted(true);
           onDeleteSuccess && onDeleteSuccess(id);
+          onRefresh()
         } else {
           console.error("Delete failed with status:", response.status);
         }
       } catch (err) {
         console.error("Delete failed", err);
       }
+    }
+  };
+
+  const handleStarToggle = async (e) => {
+    e.stopPropagation();
+    try {
+      const auth = getTokenHeader();
+      const response = await fetch(`${RESOURCE_API_URL}/star/${id}`, {
+        method: "PATCH",
+        headers: auth,
+      });
+      if (response.ok && onRefresh) {
+        onRefresh();
+      }
+    } catch (err) {
+      console.error("Star toggle failed", err);
     }
   };
 
@@ -122,16 +145,76 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
     </div>
   );
 
+  const renderStar = () => (
+    <span
+      onClick={handleStarToggle}
+      style={{
+        cursor: "pointer",
+        color: file.isStarred ? "#ffc107" : "#ccc",
+        marginLeft: "8px",
+      }}
+    >
+      <i className={`bi ${file.isStarred ? "bi-star-fill" : "bi-star"}`}></i>
+    </span>
+  );
+
   return (
     <>
       {isFolder ? (
-        // Folder Card  
-        <div className="menu-container">      
-        <div className="drive-folder-card t-bg-surface t-border" onClick={handleClick} title={name}>
-          <div className="folder-content-right">
-            <span className="folder-icon">📁</span>
-            <span className="folder-name t-text-main">{name}</span>
-          </div>{renderActionMenu()}</div>
+        // Folder Card
+        <div className="menu-container">
+          <div
+            className="drive-folder-card t-bg-surface t-border"
+            onClick={handleClick}
+            title={name}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0 12px",
+              height: "48px", 
+              minWidth: "200px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                overflow: "hidden",
+                flex: 1,
+              }}
+            >
+              <span
+                style={{ fontSize: "1.2rem", marginLeft: "8px", flexShrink: 0 }}
+              >
+                📁
+              </span>
+              <span
+                className="t-text-main"
+                style={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  fontSize: "0.9rem",
+                  fontWeight: "500",
+                }}
+              >
+                {name}
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                flexShrink: 0, 
+                gap: "4px",
+                marginRight: "auto", 
+              }}
+            >
+              {renderStar()}
+              {renderActionMenu()}
+            </div>
+          </div>
         </div>
       ) : (
         // Image Card
@@ -170,6 +253,7 @@ const FileCard = ({ file, onNavigate, onOpenImage, onDeleteSuccess }) => {
                 <div className="file-icon-small">{isImage ? "🖼️" : "📄"}</div>
                 <div className="file-name-text t-text-main">{name}</div>
               </div>
+              {renderStar()}
               {renderActionMenu()}
             </div>
           </div>

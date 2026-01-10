@@ -11,6 +11,8 @@ router.post('/users', UserController.registerUser);
 router.get('/users/:id', UserController.getUserById);
 router.post('/tokens', UserController.generateToken);
 
+router.patch('/files/star/:id', isLoggedIn, ResourceController.toggleStarred);
+
 // File Routes
 router.get('/files', isLoggedIn, ResourceController.getUserResourcesInDir);         
 router.post('/files', isLoggedIn, ResourceController.uploadResource);     
@@ -21,6 +23,7 @@ router.delete('/files/:id', isLoggedIn, ResourceController.deleteResource);
 router.get('/shared', isLoggedIn, ResourceController.getSharedResources);
 router.get('/owned', isLoggedIn, ResourceController.getOwnedResources);
 router.get('/recent', isLoggedIn, ResourceController.getRecentResources);
+router.get('/starred', isLoggedIn, ResourceController.getStarredResources);
 
 router.get('/search/:query', isLoggedIn, ResourceController.searchResourcesByQuery);
 

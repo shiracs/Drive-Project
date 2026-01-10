@@ -59,6 +59,7 @@ const FileGrid = ({
                     file={folder}
                     onNavigate={onNavigate}
                     onDeleteSuccess={onDeleteSuccess}
+                    onRefresh={onRefresh}
                   />
                 ))}
               </div>
@@ -76,6 +77,7 @@ const FileGrid = ({
                     file={file}
                     onOpenImage={setSelectedImageId}
                     onDeleteSuccess={onDeleteSuccess}
+                    onRefresh={onRefresh}
                   />
                 ))}
               </div>
