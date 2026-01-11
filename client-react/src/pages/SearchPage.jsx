@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../consts/Urls";
 import FileGrid from "../components/FileGrid";

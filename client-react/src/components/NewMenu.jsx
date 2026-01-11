@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import FileUploader from './FileUploader';
 import { SIDEBAR_MENU } from '../consts/Sidebar';
 import './styles/NewMenu.css';
