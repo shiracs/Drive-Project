@@ -38,6 +38,7 @@ const DocumentViewPage = () => {
 
   useEffect(() => {
     const fetchFile = async () => {
+      setLoading(true);
       try {
         const auth = getTokenHeader();
         const response = await fetch(`${API_BASE_URL}/files/${id}`, { headers: auth });
@@ -60,15 +61,13 @@ const DocumentViewPage = () => {
           const testResponse = await fetch(`${API_BASE_URL}/files/${id}`, {
             method: 'PATCH',
             headers: { ...auth, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: data.content || "" })
+            body: JSON.stringify({})
           });
           
           if (testResponse.status === 403) {
             setCanEdit(false);
-          } else if (testResponse.ok || testResponse.status === 204) {
-            setCanEdit(true);
           } else {
-            setCanEdit(false);
+            setCanEdit(testResponse.ok || testResponse.status === 204);
           }
         } catch {
           setCanEdit(false);
@@ -93,12 +92,11 @@ const DocumentViewPage = () => {
 
     if (response.status === 403) {
       setCanEdit(false);
-      return;
+      throw new Error("אין הרשאת עריכה");
     }
 
     if (!response.ok) {
-      const error = new Error(DOC_VIEW_MESSAGES.UPDATE_ERROR);
-      throw error;
+      throw new Error(DOC_VIEW_MESSAGES.UPDATE_ERROR);
     }
   };
 
