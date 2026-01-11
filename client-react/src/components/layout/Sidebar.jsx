@@ -3,7 +3,6 @@ import { SIDEBAR_MENU, SIDEBAR_PATHS } from "../../consts/Sidebar";
 import { RESOURCE_API_URL } from "../../consts/Urls";
 import { getTokenHeader } from "../../utils/auth";
 import NewMenu from "../NewMenu";
-import "./styles/Sidebar.css";
 
 const Sidebar = () => {
   const [searchParams] = useSearchParams();

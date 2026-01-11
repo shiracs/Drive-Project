@@ -2,7 +2,7 @@ import { useNavigate, Link } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
 import { REGISTER } from "../consts/Register";
 import { LOG_IN } from "../consts/Login";
-import "./styles/LoginPage.css";
+import "../App.css";
 
 const LoginPage = () => {
   const navigate = useNavigate();
