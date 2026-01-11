@@ -55,16 +55,27 @@ const RegisterForm = ({ onRegisterSuccess }) => {
     return;
   }
   try {
+    // Ensure profilePic is in correct format
+    let profilePicToSend = formData.profilePic;
+    
+    // If profilePic doesn't start with data:, it means it's pure base64, add prefix
+    if (profilePicToSend && !profilePicToSend.startsWith('data:image/')) {
+      profilePicToSend = `data:image/png;base64,${profilePicToSend}`;
+    }
+    
     const response = await fetch(USER_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        ...formData,
+        profilePic: profilePicToSend
+      }),
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      saveAuthData();
+      saveAuthData(data.token, data.username);
       onRegisterSuccess(); 
     } else {
       setError(data.error || "Registration failed");

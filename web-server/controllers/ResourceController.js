@@ -2,6 +2,7 @@ import ResourceModel from "../models/ResourceModel.js";
 import UserModel from "../models/UserModel.js";
 import PermissionsModel from "../models/PermissionsModel.js";
 import { sendToCpp } from "../services/cppService.js";
+import { saveImage, readImage, deleteImage } from "../services/imageStorage.js";
 import { ROLES } from "../enums/Roles.js";
 import { RESOURCE_TYPE, isValidResourceType } from "../enums/ResourceType.js";
 
@@ -81,7 +82,20 @@ const uploadResource = async (req, res) => {
     if (type === RESOURCE_TYPE.FOLDER) {
       return res.status(201).location(resourceUrl).json(resourceRecord);
     } 
-    // HANDLE FILES: send content to C++
+    // HANDLE IMAGES: save directly to file system (no compression)
+    else if (type === RESOURCE_TYPE.IMAGE) {
+      const saveSuccess = saveImage(resourceRecord.id, content);
+      
+      if (saveSuccess) {
+        return res.status(201).location(resourceUrl).json(resourceRecord);
+      }
+      
+      // Rollback records if image save fails
+      ResourceModel.removeResourceRecord(resourceRecord.id);
+      PermissionsModel.removeAllPermissionsOfResource(resourceRecord.id);
+      res.status(500).json({ error: "Image storage error" });
+    }
+    // HANDLE TEXT FILES: send content to C++
     else {
       const cppResponse = await sendToCpp(`POST ${resourceRecord.id} ${content}`);
 
@@ -127,10 +141,29 @@ const getResourceContent = async (req, res) => {
     return res.status(200).json(children.map(c => ({ id: c.id, name: c.name, type: c.type })));
   }
 
-  // HANDLE FILE: Fetch content from C++
+  // HANDLE IMAGE: Fetch from image storage (no decompression needed)
+  if (resource && resource.type === RESOURCE_TYPE.IMAGE) {
+    try {
+      const content = readImage(id);
+      if (content === null) {
+        return res.status(404).json({ error: "Image content not found" });
+      }
+      return res.status(200).json({ ...resource, content: content });
+    } catch (error) {
+      return res.status(500).json({ error: "Error reading image: " + error.message });
+    }
+  }
+
+  // HANDLE TEXT FILE: Fetch content from C++
   try {
     const cppResponse = await sendToCpp(`GET ${id}`);
-    const content = cppResponse.split("\n\n")[1] || "";
+    
+    // Split only on the FIRST occurrence of \n\n to preserve data
+    const headerEndIndex = cppResponse.indexOf("\n\n");
+    const content = headerEndIndex !== -1 
+      ? cppResponse.substring(headerEndIndex + 2) 
+      : "";
+    
     res.status(200).json({...resource, content: content });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -168,7 +201,7 @@ const updateResource = async (req, res) => {
       ResourceModel.renameResource(id, name);
       isChanged = true;
     }
-    // C++ server AddCommand prevents overwriting, so we delete first, then post the new version
+    // Update content if provided
     if (content !== undefined) {
 
       // Folders content cannot be updated
@@ -176,13 +209,26 @@ const updateResource = async (req, res) => {
          return res.status(400).json({ error: "Cannot update content of a folder" });
       }
 
-      await sendToCpp(`DELETE ${id}`);
-      const cppResponse = await sendToCpp(`POST ${id} ${content}`);
+      // HANDLE IMAGE: Update in image storage
+      if (resourceRecord.type === RESOURCE_TYPE.IMAGE) {
+        deleteImage(id); // Delete old version
+        const saveSuccess = saveImage(id, content);
+        
+        if (!saveSuccess) {
+          return res.status(500).json({ error: "Image update failed" });
+        }
+        isChanged = true;
+      } 
+      // HANDLE TEXT FILE: Update in C++ storage
+      else {
+        await sendToCpp(`DELETE ${id}`);
+        const cppResponse = await sendToCpp(`POST ${id} ${content}`);
 
-      if (!cppResponse.includes("201 Created")) {
-            return res.status(500).json({ error: "Content update failed", detail: cppResponse });
+        if (!cppResponse.includes("201 Created")) {
+          return res.status(500).json({ error: "Content update failed", detail: cppResponse });
+        }
+        isChanged = true;
       }
-      isChanged = true;
     }
 
     if (isChanged) {
@@ -225,14 +271,21 @@ const deleteResource = async (req, res) => {
 
     // Delete each one
     for (const resource of allToDelete) {
-      // If it's a file, delete from C++, otherwise skip
-      if (resource.type === RESOURCE_TYPE.FILE) {
+      // Delete physical storage based on type
+      if (resource.type === RESOURCE_TYPE.IMAGE) {
+        try {
+          deleteImage(resource.id);
+        } catch (e) {
+          console.error(`Failed to delete image ${resource.id}`, e.message);
+        }
+      } else if (resource.type === RESOURCE_TYPE.FILE) {
         try {
           await sendToCpp(`DELETE ${resource.id}`);
         } catch (e) {
           console.error(`Failed to delete physical file ${resource.id}`, e.message);
         }
       }
+      
       // Remove Metadata & Permissions
       ResourceModel.removeResourceRecord(resource.id);
       PermissionsModel.removeAllPermissionsOfResource(resource.id);

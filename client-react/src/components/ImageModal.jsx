@@ -16,13 +16,34 @@ const ImageModal = ({ fileId, onClose }) => {
         const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
           headers: auth,
         });
-        const data = await response.json();
-        if (data.content && !data.content.startsWith("data:")) {
-          data.content = `data:image/png;base64,${data.content}`;
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        // טיפול נכון בתוכן base64
+        if (data.content) {
+          // אם כבר יש data URI מלא, נשאיר כמו שהוא
+          if (!data.content.startsWith("data:image/")) {
+            // אם זה base64 טהור, נוסיף prefix
+            try {
+              atob(data.content.substring(0, 100)); // בדיקת תקינות
+              data.content = `data:image/png;base64,${data.content}`;
+            } catch (e) {
+              console.error("Invalid base64 content", e);
+              throw new Error("תוכן התמונה לא תקין");
+            }
+          }
+        } else {
+          throw new Error("לא נמצא תוכן לתמונה");
+        }
+        
         setImageData(data);
       } catch (err) {
         console.error("Error loading image", err);
+        alert("שגיאה בטעינת התמונה: " + err.message);
       } finally {
         setLoading(false);
       }

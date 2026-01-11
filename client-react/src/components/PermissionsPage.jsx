@@ -16,6 +16,25 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
   const [newUserRole, setNewUserRole] = useState('READER');
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Helper function to format profile picture correctly
+  const getProfilePicSrc = (profilePic) => {
+    if (!profilePic) return null;
+    
+    // If it's already a complete URL or data URI
+    if (profilePic.startsWith('http') || profilePic.startsWith('data:image/')) {
+      return profilePic;
+    }
+    
+    // If it's pure base64, add the prefix
+    try {
+      atob(profilePic.substring(0, 100)); // Validate base64
+      return `data:image/png;base64,${profilePic}`;
+    } catch (e) {
+      console.error("Invalid profile picture format", e);
+      return null;
+    }
+  };
+
   // Memoize permission items to avoid recalculating on every render
   const permissionItems = useMemo(() => {
     return permissions.map((permission) => {
@@ -259,15 +278,22 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
               <div key={item.id} className="permission-item">
                 <div className="permission-user">
                   <div className="user-avatar">
-                    {item.user?.profilePic ? (
-                      <img 
-                        src={item.user.profilePic} 
-                        alt={item.userDisplayName}
-                        className="user-avatar-image"
-                      />
-                    ) : (
-                      <span className="user-avatar-initials">{item.userInitials}</span>
-                    )}
+                    {(() => {
+                      const profilePicSrc = getProfilePicSrc(item.user?.profilePic);
+                      return profilePicSrc ? (
+                        <img 
+                          src={profilePicSrc} 
+                          alt={item.userDisplayName}
+                          className="user-avatar-image"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : (
+                        <span className="user-avatar-initials">{item.userInitials}</span>
+                      );
+                    })()}
                   </div>
                   <div className="user-info">
                     <div className="user-id">{item.userDisplayName}</div>

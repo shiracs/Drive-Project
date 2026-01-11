@@ -80,7 +80,21 @@ const FileCard = ({
           const data = await response.json();
           
           if (isMounted) {
-            setFileContent(data.content ? data.content : "");
+            // עבור תמונות, נוודא שהתוכן תקין
+            if (isImage && data.content) {
+              try {
+                // בדיקה אם זה base64 תקין
+                if (!data.content.startsWith("data:")) {
+                  atob(data.content.substring(0, 100));
+                }
+                setFileContent(data.content);
+              } catch (e) {
+                console.error("Invalid image content", e);
+                setFileContent("");
+              }
+            } else {
+              setFileContent(data.content ? data.content : "");
+            }
           }
 
         } catch (err) {
@@ -98,7 +112,7 @@ const FileCard = ({
         isMounted = false;
       };
     }
-  }, [id, isFolder, isDeleted]);
+  }, [id, isFolder, isDeleted, isImage]);
 
   const handleClick = (e) => {
     if (e.target.closest('.folder-menu-dots')) return;
@@ -113,9 +127,20 @@ const FileCard = ({
   };
 
   const getPreviewSrc = () => {
-    if (!fileContent) return null;
-    if (fileContent.startsWith("data:")) return fileContent;
-    return `data:image/png;base64,${fileContent}`;
+    if (!fileContent || fileContent === "Loading..." || fileContent === "Error loading preview") return null;
+    
+    // אם כבר יש data URI מלא
+    if (fileContent.startsWith("data:image/")) return fileContent;
+    
+    // אם זה base64 טהור, נוסיף את ה-prefix
+    try {
+      // בדיקה אם זה base64 תקין
+      atob(fileContent.substring(0, 100)); // בדיקה על 100 תווים ראשונים
+      return `data:image/png;base64,${fileContent}`;
+    } catch (e) {
+      console.error("Invalid base64 content for image", e);
+      return null;
+    }
   };
 
   const previewSrc = isImage ? getPreviewSrc() : null;
