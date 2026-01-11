@@ -64,7 +64,7 @@ function App() {
               <FilePage
                 customUrl={RECENT_API_URL}
                 title={SIDEBAR_MENU.RECENT}
-                subTitle={"מציג 5 אחרונים ששונו"}
+                subTitle={"עד 10 אחרונים ששונו"}
               />
             }
           />
