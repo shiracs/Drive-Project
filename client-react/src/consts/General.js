@@ -7,4 +7,13 @@ export const GENERAL = {
     FOLDER_CONTENTS: "תוכן תיקייה",
     MY_FILES: "הקבצים שלי",
     GO_BACK: "חזור",
+    MOVE_TO: 'העבר אל...',
+    MOVE: 'העבר את',
+    ROOT: 'ראשי',
+    CONFIRM_MOVE: 'אישור העברה למיקום זה',
+    CANCEL: 'ביטול',
+    OPEN: 'פתח',
+    BACK: 'חזור',
+    CURRENT_LOCATION: ' מיקום נוכחי: ',
+    INNER_FOLDER: 'תיקיה פנימית'
 }

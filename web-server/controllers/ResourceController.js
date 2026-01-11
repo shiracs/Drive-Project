@@ -474,6 +474,25 @@ const toggleSpam = async (req, res) => {
     res.json(updated);
 };
 
+const moveResource = async (req, res) => {
+  const userId = req.userId;
+  const { id } = req.params;
+  const { newParentId } = req.body;
+
+  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+
+  // moving is only allowed for owners
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+    return res.status(403).json({ error: "Forbidden: No owner access" });
+  }
+
+  const success = ResourceModel.moveResource(id, newParentId);
+  if (!success) return res.status(400).json({ error: "Move failed" });
+
+  res.status(200).json({ message: "Moved successfully" });
+};
+
+
 export default {
   getUserResourcesInDir,
   uploadResource,
@@ -490,5 +509,6 @@ export default {
   restoreResource,
   softDeleteResource,
   getSpamResources,
-  toggleSpam
+  toggleSpam,
+  moveResource
 };

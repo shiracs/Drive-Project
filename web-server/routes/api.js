@@ -16,6 +16,7 @@ router.patch('/files/star/:id', isLoggedIn, ResourceController.toggleStarred);
 router.post('/files/restore/:id', isLoggedIn, ResourceController.restoreResource);
 router.delete('/files/permanent-delete/:id', isLoggedIn, ResourceController.deleteResource);
 router.patch('/files/spam/:id', isLoggedIn, ResourceController.toggleSpam);
+router.patch('/files/move/:id', isLoggedIn, ResourceController.moveResource);
 
 // File Routes
 router.get('/files', isLoggedIn, ResourceController.getUserResourcesInDir);         

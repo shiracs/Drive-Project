@@ -307,6 +307,43 @@ const getSpamResources = (userId, parentId) => {
 };
 
 
+const moveResource = (id, newParentId) => {
+  const resource = findById(id);
+  if (!resource) return false;
+
+  // prevent moving a folder into itself or into one of its descendants
+  if (newParentId) {
+    if (newParentId === id) return false;
+    const descendants = getDescendants(id);
+    if (descendants.some(d => d.id === newParentId)) return false;
+  }
+
+  // calculate the new path
+  let newPath = ",";
+  if (newParentId) {
+    const newParent = findById(newParentId);
+    if (!newParent) return false;
+    newPath = `${newParent.path}${newParent.id},`;
+  }
+
+
+  const oldFullPathPrefix = `${resource.path}${resource.id},`;
+  const newFullPathPrefix = `${newPath}${resource.id},`;
+
+  // update the paths of all the resource's descendants
+  const descendants = getDescendants(id);
+  descendants.forEach(child => {
+      child.path = child.path.replace(oldFullPathPrefix, newFullPathPrefix);
+  });
+
+  // update the resource's path
+  resource.parentId = newParentId;
+  resource.path = newPath;
+  resource.updatedAt = new Date().toISOString();
+
+  return true;
+};
+
 export default {
   createResourceRecord,
   getResourcesByUserId,
@@ -327,5 +364,6 @@ export default {
   getTrashResources,
   softDeleteResource,
   toggleSpam,
-  getSpamResources
+  getSpamResources,
+  moveResource
 };
