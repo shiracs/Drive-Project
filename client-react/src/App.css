@@ -1,3 +1,4 @@
+﻿/* Global App Styles */
 .App {
   text-align: center;
 }
@@ -37,6 +38,7 @@
   }
 }
 
+/* Global Body Styles */
 body {
   background-color: #f8f9fa;
   font-family: 'Roboto', sans-serif;
@@ -44,5 +46,5 @@ body {
 
 .no-reveal::-ms-reveal,
 .no-reveal::-ms-clear {
-    display: none !important;
+  display: none !important;
 }

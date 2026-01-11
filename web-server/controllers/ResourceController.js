@@ -23,7 +23,10 @@ const getUserResourcesInDir = async (req, res) => {
   res.json(userResources.map((r) => ({ 
       id: r.id, 
       name: r.name, 
-      type: r.type 
+      type: r.type,
+      isStarred: r.isStarred,
+      isDeleted: r.isDeleted,
+      isSpam: r.isSpam
   })));
 };
 
@@ -158,9 +161,12 @@ const updateResource = async (req, res) => {
   }
 
   try {
+    let isChanged = false;
+
     // Rename if needed
     if (name && name !== resourceRecord.name) {
       ResourceModel.renameResource(id, name);
+      isChanged = true;
     }
     // C++ server AddCommand prevents overwriting, so we delete first, then post the new version
     if (content !== undefined) {
@@ -176,7 +182,13 @@ const updateResource = async (req, res) => {
       if (!cppResponse.includes("201 Created")) {
             return res.status(500).json({ error: "Content update failed", detail: cppResponse });
       }
+      isChanged = true;
     }
+
+    if (isChanged) {
+      ResourceModel.updateTimestamp(id); 
+    }
+
     return res.status(204).send();
     
   } catch (error) {
@@ -185,7 +197,7 @@ const updateResource = async (req, res) => {
 };
 
 /**
- * DELETE /api/files/:id
+ * DELETE /api//files/permanent-delete/:id
  * Uses Flat Deletion logic for folders (using Path) to delete all descendants
  */
 const deleteResource = async (req, res) => {
@@ -268,7 +280,7 @@ const searchResourcesByQuery = async (req, res) => {
       return nameMatch || contentMatch;
     });
 
-    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name, type: f.type }));
+    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name, type: f.type, isStarred: f.isStarred, isDeleted: f.isDeleted, isSpam: f.isSpam }));
     return res.status(200).json(finalResponse);
 
   } catch (error) {
@@ -277,11 +289,196 @@ const searchResourcesByQuery = async (req, res) => {
   }
 }
 
+/**
+ * GET /api/shared
+ * returns only resources that were shared with userId
+ */
+const getSharedResources = async (req, res) => {
+  const userId = req.userId;
+  const parentId = req.query.parentId || null;
+
+
+  if (!UserModel.isValidId(userId))
+    return res.status(401).json({ error: "Unauthorized" });
+
+  // Get resources only for this specific level (right now we use null for root)
+  const sharedResources = ResourceModel.getSharedResourcesByUserId(userId, parentId);
+  
+  res.json(sharedResources.map((r) => ({ 
+      id: r.id, 
+      name: r.name, 
+      type: r.type,
+      isStarred: r.isStarred,
+      isDeleted: r.isDeleted,
+      isSpam: r.isSpam
+  })));
+};
+
+/**
+ * GET /api/owned
+ * returns resources owned by userId
+ */
+const getOwnedResources = async (req, res) => {
+  const userId = req.userId;
+  const parentId = req.query.parentId || null;
+
+  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+
+  const resources = ResourceModel.getOwnedResources(userId, parentId);
+  res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
+};
+
+/**
+ * GET /api/recent
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+const getRecentResources = async (req, res) => {
+    const userId = req.userId;
+    const parentId = req.query.parentId || null;
+
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const resources = ResourceModel.getRecentResources(userId, parentId);
+    res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
+};
+
+const getStarredResources = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const parentId = req.query.parentId || null;
+
+        if (!UserModel.isValidId(userId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const resources = ResourceModel.getStarredResources(userId, parentId);
+
+        res.json(resources.map(r => ({ 
+            id: r.id, 
+            name: r.name, 
+            type: r.type, 
+            isStarred: r.isStarred,
+            isDeleted: r.isDeleted, 
+            isSpam: r.isSpam
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const toggleStarred = async (req, res) => {
+    const { id } = req.params;
+    const updated = ResourceModel.toggleStarred(id);
+    if (!updated) return res.status(404).json({ error: "Not found" });
+    res.json(updated);
+};
+
+
+export const getTrashResources = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const parentId = req.query.parentId || null;
+
+        if (!UserModel.isValidId(userId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const resources = ResourceModel.getTrashResources(userId, parentId);
+        res.json(resources.map(r => ({ 
+            id: r.id, 
+            name: r.name, 
+            type: r.type, 
+            isStarred: r.isStarred,
+            isDeleted: r.isDeleted, 
+            isSpam: r.isSpam
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+export const restoreResource = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const success = ResourceModel.restoreResource(id);
+        if (!success) return res.status(404).json({ error: "Resource not found" });
+        res.json({ message: "Resource restored" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+/**
+ * DELETE /api/files/:id
+ */
+const softDeleteResource = async (req, res) => {
+  const userId = req.userId;
+  const { id } = req.params;
+
+  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+
+  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+    return res.status(403).json({ error: "Forbidden: Only owners can delete" });
+  }
+
+  try {
+    const targetResource = ResourceModel.findById(id);
+    if (!targetResource) return res.status(404).json({ error: "Resource not found" });
+
+    const descendants = ResourceModel.getDescendants(id);
+    const allToTrash = [targetResource, ...descendants];
+
+    for (const resource of allToTrash) {
+      ResourceModel.softDeleteResource(resource.id);
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getSpamResources = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const parentId = req.query.parentId || null;
+
+         if (!UserModel.isValidId(userId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const resources = ResourceModel.getSpamResources(userId, parentId);
+        res.json(resources.map(r => ({ 
+            id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const toggleSpam = async (req, res) => {
+    const { id } = req.params;
+    const updated = ResourceModel.toggleSpam(id);
+    if (!updated) return res.status(404).json({ error: "Resource not found" });
+    res.json(updated);
+};
+
 export default {
   getUserResourcesInDir,
   uploadResource,
   getResourceContent,
   updateResource,
   deleteResource,
-  searchResourcesByQuery
+  searchResourcesByQuery,
+  getSharedResources,
+  getOwnedResources,
+  getRecentResources,
+  getStarredResources,
+  toggleStarred,
+  getTrashResources,
+  restoreResource,
+  softDeleteResource,
+  getSpamResources,
+  toggleSpam
 };
