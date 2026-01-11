@@ -1,3 +1,5 @@
+import "./styles/DocumentPaper.css";
+
 const DocumentPaper = ({ content, setContent, isEditing }) => {
   return (
     <div className="document-paper">

@@ -5,6 +5,7 @@ import { DOC_BUTTONS } from '../consts/DocumentBottons';
 import { DOC_VIEW_MESSAGES } from '../consts/DocumentView';
 import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
+import "./styles/DocumentViewPage.css";
 
 const DocumentViewPage = () => {
   const { id } = useParams();

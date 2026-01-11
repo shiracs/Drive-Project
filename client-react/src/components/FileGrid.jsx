@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { GENERAL } from "../consts/General";
 import FileCard from "./FileCard";
 import ImageModal from "./ImageModal";
+import "./styles/FileGrid.css";
 
 const FileGrid = ({
   resources,
