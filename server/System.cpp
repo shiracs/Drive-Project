@@ -22,11 +22,11 @@ System::System(std::shared_ptr<IOHandler> _io, std::shared_ptr<Storage> _s, std:
 }
 
 void System::run() {
-    // The Application Loop
+    // The Application Loop - process one command per connection
     while (true) {
         // Get line from io
         std::string inputLine = io->input();
-        if (inputLine.empty()) continue; // Client disconnected or empty line
+        if (inputLine.empty()) break; // Client disconnected or empty line
 
         std::vector<std::string> args = parseInput(inputLine);
         if (args.empty()) continue;
@@ -41,12 +41,17 @@ void System::run() {
         if (commandMap.count(commandName)) {
             try {
                 commandMap[commandName]->execute(args);
+                // אחרי ביצוע פקודה - נסגור את החיבור
+                // זה מאפשר ל-Node.js לדעת שהתגובה הושלמה
+                break;
             } catch (...) {
                 // Silent failure on exceptions
+                break;
             }
         } else {
             // Handle invalid command
             io->output(handleInvalidCommand(commandName));
+            break;
         }
     }
 }

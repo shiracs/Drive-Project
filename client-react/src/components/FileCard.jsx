@@ -63,6 +63,8 @@ const FileCard = ({
     // only for files, not folders
     if (!isFolder && id) {
       let isMounted = true;
+      let retryCount = 0;
+      const maxRetries = 3;
       
       const fetchPreview = async () => {
         try {
@@ -80,13 +82,31 @@ const FileCard = ({
           
           const data = await response.json();
           
+          console.log(`[FileCard] Loaded file ${id}, type: ${type}, isImage: ${isImage}`);
+          console.log(`[FileCard] Content length: ${data.content?.length || 0}`);
+          console.log(`[FileCard] Content preview: ${data.content?.substring(0, 50)}...`);
+          
           if (isMounted) {
+            // אם זו תמונה והתוכן ריק, נסה שוב לאחר זמן קצר
+            if (isImage && (!data.content || data.content === "") && retryCount < maxRetries) {
+              console.log(`[FileCard] Retry ${retryCount + 1}/${maxRetries} - empty content for image ${id}`);
+              retryCount++;
+              setTimeout(() => {
+                if (isMounted) fetchPreview();
+              }, 500 * retryCount); // המתנה מתקדמת: 500ms, 1000ms, 1500ms
+              return;
+            }
             setFileContent(data.content ? data.content : "");
           }
 
         } catch (err) {
           console.error("Failed to load preview", err);
-          if (isMounted) {
+          if (isMounted && retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(() => {
+              if (isMounted) fetchPreview();
+            }, 500 * retryCount);
+          } else if (isMounted) {
             setFileContent("Error loading preview");
           }
         }
@@ -99,7 +119,7 @@ const FileCard = ({
         isMounted = false;
       };
     }
-  }, [id, isFolder, isDeleted]);
+  }, [id, isFolder, isDeleted, isImage, type]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -127,8 +147,13 @@ const FileCard = ({
   };
 
   const getPreviewSrc = () => {
-    if (!fileContent) return null;
+    // אם אין תוכן או התוכן ריק או שגיאה - החזר null
+    if (!fileContent || fileContent === "" || fileContent === "Loading..." || fileContent.includes("Error")) {
+      return null;
+    }
+    // אם התוכן כבר במבנה data URL
     if (fileContent.startsWith("data:")) return fileContent;
+    // אחרת, הוסף את הקידומת של base64
     return `data:image/png;base64,${fileContent}`;
   };
 

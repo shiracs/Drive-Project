@@ -10,21 +10,56 @@ const ImageModal = ({ fileId, onClose }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+
     const fetchImage = async () => {
       try {
         const auth = getTokenHeader();
         const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
           headers: auth,
         });
-        const data = await response.json();
-        if (data.content && !data.content.startsWith("data:")) {
-          data.content = `data:image/png;base64,${data.content}`;
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        setImageData(data);
+        
+        const data = await response.json();
+        
+        console.log(`[ImageModal] Loaded image ${fileId}`);
+        console.log(`[ImageModal] Content length: ${data.content?.length || 0}`);
+        console.log(`[ImageModal] Content preview: ${data.content?.substring(0, 50)}...`);
+        
+        // אם התוכן ריק, נסה שוב
+        if ((!data.content || data.content === "") && retryCount < maxRetries && isMounted) {
+          console.log(`[ImageModal] Retry ${retryCount + 1}/${maxRetries} - empty content`);
+          retryCount++;
+          setTimeout(() => {
+            if (isMounted) fetchImage();
+          }, 500 * retryCount);
+          return;
+        }
+        
+        if (isMounted) {
+          if (data.content && !data.content.startsWith("data:")) {
+            console.log(`[ImageModal] Adding data URI prefix`);
+            data.content = `data:image/png;base64,${data.content}`;
+          }
+          setImageData(data);
+        }
       } catch (err) {
         console.error("Error loading image", err);
+        if (retryCount < maxRetries && isMounted) {
+          retryCount++;
+          setTimeout(() => {
+            if (isMounted) fetchImage();
+          }, 500 * retryCount);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -34,7 +69,10 @@ const ImageModal = ({ fileId, onClose }) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("keydown", handleEsc);
+    };
   }, [fileId, onClose]);
 
   const handleImageUpdate = async (fileData) => {

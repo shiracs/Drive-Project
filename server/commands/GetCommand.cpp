@@ -23,8 +23,12 @@ void GetCommand::execute(const std::vector<std::string>& args) {
         
         io->output(response);
 
+    } catch (const std::exception& e) {
+        std::cerr << "GetCommand Error: " << e.what() << std::endl;
+        io->output("500 Internal Server Error");
     } catch (...) {
-        ///
+        std::cerr << "GetCommand Unknown Error" << std::endl;
+        io->output("500 Internal Server Error");
     }
 }
 
