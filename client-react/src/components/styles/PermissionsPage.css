@@ -1,5 +1,4 @@
-/* Permissions Page Styles */
-
+/* Permissions Modal Styles */
 .permissions-modal-overlay {
   position: fixed;
   top: 0;
@@ -33,7 +32,7 @@
   position: relative;
   animation: slideUp 0.3s ease-out;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  padding: 20px 30px 20px 20px;
+  padding: 20px 30px 20px 20px; /* padding נוסף מימין למניעת חפיפה עם כפתור ה-X */
 }
 
 @keyframes slideUp {
@@ -50,7 +49,7 @@
 .permissions-modal-close {
   position: absolute;
   top: 10px;
-  left: 10px;
+  left: 10px; /* שינוי מ-right ל-left כדי להציב את ה-X בצד שמאל */
   background: none;
   border: none;
   font-size: 28px;
@@ -76,8 +75,9 @@
   margin: 0;
   box-shadow: none;
   border-radius: 0;
-  padding: 0;
+  padding: 0; /* מסיר את הpadding הכפול */
 }
+
 
 .permissions-container {
   background-color: #ffffff;
@@ -97,7 +97,37 @@
   margin-bottom: 20px;
   padding-bottom: 15px;
   border-bottom: 2px solid #e0e0e0;
-  padding-right: 20px;
+  padding-right: 20px; /* רווח נוסף מימין */
+}
+
+.permissions-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.add-user-button {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.add-user-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.add-user-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .permissions-header h3 {
@@ -106,6 +136,10 @@
   font-size: 1.5rem;
   font-weight: 600;
   padding-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 500px;
 }
 
 .permissions-count {
@@ -161,6 +195,75 @@
   background-color: #eeeeee;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+.permission-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.permission-role-button {
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: center;
+  min-width: 80px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.permission-role-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.permission-role-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.permission-role-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: center;
+  min-width: 80px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.permission-delete-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.permission-delete-button:hover:not(:disabled) {
+  background-color: #d32f2f;
+  transform: scale(1.1);
+}
+
+.permission-delete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .permission-user {
@@ -239,6 +342,113 @@
   min-width: 80px;
   flex-shrink: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Add User Modal */
+.add-user-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  direction: rtl;
+}
+
+.add-user-modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  min-width: 400px;
+  max-width: 90%;
+  direction: rtl;
+  text-align: right;
+}
+
+.add-user-modal-content h4 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.add-user-input,
+.add-user-role-select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  direction: rtl;
+  text-align: right;
+}
+
+.add-user-input:focus,
+.add-user-role-select:focus {
+  outline: none;
+  border-color: #1976d2;
+}
+
+.add-user-input:disabled,
+.add-user-role-select:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.add-user-role-select {
+  cursor: pointer;
+}
+
+.add-user-modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.add-user-cancel-button,
+.add-user-confirm-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-user-cancel-button {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.add-user-cancel-button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.add-user-confirm-button {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.add-user-confirm-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.add-user-cancel-button:disabled,
+.add-user-confirm-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Responsive design */

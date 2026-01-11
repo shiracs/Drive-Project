@@ -3,7 +3,7 @@ import { RESOURCE_API_URL, API_BASE_URL } from "../consts/Urls";
 import FileUploader from "./FileUploader";
 import { GENERAL } from "../consts/General";
 import { getTokenHeader } from "../utils/auth";
-import "./styles/ImageModal.css";
+import './styles/ImageModal.css';
 
 const ImageModal = ({ fileId, onClose }) => {
   const [imageData, setImageData] = useState(null);

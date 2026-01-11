@@ -314,3 +314,56 @@
 .menu-item:hover { 
   background: #f1f3f4; 
 }
+
+/* Star icon styles */
+.star-icon {
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.star-icon.starred {
+  color: #ffc107;
+}
+
+.star-icon.unstarred {
+  color: #ccc;
+}
+
+/* Folder card layout */
+.folder-card-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  height: 48px;
+  min-width: 200px;
+}
+
+.folder-content-left {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex: 1;
+}
+
+.folder-emoji {
+  font-size: 1.2rem;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.folder-name-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.folder-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 4px;
+  margin-right: auto;
+}

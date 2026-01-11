@@ -4,7 +4,6 @@ import { clearAuthData } from "../../utils/auth";
 import { SEARCH } from "../../consts/Search";
 import SearchBar from "../SearchBar";
 import { LOG_IN } from "../../consts/Login";
-import "./styles/Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();

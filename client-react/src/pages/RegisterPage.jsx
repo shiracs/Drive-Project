@@ -1,7 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import RegisterForm from "../components/RegisterForm";
 import { REGISTER } from "../consts/Register";
-import "./styles/RegisterPage.css";
+import './styles/LoginPage.css';
 
 const RegisterPage = () => {
   const navigate = useNavigate();

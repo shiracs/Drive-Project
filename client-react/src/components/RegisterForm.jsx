@@ -4,7 +4,7 @@ import { USER_API_URL } from "../consts/Urls";
 import { getTokenHeader, saveAuthData } from "../utils/auth";
 import FileUploader from "../components/FileUploader";
 import { FILE } from "../consts/FilePage";
-import "./styles/RegisterForm.css";
+import './styles/RegisterForm.css';
 
 const RegisterForm = ({ onRegisterSuccess }) => {
   const [formData, setFormData] = useState({
