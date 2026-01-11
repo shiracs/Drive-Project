@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { FILE } from "../consts/FilePage";
+import "./styles/FileUploader.css";
 
 const FileUploader = ({
   onFileSelected,

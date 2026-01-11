@@ -1,0 +1,174 @@
+/* Update Name Styles */
+
+.permissions-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.permissions-modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  padding: 20px 30px 20px 20px;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.permissions-modal-close {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #5f6368;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  z-index: 10;
+  line-height: 1;
+}
+
+.permissions-modal-close:hover {
+  background-color: #f1f3f4;
+  color: #202124;
+}
+
+.permissions-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 30px 20px 20px 20px;
+  max-width: 800px;
+  margin: 20px auto;
+  direction: rtl;
+  text-align: right;
+}
+
+.permissions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-right: 20px;
+}
+
+.permissions-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding-right: 10px;
+}
+
+.rename-content {
+  padding: 20px;
+}
+
+.rename-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.rename-buttons-container {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.rename-cancel-button {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.rename-save-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background: #1a73e8;
+  color: white;
+  cursor: pointer;
+}
+
+.update-name-dialog-content {
+    padding: 20px;
+}
+
+.update-name-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.update-name-buttons-container {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.update-name-cancel-button {
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+.update-name-save-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background: #1a73e8;
+    color: white;
+    cursor: pointer;
+}

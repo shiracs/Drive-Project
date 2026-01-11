@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
 import { RENAME } from '../consts/Rename';
-import '../App.css';
+import './styles/UpdateName.css';
 
 const UpdateName = ({ fileId, fileName, onClose, onSuccess }) => {
   const [newName, setNewName] = useState(fileName);

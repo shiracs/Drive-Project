@@ -1,0 +1,46 @@
+/* File Grid Styles */
+
+.drive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+  gap: 16px;
+  justify-items: start; 
+  width: 100%;
+}
+
+.drive-folder-card {
+  width: 240px !important;  
+  height: 48px !important;
+  margin: 0 !important; 
+}
+
+.drive-file-card {
+  width: 260px !important;
+  height: 230px !important;
+  margin: 0 !important;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: fit-content;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #f1f3f4;
+}
+
+.back-arrow {
+  width: 12px;
+  height: 12px;
+  border-left: 3px solid #5f6368;
+  border-bottom: 3px solid #5f6368;
+  transform: rotate(-135deg);
+}

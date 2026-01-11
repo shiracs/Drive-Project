@@ -3,12 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, RESOURCE_API_URL } from "../consts/Urls";
 import { getTokenHeader } from "../utils/auth";
 import { DELETE } from "../consts/Delete";
-import "../App.css";
+import "./styles/FileCard.css";
 import { PERMISSIONS } from '../consts/Permissions';
 import { RENAME } from '../consts/Rename';
 import PermissionsPage from './PermissionsPage';
 import UpdateName from './UpdateName';
-import '../App.css';
 
 const FileCard = ({
   file,
@@ -224,30 +223,39 @@ const FileCard = ({
       {showMenu && (
         <div className="delete-dropdown">
           {isSoftDeleted && (<>
-            <button className="delete-button" onClick={handleRestore} style={{ color: '#28a745' }}>
+            <button className="delete-button" onClick={handleRestore}>
+              <span>♻️</span>
               <span>{DELETE.RESTORE}</span>
             </button>
             <div className="menu-divider"></div>
             </>
           )}
-          {!isSoftDeleted && (<><button className="delete-button" onClick={handleSpamToggle}>
+          {!isSoftDeleted && (<>
+            <button className="delete-button" onClick={handleSpamToggle}>
+              <span>⚠️</span>
               <span>{file.isSpam ? "לא ספאם" : "דווח כספאם"}</span>
-          </button>
-          <div className="menu-divider"></div></>)}
+            </button>
+            <div className="menu-divider"></div>
+          </>)}
           <button 
             className={`delete-button ${isOwner ? '' : 'permissions-button-non-owner'}`}
             onClick={handleShowPermissions}
           >
+            <span>👥</span>
             <span>{PERMISSIONS.MENU_BUTTON}</span>
           </button>
+          <div className="menu-divider"></div>
           <button 
             className={`delete-button ${canEdit ? 'update-name-button-enabled' : 'update-name-button-disabled'}`}
             onClick={handleShowUpdateName}
             disabled={!canEdit}
           >
+            <span>✏️</span>
             <span>{RENAME.MENU_BUTTON}</span>
           </button>
+          <div className="menu-divider"></div>
           <button className="delete-button" onClick={handleDelete}>
+            <span>🗑️</span>
             <span>{isSoftDeleted ? DELETE.PERMANENT_DELETE : DELETE.DELETE_BUTTON}</span>
           </button>
         </div>
