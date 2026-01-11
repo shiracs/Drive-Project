@@ -191,7 +191,7 @@ const getOwnedResources = (userId, parentId = null) => {
 };
 
 /**
- * returns 5 most recently added/updated resources
+ * returns 10 most recently added/updated resources
  */
 const getRecentResources = (userId, parentId = null) => {
   const allResources = getResourcesByUserId(userId, parentId);
@@ -203,7 +203,7 @@ const getRecentResources = (userId, parentId = null) => {
       const dateB = new Date(b.updatedAt || 0);
       return dateB - dateA;
     })
-    .slice(0, 5);
+    .slice(0, 10);
 };
 
 const getStarredResources = (userId, parentId = null) => {
