@@ -32,6 +32,15 @@ const NewMenu = ({ onUpload }) => {
 
       {isOpen && (
         <div className="google-dropdown-menu shadow">
+          <div className="menu-item" onClick={() => console.log('צור קובץ txt')}>
+            <i className="bi bi-file-earmark-text"></i>
+            <span>{SIDEBAR_MENU.NEW_TXT_FILE}</span>
+          </div>
+          <div className="menu-item" onClick={() => console.log('צור תיקייה')}>
+            <i className="bi bi-folder-plus"></i>
+            <span>{SIDEBAR_MENU.CREATE_FOLDER}</span>
+          </div>
+          <div className="menu-divider"></div>
           <FileUploader onFileSelected={handleSelected} customItem={
             <div className="menu-item"><i className="bi bi-file-earmark-arrow-up"></i><span>העלאת קבצים</span></div>
           } />

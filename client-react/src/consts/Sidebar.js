@@ -9,6 +9,8 @@ export const SIDEBAR_MENU = {
   NEW_BTN: "חדש",
   NEW_FILE: "קובץ חדש",
   NEW_FOLDER: "תיקייה חדשה",
+  NEW_TXT_FILE: "צור קובץ txt",
+  CREATE_FOLDER: "צור תיקייה",
   UPLOAD_SUCCESSFUL: "העלאה הסתיימה בהצלחה!",
   UPLOAD_ERROR: "אירעה שגיאה בזמן ההעלאה."
 };
