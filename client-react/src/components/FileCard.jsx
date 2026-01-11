@@ -223,30 +223,37 @@ const FileCard = ({
       {showMenu && (
         <div className="delete-dropdown">
           {isSoftDeleted && (<>
-            <button className="delete-button" onClick={handleRestore} style={{ color: '#28a745' }}>
+            <button className="delete-button" onClick={handleRestore} style={{ color: '#28a745' }} title={DELETE.RESTORE}>
+              <span>🔄</span>
               <span>{DELETE.RESTORE}</span>
             </button>
             <div className="menu-divider"></div>
             </>
           )}
-          {!isSoftDeleted && (<><button className="delete-button" onClick={handleSpamToggle}>
+          {!isSoftDeleted && (<><button className="delete-button" onClick={handleSpamToggle} title={file.isSpam ? "לא ספאם" : "דווח כספאם"}>
+              <span>{file.isSpam ? "✅" : "⚠️"}</span>
               <span>{file.isSpam ? "לא ספאם" : "דווח כספאם"}</span>
           </button>
           <div className="menu-divider"></div></>)}
           <button 
             className={`delete-button ${isOwner ? '' : 'permissions-button-non-owner'}`}
             onClick={handleShowPermissions}
+            title={PERMISSIONS.MENU_BUTTON}
           >
+            <span>👥</span>
             <span>{PERMISSIONS.MENU_BUTTON}</span>
           </button>
           <button 
             className={`delete-button ${canEdit ? 'update-name-button-enabled' : 'update-name-button-disabled'}`}
             onClick={handleShowUpdateName}
             disabled={!canEdit}
+            title={RENAME.MENU_BUTTON}
           >
+            <span>✏️</span>
             <span>{RENAME.MENU_BUTTON}</span>
           </button>
-          <button className="delete-button" onClick={handleDelete}>
+          <button className="delete-button" onClick={handleDelete} title={isSoftDeleted ? DELETE.PERMANENT_DELETE : DELETE.DELETE_BUTTON}>
+            <span>🗑️</span>
             <span>{isSoftDeleted ? DELETE.PERMANENT_DELETE : DELETE.DELETE_BUTTON}</span>
           </button>
         </div>
