@@ -6,7 +6,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--modal-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,13 +24,13 @@
 }
 
 .create-folder-content {
-  background: white;
+  background: var(--card-bg);
   border-radius: 8px;
   width: 400px;
   max-width: 90%;
   position: relative;
   animation: slideUp 0.3s ease-out;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px var(--shadow-strong);
   overflow: hidden;
 }
 
@@ -52,14 +52,14 @@
 
 .create-folder-header {
   padding: 20px 24px 10px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .create-folder-header h3 {
   margin: 0;
   font-size: 22px;
   font-weight: 400;
-  color: #202124;
+  color: var(--text-primary);
   text-align: right;
 }
 
@@ -78,11 +78,12 @@
   direction: rtl;
   text-align: right;
   font-family: inherit;
-  background-color: transparent;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
 }
 
 .create-folder-input::placeholder {
-  color: #5f6368;
+  color: var(--text-secondary);
 }
 
 .create-folder-input:focus {

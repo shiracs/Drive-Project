@@ -6,7 +6,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--modal-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,7 +24,7 @@
 }
 
 .permissions-modal-content {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   max-width: 900px;
   width: 90%;
@@ -32,7 +32,7 @@
   overflow-y: auto;
   position: relative;
   animation: slideUp 0.3s ease-out;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px var(--shadow-strong);
   padding: 20px 30px 20px 20px;
 }
 
@@ -55,7 +55,7 @@
   border: none;
   font-size: 28px;
   cursor: pointer;
-  color: #5f6368;
+  color: var(--text-secondary);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -68,14 +68,14 @@
 }
 
 .permissions-modal-close:hover {
-  background-color: #f1f3f4;
-  color: #202124;
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
 }
 
 .permissions-container {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--shadow);
   padding: 30px 20px 20px 20px;
   max-width: 800px;
   margin: 20px auto;
@@ -89,13 +89,13 @@
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 15px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--border-color);
   padding-right: 20px;
 }
 
 .permissions-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 1.5rem;
   font-weight: 600;
   padding-right: 10px;
@@ -109,7 +109,9 @@
   width: 100%;
   padding: 10px;
   font-size: 16px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
   border-radius: 4px;
   margin-bottom: 20px;
 }
@@ -122,9 +124,10 @@
 
 .rename-cancel-button {
   padding: 10px 20px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background: white;
+  background: var(--card-bg);
+  color: var(--text-primary);
   cursor: pointer;
 }
 
@@ -158,9 +161,10 @@
 
 .update-name-cancel-button {
     padding: 10px 20px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: white;
+    background: var(--card-bg);
+    color: var(--text-primary);
     cursor: pointer;
 }
 
