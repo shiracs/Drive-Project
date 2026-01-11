@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
 import { PERMISSIONS } from '../consts/Permissions';
@@ -15,6 +15,25 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
   const [newUsername, setNewUsername] = useState('');
   const [newUserRole, setNewUserRole] = useState('READER');
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Memoize permission items to avoid recalculating on every render
+  const permissionItems = useMemo(() => {
+    return permissions.map((permission) => {
+      const user = usersData[permission.userId];
+      const userInitials = user?.username?.slice(0, 2).toUpperCase() || 
+                          permission.userId.slice(0, 2).toUpperCase();
+      const userDisplayName = user?.username || permission.userId;
+      
+      return {
+        id: permission.id,
+        userId: permission.userId,
+        role: permission.role,
+        user,
+        userInitials,
+        userDisplayName
+      };
+    });
+  }, [permissions, usersData]);
 
   const fetchPermissions = async () => {
     setLoading(true);
@@ -43,22 +62,26 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
       setIsOwner(true);
 
       const userIds = [...new Set(data.map(p => p.userId))];
-      const usersMap = {};
       
-      for (const userId of userIds) {
+      // Fetch all users in parallel for better performance
+      const userPromises = userIds.map(async (userId) => {
         try {
           const userResponse = await fetch(`${API_BASE_URL}/users/${userId}`, {
             method: 'GET',
             headers: auth
           });
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-            usersMap[userId] = userData;
-          }
+          return userResponse.ok ? await userResponse.json() : null;
         } catch (err) {
           console.error(`Failed to fetch user ${userId}:`, err);
+          return null;
         }
-      }
+      });
+
+      const usersResults = await Promise.all(userPromises);
+      const usersMap = {};
+      usersResults.forEach(user => {
+        if (user) usersMap[user.id] = user;
+      });
       
       setUsersData(usersMap);
 
@@ -81,7 +104,6 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
       return;
     }
 
-    console.log('Adding user:', newUsername.trim());
     setActionLoading(true);
     try {
       const auth = getTokenHeader();
@@ -96,16 +118,12 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
         if (userResponse.ok) {
           const userData = await userResponse.json();
           targetUserId = userData.id;
-          console.log('Found user:', userData);
-        } else {
-          console.log('User not found in API');
         }
       } catch (err) {
         console.error('Error fetching user:', err);
       }
       
       if (!targetUserId) {
-        console.log('User not found!');
         alert(PERMISSIONS.USER_NOT_FOUND_HINT);
         setActionLoading(false);
         return;
@@ -231,57 +249,52 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
         <div className="permissions-info">{PERMISSIONS.NO_PERMISSION_MESSAGE}</div>
       )}
 
-      {!loading && !error && isOwner && permissions.length === 0 && (
+      {!loading && !error && isOwner && permissionItems.length === 0 && (
         <div className="permissions-empty">{PERMISSIONS.EMPTY_MESSAGE}</div>
       )}
 
-      {!loading && !error && isOwner && permissions.length > 0 && (
+      {!loading && !error && isOwner && permissionItems.length > 0 && (
         <div className="permissions-list">
-          {permissions.map((permission) => {
-            const user = usersData[permission.userId];
-            const userInitials = user?.username?.substring(0, 2).toUpperCase() || permission.userId.substring(0, 2).toUpperCase();
-            const userDisplayName = user?.username || permission.userId;
-            
-            return (
-              <div key={permission.id} className="permission-item">
+          {permissionItems.map((item) => (
+              <div key={item.id} className="permission-item">
                 <div className="permission-user">
                   <div className="user-avatar">
-                    {user?.profilePic ? (
+                    {item.user?.profilePic ? (
                       <img 
-                        src={user.profilePic} 
-                        alt={userDisplayName}
+                        src={item.user.profilePic} 
+                        alt={item.userDisplayName}
                         className="user-avatar-image"
                       />
                     ) : (
-                      <span className="user-avatar-initials">{userInitials}</span>
+                      <span className="user-avatar-initials">{item.userInitials}</span>
                     )}
                   </div>
                   <div className="user-info">
-                    <div className="user-id">{userDisplayName}</div>
+                    <div className="user-id">{item.userDisplayName}</div>
                   </div>
                 </div>
                 <div className="permission-actions">
-                  {permission.role === 'OWNER' ? (
+                  {item.role === 'OWNER' ? (
                     <div
                       className="permission-role-badge"
-                      style={{ backgroundColor: getRoleColor(permission.role) }}
+                      style={{ backgroundColor: getRoleColor(item.role) }}
                     >
-                      {getRoleDisplay(permission.role)}
+                      {getRoleDisplay(item.role)}
                     </div>
                   ) : (
                     <>
                       <button
                         className="permission-role-button"
-                        style={{ backgroundColor: getRoleColor(permission.role) }}
-                        onClick={() => handleChangeRole(permission.id, permission.role)}
+                        style={{ backgroundColor: getRoleColor(item.role) }}
+                        onClick={() => handleChangeRole(item.id, item.role)}
                         disabled={actionLoading}
                         title={PERMISSIONS.CHANGE_ROLE_TOOLTIP}
                       >
-                        {getRoleDisplay(permission.role)}
+                        {getRoleDisplay(item.role)}
                       </button>
                       <button
                         className="permission-delete-button"
-                        onClick={() => handleDeletePermission(permission.id, permission.userId)}
+                        onClick={() => handleDeletePermission(item.id, item.userId)}
                         disabled={actionLoading}
                         title={PERMISSIONS.DELETE_PERMISSION_TOOLTIP}
                       >
@@ -291,8 +304,7 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
                   )}
                 </div>
               </div>
-            );
-          })}
+            ))}
         </div>
       )}
 

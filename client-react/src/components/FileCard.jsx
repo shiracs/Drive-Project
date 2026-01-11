@@ -254,7 +254,11 @@ const FileCard = ({
             <span>{RENAME.MENU_BUTTON}</span>
           </button>
           <div className="menu-divider"></div>
-          <button className="delete-button" onClick={handleDelete}>
+          <button 
+            className={`delete-button ${canEdit ? 'update-name-button-enabled' : 'update-name-button-disabled'}`}
+            onClick={handleDelete}
+            disabled={!canEdit}
+          >
             <span>🗑️</span>
             <span>{isSoftDeleted ? DELETE.PERMANENT_DELETE : DELETE.DELETE_BUTTON}</span>
           </button>
@@ -266,11 +270,7 @@ const FileCard = ({
   const renderStar = () => (
     <span
       onClick={handleStarToggle}
-      style={{
-        cursor: "pointer",
-        color: isStarred ? "#ffc107" : "#ccc",
-        marginLeft: "8px",
-      }}
+      className={`star-icon ${isStarred ? 'starred' : 'unstarred'}`}
     >
       <i className={`bi ${isStarred ? "bi-star-fill" : "bi-star"}`}></i>
     </span>
@@ -282,53 +282,19 @@ const FileCard = ({
         // Folder Card
         <div className="menu-container">
           <div
-            className="drive-folder-card t-bg-surface t-border"
+            className="drive-folder-card folder-card-layout t-bg-surface t-border"
             onClick={handleClick}
             title={name}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "0 12px",
-              height: "48px",
-              minWidth: "200px",
-            }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                overflow: "hidden",
-                flex: 1,
-              }}
-            >
-              <span
-                style={{ fontSize: "1.2rem", marginLeft: "8px", flexShrink: 0 }}
-              >
+            <div className="folder-content-left">
+              <span className="folder-emoji">
                 📁
               </span>
-              <span
-                className="t-text-main"
-                style={{
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  fontSize: "0.9rem",
-                  fontWeight: "500",
-                }}
-              >
+              <span className="folder-name-text t-text-main">
                 {name}
               </span>
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                flexShrink: 0,
-                gap: "4px",
-                marginRight: "auto",
-              }}
-            >
+            <div className="folder-actions">
               {renderStar()}
               {renderActionMenu()}
             </div>
