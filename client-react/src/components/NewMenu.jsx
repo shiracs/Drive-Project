@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import FileUploader from './FileUploader';
+import CreateFolderModal from './CreateFolderModal';
 import { SIDEBAR_MENU } from '../consts/Sidebar';
 import { RESOURCE_API_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
@@ -8,6 +9,7 @@ import './styles/NewMenu.css';
 
 const NewMenu = ({ onUpload }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -53,9 +55,18 @@ const NewMenu = ({ onUpload }) => {
       const newFile = await response.json();
       navigate(`/files/${newFile.id}`, { state: { isNewFile: true } });
     } catch (error) {
-      console.error("Failed to create file:", error);
       alert(SIDEBAR_MENU.CREATE_FILE_ERROR);
     }
+  };
+
+  const handleCreateFolderClick = () => {
+    setIsOpen(false);
+    setShowCreateFolderModal(true);
+  };
+
+  const handleFolderCreated = (newFolder) => {
+    // רענון הדף או עדכון רשימת הקבצים
+    window.location.reload();
   };
 
   return (
@@ -74,7 +85,7 @@ const NewMenu = ({ onUpload }) => {
             <i className="bi bi-file-earmark-text"></i>
             <span>{SIDEBAR_MENU.NEW_TXT_FILE}</span>
           </div>
-          <div className="menu-item" onClick={() => console.log('צור תיקייה')}>
+          <div className="menu-item" onClick={handleCreateFolderClick}>
             <i className="bi bi-folder-plus"></i>
             <span>{SIDEBAR_MENU.CREATE_FOLDER}</span>
           </div>
@@ -86,6 +97,14 @@ const NewMenu = ({ onUpload }) => {
             <div className="menu-item"><i className="bi bi-folder-symlink"></i><span>העלאת תיקייה</span></div>
           } />
         </div>
+      )}
+
+      {showCreateFolderModal && (
+        <CreateFolderModal
+          onClose={() => setShowCreateFolderModal(false)}
+          onSuccess={handleFolderCreated}
+          parentId={currentFolderId}
+        />
       )}
     </div>
   );
