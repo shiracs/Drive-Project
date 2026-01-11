@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
 import { PERMISSIONS } from '../consts/Permissions';
 import { getRoleDisplay, getRoleColor } from '../enums/PermissionEnum';
-import "./styles/PermissionsPage.css";
+import './styles/PermissionsPage.css';
 
 const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
   const [permissions, setPermissions] = useState([]);

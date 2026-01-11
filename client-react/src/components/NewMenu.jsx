@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import FileUploader from './FileUploader';
 import { SIDEBAR_MENU } from '../consts/Sidebar';
-import "./styles/NewMenu.css";
+import './styles/NewMenu.css';
 
 const NewMenu = ({ onUpload }) => {
   const [isOpen, setIsOpen] = useState(false);

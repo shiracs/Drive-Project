@@ -7,7 +7,7 @@ import { PERMISSIONS } from '../consts/Permissions';
 import { RENAME } from '../consts/Rename';
 import PermissionsPage from './PermissionsPage';
 import UpdateName from './UpdateName';
-import "./styles/FileCard.css";
+import './styles/FileCard.css';
 
 const FileCard = ({
   file,

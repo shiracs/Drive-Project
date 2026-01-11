@@ -1,4 +1,4 @@
-import "./styles/DocumentPaper.css";
+import './styles/DocumentPaper.css';
 
 const DocumentPaper = ({ content, setContent, isEditing }) => {
   return (
