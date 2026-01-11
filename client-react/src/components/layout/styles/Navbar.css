@@ -1,0 +1,45 @@
+/* Dark Mode Toggle Switch */
+.dark-mode-toggle {
+  position: relative;
+  display: inline-block;
+}
+
+.dark-mode-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-label {
+  display: block;
+  width: 50px;
+  height: 26px;
+  background-color: #ccc;
+  border-radius: 34px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.dark-mode-toggle input[type="checkbox"]:checked + .toggle-label {
+  background-color: #1a73e8;
+}
+
+.toggle-button {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode-toggle input[type="checkbox"]:checked + .toggle-label .toggle-button {
+  transform: translateX(24px);
+}
+
+/* Hover effect */
+.toggle-label:hover {
+  opacity: 0.9;
+}

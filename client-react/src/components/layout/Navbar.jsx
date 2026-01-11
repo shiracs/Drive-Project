@@ -4,10 +4,17 @@ import { clearAuthData } from "../../utils/auth";
 import { SEARCH } from "../../consts/Search";
 import SearchBar from "../SearchBar";
 import { LOG_IN } from "../../consts/Login";
+import './styles/Navbar.css';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const username = localStorage.getItem("username");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    // כאן נוסיף בהמשך את הלוגיקה להחלת הדארק מוד
+  };
 
   const handleLogout = () => {
     clearAuthData();
@@ -16,7 +23,7 @@ const Navbar = () => {
 
   return (
     <nav className="navbar navbar-light bg-white border-bottom px-4 py-2 shadow-sm d-flex justify-content-between align-items-center">
-      <div className="d-flex align-items-center gap-2">
+      <div className="d-flex align-items-center gap-3">
         <img
           src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg"
           alt="logo"
@@ -25,6 +32,17 @@ const Navbar = () => {
         <span className="navbar-brand fw-normal fs-4 m-0 text-secondary">
           Drive
         </span>
+        <div className="dark-mode-toggle">
+          <input
+            type="checkbox"
+            id="darkModeSwitch"
+            checked={isDarkMode}
+            onChange={toggleDarkMode}
+          />
+          <label htmlFor="darkModeSwitch" className="toggle-label">
+            <span className="toggle-button"></span>
+          </label>
+        </div>
       </div>
 
       <SearchBar />
