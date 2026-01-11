@@ -14,28 +14,7 @@ import { RESOURCE_TYPE } from "../enums/ResourceType.js";
  *  path: STRING (e.g., ",parent_id,child_id,")
  * }
  */
-let RESOURCES = [
-  {
-    id: "file_shared_id",
-    name: "shared_file.txt",
-    type: "FILE",
-    ownerId: "user_a_id",
-    parentId: null,
-    isStarred: true,
-    isDeleted: true,
-    isSpam: false
-  },
-  {
-    id: "file_private_id",
-    name: "private_file.txt",
-    type: "FILE",
-    ownerId: "user_a_id",
-    parentId: null,
-    isStarred: false,
-    isDeleted: false,
-    isSpam:true
-  },
-];
+let RESOURCES = [];
 
 /**
  * Returns a resource object by its ID
@@ -77,7 +56,6 @@ const createResourceRecord = (
   };
 
   RESOURCES.push(record);
-  console.log(`[STORAGE UPDATE]`, { RESOURCES });
   return record;
 };
 

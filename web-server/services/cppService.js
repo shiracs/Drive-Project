@@ -15,10 +15,6 @@ export const sendToCpp = (command) => {
       host: CPP_SERVER_HOST,
     });
 
-    console.log(
-      `Connecting to C++ Server at ${CPP_SERVER_HOST}:${CPP_SERVER_PORT}`
-    );
-
     let responseData = "";
     let commandSent = false;
 
@@ -29,10 +25,6 @@ export const sendToCpp = (command) => {
 
     client.on("data", (data) => {
       responseData += data.toString();
-
-      if (responseData.includes("\n")) {
-        client.write("exit\n");
-      }
     });
 
     client.on("end", () => {
@@ -43,7 +35,7 @@ export const sendToCpp = (command) => {
       reject(new Error(`TCP Error: ${err.message}`));
     });
 
-    client.setTimeout(4000);
+    client.setTimeout(10000);
     client.on("timeout", () => {
       client.destroy();
       reject(new Error("C++ Server Timeout"));

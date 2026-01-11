@@ -4,6 +4,7 @@ import { getTokenHeader } from '../utils/auth';
 import { PERMISSIONS } from '../consts/Permissions';
 import { getRoleDisplay, getRoleColor } from '../enums/PermissionEnum';
 import './styles/PermissionsPage.css';
+import ProfilePic from './ProfilePic';
 
 const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
   const [permissions, setPermissions] = useState([]);
@@ -263,17 +264,11 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
           {permissionItems.map((item) => (
               <div key={item.id} className="permission-item">
                 <div className="permission-user">
-                  <div className="user-avatar">
-                    {item.user?.profilePic ? (
-                      <img 
-                        src={item.user.profilePic} 
-                        alt={item.userDisplayName}
-                        className="user-avatar-image"
-                      />
-                    ) : (
-                      <span className="user-avatar-initials">{item.userInitials}</span>
-                    )}
-                  </div>
+                    <ProfilePic 
+                      profilePic={item.user.profilePic} 
+                      displayName={item.userDisplayName} 
+                      initials={item.userInitials} 
+                    />
                   <div className="user-info">
                     <div className="user-id">{item.userDisplayName}</div>
                   </div>

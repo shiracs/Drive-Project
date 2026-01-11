@@ -1,16 +1,18 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAuthData } from "../../utils/auth";
-import { SEARCH } from "../../consts/Search";
 import SearchBar from "../SearchBar";
 import { LOG_IN } from "../../consts/Login";
 import { useTheme } from "../../contexts/ThemeContext";
-import './styles/Navbar.css';
+import ProfilePic from "../ProfilePic"
+import "./styles/Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const username = localStorage.getItem("username");
   const { isDarkMode, toggleTheme } = useTheme();
+  const username = localStorage.getItem("username");
+  const profilePic = localStorage.getItem("profilePic")
+
+  const userInitials = username.slice(0, 1).toUpperCase();
 
   const handleLogout = () => {
     clearAuthData();
@@ -44,7 +46,26 @@ const Navbar = () => {
       <SearchBar />
 
       <div className="d-flex align-items-center gap-3">
-        <span className="small fw-bold" style={{ color: 'var(--text-secondary)' }}>שלום, {username}</span>
+        <span
+          className="small fw-bold"
+          title={username}
+          style={{ 
+            color: "var(--text-secondary)",
+            maxWidth: "120px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "inline-block",
+            verticalAlign: "middle"
+          }}
+        >
+          שלום, {username}
+        </span>
+        <ProfilePic 
+          profilePic={profilePic} 
+          displayName={username} 
+          initials={userInitials} 
+        />
         <button
           onClick={handleLogout}
           className="btn btn-outline-danger btn-sm rounded-pill px-3"

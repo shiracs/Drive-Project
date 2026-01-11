@@ -133,6 +133,7 @@ const getResourceContent = async (req, res) => {
     const content = cppResponse.split("\n\n")[1] || "";
     res.status(200).json({...resource, content: content });
   } catch (error) {
+    console.error(`[ResourceController] Error getting resource ${id}:`, error);
     res.status(500).json({ error: error.message });
   }
 };

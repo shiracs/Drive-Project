@@ -24,7 +24,7 @@ const LoginForm = ({ onLoginSuccess }) => {
 
       const data = await response.json();
       if (response.ok) {
-        saveAuthData(data.token, data.username);
+        saveAuthData(data.token, data.username, data.profilePic);
         onLoginSuccess();
       } else {
         setError(data.error || LOG_IN.LOG_IN_FAIL);

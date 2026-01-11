@@ -75,7 +75,6 @@ const Sidebar = () => {
           const isImage = file.type.startsWith("image/");
           const contentToSend = isImage ? base64.split(",")[1] : base64;
           const resourceType = isImage ? "IMAGE" : "FILE";
-
           await createResource(
             fileName,
             resourceType,
@@ -98,7 +97,9 @@ const Sidebar = () => {
         );
       }
       alert("העלאה הושלמה בהצלחה!");
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
     } catch (err) {
       console.error("Upload failed:", err);
       alert("שגיאה בהעלאה: " + err.message);

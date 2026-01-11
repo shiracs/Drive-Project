@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <iostream>
+#include <cstring>
+#include <cerrno>
 
 SocketIOHandler::SocketIOHandler(int socket) : clientSocket(socket) {}
 
@@ -36,5 +38,24 @@ std::string SocketIOHandler::input() {
 void SocketIOHandler::output(const std::string& message) {
     // Append newline as required by the protocol
     std::string response = message + "\n";
-    send(clientSocket, response.c_str(), response.size(), 0);
+    
+    // Send all data, handling partial sends
+    size_t totalSent = 0;
+    size_t totalSize = response.size();
+    
+    while (totalSent < totalSize) {
+        ssize_t sent = send(clientSocket, response.c_str() + totalSent, 
+                           totalSize - totalSent, 0);
+        
+        if (sent < 0) {
+            std::cerr << "Error sending data: " << strerror(errno) << std::endl;
+            break;
+        }
+        
+        totalSent += sent;
+    }
+    
+    if (totalSent < totalSize) {
+        std::cerr << "Warning: Only sent " << totalSent << " of " << totalSize << " bytes" << std::endl;
+    }
 }

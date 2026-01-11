@@ -10,11 +10,7 @@ import { ROLES, isValidRole } from "../enums/Roles.js";
  *   userId: USER_ID,
  *   role: READER | WRITER | OWNER
  */
-let PERMISSIONS = [
-  { resourceId: "file_shared_id", userId: "user_a_id", role: "OWNER" },
-  { resourceId: "file_private_id", userId: "user_a_id", role: "OWNER" },
-  { resourceId: "file_shared_id", userId: "user_b_id", role: "READER" },
-];
+let PERMISSIONS = [];
 
 /**
  * Creates a new permission record for a user on a specific resource
@@ -31,7 +27,6 @@ const createResourcePermission = (resourceId, userId, role) => {
     role,
   };
   PERMISSIONS.push(permission);
-  console.log(`[STORAGE UPDATE]`, { PERMISSIONS });
   return permission;
 };
 
@@ -97,7 +92,6 @@ const updatePermission = (pId, newRole) => {
   const permission = PERMISSIONS.find((p) => p.id === pId);
   if (permission) {
     permission.role = newRole;
-    console.log(`[STORAGE UPDATE] Permission updated:`, permission);
     return permission;
   }
   return null;
@@ -112,7 +106,6 @@ const deletePermission = (pId) => {
   const index = PERMISSIONS.findIndex((p) => p.id === pId);
   if (index !== -1) {
     PERMISSIONS.splice(index, 1);
-    console.log(`[STORAGE UPDATE] Permission deleted: ${pId}`);
     return true;
   }
   return false;
