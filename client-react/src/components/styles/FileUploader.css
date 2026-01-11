@@ -4,10 +4,10 @@
   display: flex;
   align-items: center;
   padding: 8px 16px 8px 12px;
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border: none;
   border-radius: 28px;
-  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.302), 0 1px 3px 1px rgba(60,64,67,0.149);
+  box-shadow: 0 1px 2px 0 var(--shadow), 0 1px 3px 1px var(--shadow);
   cursor: pointer;
   transition: box-shadow 0.2s ease, background-color 0.2s ease;
   min-width: 100px;
@@ -15,12 +15,12 @@
 }
 
 .google-drive-btn:hover {
-  background-color: #f1f3f4;
-  box-shadow: 0 1px 3px 0 rgba(60,64,67,0.302), 0 4px 8px 3px rgba(60,64,67,0.149);
+  background-color: var(--hover-bg);
+  box-shadow: 0 1px 3px 0 var(--shadow), 0 4px 8px 3px var(--shadow);
 }
 
 .google-drive-btn:active {
-  background-color: #e8eaed;
+  background-color: var(--hover-bg);
 }
 
 .plus-icon {
@@ -34,5 +34,5 @@
   font-size: 14px;
   font-weight: 500;
   letter-spacing: .25px;
-  color: #3c4043;
+  color: var(--text-primary);
 }

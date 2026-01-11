@@ -1,4 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
+import { useEffect } from "react";
 import LoginForm from "../components/LoginForm";
 import { REGISTER } from "../consts/Register";
 import { LOG_IN } from "../consts/Login";
@@ -7,15 +8,20 @@ import './styles/LoginPage.css';
 const LoginPage = () => {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // הסרת dark mode בדפי התחברות
+    document.body.classList.remove('dark-mode');
+  }, []);
+
   const handleSuccess = () => {
     navigate("/dashboard");
   };
 
   return (
-    <div className="container d-flex align-items-center justify-content-center" style={{ minHeight: "100vh" }}>
+    <div className="container d-flex align-items-center justify-content-center" style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
       <div className="google-card col-md-5 col-sm-10 text-center">
         <h1 className="mb-2" style={{ color: "#5f6368", fontSize: "24px" }}>Drive</h1>
-        <h2 className="mb-4" style={{ fontSize: "22px", fontWeight: "400" }}>כניסה למערכת</h2>
+        <h2 className="mb-4" style={{ fontSize: "22px", fontWeight: "400", color: "#202124" }}>כניסה למערכת</h2>
         
         <LoginForm onLoginSuccess={handleSuccess} />
         
