@@ -7,7 +7,10 @@ import { PERMISSIONS } from '../consts/Permissions';
 import { RENAME } from '../consts/Rename';
 import PermissionsPage from './PermissionsPage';
 import UpdateName from './UpdateName';
+import { GENERAL } from "../consts/General";
+import MoveToModal from "./MoveToModal";
 import './styles/FileCard.css';
+
 
 const FileCard = ({
   file,
@@ -16,7 +19,7 @@ const FileCard = ({
   onDeleteSuccess,
   onRefresh,
 }) => {
-  const { id, name, type, isStarred, isDeleted: isSoftDeleted, isSpam } = file;
+  const { id, name, type, isStarred, isDeleted: isSoftDeleted } = file;
 
   const navigate = useNavigate();
 
@@ -29,9 +32,10 @@ const FileCard = ({
   const [showPermissions, setShowPermissions] = useState(false);
   const [showUpdateName, setShowUpdateName] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [showMoveTo, setShowMoveTo] = useState(false)
   const menuRef = useRef(null);
   
-  // see usrer role for this file/folder
+  // see user role for this file/folder
   useEffect(() => {
     if (isDeleted || !id) return;
     
@@ -288,6 +292,15 @@ const decodeBase64ToHebrew = (str) => {
             <span>🗑️</span>
             <span>{isSoftDeleted ? DELETE.PERMANENT_DELETE : DELETE.DELETE_BUTTON}</span>
           </button>
+          <div className="menu-divider"></div>
+        <button 
+          className={`delete-button ${canEdit ? '' : 'disabled'}`}
+          onClick={(e) => { e.stopPropagation(); setShowMoveTo(true); setShowMenu(false); }}
+          disabled={!canEdit}
+        >
+          <span>📂</span>
+          <span>{GENERAL.MOVE_TO}</span>
+        </button>
         </div>
       )}
     </div>
@@ -386,6 +399,14 @@ const decodeBase64ToHebrew = (str) => {
           fileName={name}
           onClose={() => setShowUpdateName(false)}
           onSuccess={handleUpdateNameSuccess}
+        />
+      )}
+      {showMoveTo && (
+        <MoveToModal 
+          fileId={id} 
+          currentName={name} 
+          onClose={() => setShowMoveTo(false)} 
+          onRefresh={onRefresh} 
         />
       )}
     </>

@@ -230,7 +230,7 @@
   padding: 10px 12px;
   border: none;
   background: none;
-  color: #d93025; 
+  color:var(--text-primary);
   text-align: right;
   cursor: pointer;
   font-size: 14px;
@@ -257,7 +257,6 @@
 .delete-button.update-name-button-enabled {
     opacity: 1;
     cursor: pointer;
-    color: #d32f2f;
     background-color: transparent;
 }
 
