@@ -8,6 +8,6 @@ export const REGISTER = {
     USERNAME: "שם משתמש",
     UPLOAD_PROFILE_PIC: "בחר תמונת פרופיל",
     FULL_NAME: "שם מלא",
-    ERROR_NOT_STRONG_PASSWORD: "הסיסמה חייבת להכיל בין 8 ל-16 תווים, לפחות אות אחת ומספר אחד",
+    ERROR_NOT_STRONG_PASSWORD: "הסיסמה חייבת להכיל בין 8 ל-16 תווים, לפחות אות קטנה, אות גדולה ומספר אחד",
     ERROR_PASSWORD_MISMATCH: "הסיסמאות לא תואמות"
 }
