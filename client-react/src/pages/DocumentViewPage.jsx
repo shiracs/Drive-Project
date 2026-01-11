@@ -19,7 +19,7 @@ const DocumentViewPage = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [canEdit, setCanEdit] = useState(null); // null = checking, true = can edit, false = cannot
+  const [canEdit, setCanEdit] = useState(null); 
 
   useEffect(() => {
     const fetchFile = async () => {
@@ -34,6 +34,10 @@ const DocumentViewPage = () => {
         setContent(data.content || "");
         setOriginalContent(data.content || "");
         setFileName(data.name);
+
+        if (location.state?.isNewFile) {
+          setIsEditing(true);
+        }
 
         try {
           const testResponse = await fetch(`${API_BASE_URL}/files/${id}`, {

@@ -1,0 +1,132 @@
+/* Create Folder Modal Styles */
+
+.create-folder-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.create-folder-content {
+  background: white;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.create-folder-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.create-folder-header {
+  padding: 20px 24px 10px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.create-folder-header h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 400;
+  color: #202124;
+  text-align: right;
+}
+
+.create-folder-body {
+  padding: 20px 24px;
+}
+
+.create-folder-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: none;
+  border-bottom: 2px solid #1a73e8;
+  outline: none;
+  box-sizing: border-box;
+  direction: rtl;
+  text-align: right;
+  font-family: inherit;
+  background-color: transparent;
+}
+
+.create-folder-input::placeholder {
+  color: #5f6368;
+}
+
+.create-folder-input:focus {
+  border-bottom-color: #1a73e8;
+}
+
+.create-folder-buttons {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 16px 24px;
+  direction: rtl;
+}
+
+.create-folder-cancel-button,
+.create-folder-create-button {
+  padding: 8px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-family: inherit;
+}
+
+.create-folder-cancel-button {
+  background-color: transparent;
+  color: #1a73e8;
+}
+
+.create-folder-cancel-button:hover {
+  background-color: rgba(26, 115, 232, 0.08);
+}
+
+.create-folder-create-button {
+  background-color: #1a73e8;
+  color: white;
+}
+
+.create-folder-create-button:hover {
+  background-color: #1557b0;
+}
+
+.create-folder-create-button:active {
+  background-color: #0d47a1;
+}

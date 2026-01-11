@@ -1,11 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import FileUploader from './FileUploader';
+import CreateFolderModal from './CreateFolderModal';
 import { SIDEBAR_MENU } from '../consts/Sidebar';
+import { RESOURCE_API_URL } from '../consts/Urls';
+import { getTokenHeader } from '../utils/auth';
 import './styles/NewMenu.css';
 
 const NewMenu = ({ onUpload }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const currentFolderId = searchParams.get("folderId") || null;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -20,6 +28,47 @@ const NewMenu = ({ onUpload }) => {
     setIsOpen(false);
   };
 
+  const handleCreateTextFile = async () => {
+    setIsOpen(false);
+    try {
+      const auth = getTokenHeader();
+      
+      const response = await fetch(RESOURCE_API_URL, {
+        method: "POST",
+        headers: {
+          ...auth,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          name: SIDEBAR_MENU.NEW_FILE_NAME, 
+          type: "FILE", 
+          content: "", 
+          parentId: currentFolderId 
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
+      }
+      
+      const newFile = await response.json();
+      navigate(`/files/${newFile.id}`, { state: { isNewFile: true } });
+    } catch (error) {
+      alert(SIDEBAR_MENU.CREATE_FILE_ERROR);
+    }
+  };
+
+  const handleCreateFolderClick = () => {
+    setIsOpen(false);
+    setShowCreateFolderModal(true);
+  };
+
+  const handleFolderCreated = (newFolder) => {
+    // רענון הדף או עדכון רשימת הקבצים
+    window.location.reload();
+  };
+
   return (
     <div className="position-relative" ref={menuRef}>
       <button className="google-new-btn" onClick={() => setIsOpen(!isOpen)}>
@@ -32,6 +81,15 @@ const NewMenu = ({ onUpload }) => {
 
       {isOpen && (
         <div className="google-dropdown-menu shadow">
+          <div className="menu-item" onClick={handleCreateTextFile}>
+            <i className="bi bi-file-earmark-text"></i>
+            <span>{SIDEBAR_MENU.NEW_TXT_FILE}</span>
+          </div>
+          <div className="menu-item" onClick={handleCreateFolderClick}>
+            <i className="bi bi-folder-plus"></i>
+            <span>{SIDEBAR_MENU.CREATE_FOLDER}</span>
+          </div>
+          <div className="menu-divider"></div>
           <FileUploader onFileSelected={handleSelected} customItem={
             <div className="menu-item"><i className="bi bi-file-earmark-arrow-up"></i><span>העלאת קבצים</span></div>
           } />
@@ -39,6 +97,14 @@ const NewMenu = ({ onUpload }) => {
             <div className="menu-item"><i className="bi bi-folder-symlink"></i><span>העלאת תיקייה</span></div>
           } />
         </div>
+      )}
+
+      {showCreateFolderModal && (
+        <CreateFolderModal
+          onClose={() => setShowCreateFolderModal(false)}
+          onSuccess={handleFolderCreated}
+          parentId={currentFolderId}
+        />
       )}
     </div>
   );
