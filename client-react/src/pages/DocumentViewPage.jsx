@@ -52,6 +52,10 @@ const DocumentViewPage = () => {
         setOriginalContent(decodedText);
         setFileName(data.name);
 
+        if (location.state?.isNewFile) {
+          setIsEditing(true);
+        }
+
         try {
           const testResponse = await fetch(`${API_BASE_URL}/files/${id}`, {
             method: 'PATCH',

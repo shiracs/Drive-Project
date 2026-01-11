@@ -8,14 +8,14 @@
 
 .document-header {
   height: 60px;
-  background-color: white;
+  background-color: var(--navbar-bg);
   display: flex;
   flex-direction: row; 
   direction: rtl; 
   justify-content: space-between;
   align-items: center;
   padding: 0 15px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
   box-sizing: border-box;
 }
 
@@ -46,20 +46,20 @@
 }
 
 .back-button:hover {
-  background-color: #f1f3f4;
+  background-color: var(--hover-bg);
 }
 
 .back-button::before {
-  border-left: 3px solid #5f6368;
-  border-bottom: 3px solid #5f6368;
+  border-left: 3px solid var(--text-secondary);
+  border-bottom: 3px solid var(--text-secondary);
   transform: rotate(45deg);
 }
 
 .back-arrow {
   width: 12px;
   height: 12px;
-  border-left: 3px solid #5f6368;
-  border-bottom: 3px solid #5f6368;
+  border-left: 3px solid var(--text-secondary);
+  border-bottom: 3px solid var(--text-secondary);
   transform: rotate(-135deg);
 }
 
@@ -69,7 +69,7 @@
   font-family: 'Arial', sans-serif;
   font-size: 18px;
   font-weight: 500;
-  color: #202124;
+  color: var(--text-primary);
   padding: 2px 8px;
   border-radius: 4px;
   cursor: pointer;
@@ -81,14 +81,14 @@
 }
 
 .file-name-button:hover {
-  border: 1px solid #dadce0;
-  background-color: #f8f9fa;
+  border: 1px solid var(--border-color);
+  background-color: var(--hover-bg);
 }
 
 .file-name-button:focus {
   border: 2px solid #1a73e8;
   outline: none;
-  background-color: white;
+  background-color: var(--input-bg);
 }
 
 .file-name-readonly {
@@ -97,7 +97,7 @@
   font-family: 'Arial', sans-serif;
   font-size: 18px;
   font-weight: 500;
-  color: #202124;
+  color: var(--text-primary);
   padding: 2px 8px;
   border-radius: 4px;
   cursor: default;
@@ -117,19 +117,19 @@
   font-family: 'Arial', sans-serif;
   font-size: 18px;
   font-weight: 500;
-  color: #202124;
+  color: var(--text-primary);
   padding: 2px 8px;
   border: 2px solid #1a73e8;
   border-radius: 4px;
   outline: none;
-  background-color: white;
+  background-color: var(--input-bg);
 }
 
 .visual-extension {
   font-family: 'Arial', sans-serif;
   font-size: 18px;
   font-weight: 500;
-  color: #202124;
+  color: var(--text-primary);
   margin-right: 2px;
 }
 
@@ -167,8 +167,8 @@
 .document-tabs {
   display: flex;
   gap: 0;
-  background-color: #fff;
-  border-bottom: 2px solid #e0e0e0;
+  background-color: var(--bg-primary);
+  border-bottom: 2px solid var(--border-color);
   padding: 0 20px;
 }
 
@@ -180,7 +180,7 @@
   border: none;
   background: none;
   cursor: pointer;
-  color: #5f6368;
+  color: var(--text-secondary);
   border-bottom: 3px solid transparent;
   transition: all 0.2s;
   position: relative;
@@ -188,8 +188,8 @@
 }
 
 .tab-button:hover {
-  background-color: #f8f9fa;
-  color: #202124;
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
 }
 
 .tab-button.active {
@@ -200,7 +200,7 @@
 
 .document-workspace {
   flex: 1;
-  background-color: #f1f3f4;
+  background-color: var(--bg-secondary);
   padding: 40px 20px;
   overflow-y: auto;
   display: flex;
@@ -210,7 +210,7 @@
 
 .document-loading, .document-error {
   font-family: 'Arial', sans-serif;
-  color: #70757a;
+  color: var(--text-secondary);
   text-align: center;
   margin-top: 50px;
 }

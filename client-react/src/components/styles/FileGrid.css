@@ -34,13 +34,13 @@
 }
 
 .back-button:hover {
-  background-color: #f1f3f4;
+  background-color: var(--hover-bg);
 }
 
 .back-arrow {
   width: 12px;
   height: 12px;
-  border-left: 3px solid #5f6368;
-  border-bottom: 3px solid #5f6368;
+  border-left: 3px solid var(--text-secondary);
+  border-bottom: 3px solid var(--text-secondary);
   transform: rotate(-135deg);
 }

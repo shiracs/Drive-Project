@@ -141,8 +141,14 @@ const Sidebar = () => {
 
   return (
     <div
-      className="bg-white pt-4"
-      style={{ width: "250px", minHeight: "100vh", position: "relative" }}
+      className="pt-4"
+      style={{ 
+        width: "250px", 
+        minHeight: "100vh", 
+        position: "relative",
+        backgroundColor: "var(--sidebar-bg)",
+        borderRight: "1px solid var(--border-color)"
+      }}
       dir="rtl"
     >
       <div className="px-3 mb-4">

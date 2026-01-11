@@ -4,10 +4,13 @@ import { clearAuthData } from "../../utils/auth";
 import { SEARCH } from "../../consts/Search";
 import SearchBar from "../SearchBar";
 import { LOG_IN } from "../../consts/Login";
+import { useTheme } from "../../contexts/ThemeContext";
+import './styles/Navbar.css';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const username = localStorage.getItem("username");
+  const { isDarkMode, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     clearAuthData();
@@ -15,22 +18,33 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-light bg-white border-bottom px-4 py-2 shadow-sm d-flex justify-content-between align-items-center">
-      <div className="d-flex align-items-center gap-2">
+    <nav className="navbar navbar-light border-bottom px-4 py-2 d-flex justify-content-between align-items-center" style={{ backgroundColor: 'var(--navbar-bg)', borderColor: 'var(--border-color)', boxShadow: '0 1px 2px var(--shadow)' }}>
+      <div className="d-flex align-items-center gap-3">
         <img
           src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg"
           alt="logo"
           width="30"
         />
-        <span className="navbar-brand fw-normal fs-4 m-0 text-secondary">
+        <span className="navbar-brand fw-normal fs-4 m-0" style={{ color: 'var(--text-secondary)' }}>
           Drive
         </span>
+        <div className="dark-mode-toggle">
+          <input
+            type="checkbox"
+            id="darkModeSwitch"
+            checked={isDarkMode}
+            onChange={toggleTheme}
+          />
+          <label htmlFor="darkModeSwitch" className="toggle-label">
+            <span className="toggle-button"></span>
+          </label>
+        </div>
       </div>
 
       <SearchBar />
 
       <div className="d-flex align-items-center gap-3">
-        <span className="text-muted small fw-bold">שלום, {username}</span>
+        <span className="small fw-bold" style={{ color: 'var(--text-secondary)' }}>שלום, {username}</span>
         <button
           onClick={handleLogout}
           className="btn btn-outline-danger btn-sm rounded-pill px-3"
