@@ -3,6 +3,7 @@ import { SIDEBAR_MENU, SIDEBAR_PATHS } from "../../consts/Sidebar";
 import { RESOURCE_API_URL } from "../../consts/Urls";
 import { getTokenHeader } from "../../utils/auth";
 import NewMenu from "../NewMenu";
+import "./styles/Sidebar.css";
 
 const Sidebar = () => {
   const [searchParams] = useSearchParams();
@@ -132,9 +133,9 @@ const Sidebar = () => {
     },
     { name: SIDEBAR_MENU.TRASH, icon: "bi-trash3", path: SIDEBAR_PATHS.TRASH },
     {
-      name: SIDEBAR_MENU.STORAGE,
-      icon: "bi-cloud-check",
-      path: SIDEBAR_PATHS.STORAGE,
+      name: SIDEBAR_MENU.SPAM,
+      icon: "bi-exclamation-octagon",
+      path: SIDEBAR_PATHS.SPAM,
     },
   ];
 
@@ -163,15 +164,6 @@ const Sidebar = () => {
           </li>
         ))}
       </ul>
-
-      <div className="px-4 mt-4 pt-4 border-top">
-        <div className="progress mb-2" style={{ height: "4px" }}>
-          <div className="progress-bar" style={{ width: "45%" }}></div>
-        </div>
-        <small className="text-secondary" style={{ fontSize: "12px" }}>
-          6.7GB מתוך 15GB בשימוש
-        </small>
-      </div>
     </div>
   );
 };

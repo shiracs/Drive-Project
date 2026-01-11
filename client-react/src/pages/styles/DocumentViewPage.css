@@ -1,0 +1,237 @@
+/* Document View Page Styles */
+
+.document-view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.document-header {
+  height: 60px;
+  background-color: white;
+  display: flex;
+  flex-direction: row; 
+  direction: rtl; 
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  border-bottom: 1px solid #e0e0e0;
+  box-sizing: border-box;
+}
+
+.header-left-group {
+  display: flex;
+  align-items: center;
+}
+
+.header-right-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px; 
+}
+
+.back-button {
+  width: fit-content;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #f1f3f4;
+}
+
+.back-button::before {
+  border-left: 3px solid #5f6368;
+  border-bottom: 3px solid #5f6368;
+  transform: rotate(45deg);
+}
+
+.back-arrow {
+  width: 12px;
+  height: 12px;
+  border-left: 3px solid #5f6368;
+  border-bottom: 3px solid #5f6368;
+  transform: rotate(-135deg);
+}
+
+.file-name-button {
+  background: none;
+  border: 1px solid transparent;
+  font-family: 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+.file-name-button:hover {
+  border: 1px solid #dadce0;
+  background-color: #f8f9fa;
+}
+
+.file-name-button:focus {
+  border: 2px solid #1a73e8;
+  outline: none;
+  background-color: white;
+}
+
+.file-name-readonly {
+  background: none;
+  border: 1px solid transparent;
+  font-family: 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+  user-select: text;
+}
+
+.file-name-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.file-name-input {
+  font-family: 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+  padding: 2px 8px;
+  border: 2px solid #1a73e8;
+  border-radius: 4px;
+  outline: none;
+  background-color: white;
+}
+
+.visual-extension {
+  font-family: 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+  margin-right: 2px;
+}
+
+.edit-button {
+  font-family: inherit;      
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  color: white;
+  background-color: #1a73e8;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.edit-button:hover {
+  opacity: 0.9;
+}
+
+.save-cancel-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.save-button {
+  background-color: #34a853;
+}
+
+.cancel-button {
+  background-color: #ea4335;
+}
+
+.document-tabs {
+  display: flex;
+  gap: 0;
+  background-color: #fff;
+  border-bottom: 2px solid #e0e0e0;
+  padding: 0 20px;
+}
+
+.tab-button {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #5f6368;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+  bottom: -2px;
+}
+
+.tab-button:hover {
+  background-color: #f8f9fa;
+  color: #202124;
+}
+
+.tab-button.active {
+  color: #1a73e8;
+  border-bottom-color: #1a73e8;
+  font-weight: 600;
+}
+
+.document-workspace {
+  flex: 1;
+  background-color: #f1f3f4;
+  padding: 40px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.document-loading, .document-error {
+  font-family: 'Arial', sans-serif;
+  color: #70757a;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.document-error {
+  color: #d93025; 
+}
+
+.readonly-warning-banner {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 12px 24px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid #ffeaa7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+}
