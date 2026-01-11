@@ -3,14 +3,17 @@ import { useEffect } from "react";
 import LoginForm from "../components/LoginForm";
 import { REGISTER } from "../consts/Register";
 import { LOG_IN } from "../consts/Login";
+import { useTheme } from '../contexts/ThemeContext';
 import './styles/LoginPage.css';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { isDarkMode, toggleTheme } = useTheme();
 
   useEffect(() => {
-    // הסרת dark mode בדפי התחברות
-    document.body.classList.remove('dark-mode');
+    if (isDarkMode) {
+      toggleTheme();
+    }
   }, []);
 
   const handleSuccess = () => {

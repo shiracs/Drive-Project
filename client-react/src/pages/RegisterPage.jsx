@@ -2,14 +2,17 @@ import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import RegisterForm from "../components/RegisterForm";
 import { REGISTER } from "../consts/Register";
+import { useTheme } from '../contexts/ThemeContext';
 import './styles/LoginPage.css';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { isDarkMode, toggleTheme } = useTheme();
 
   useEffect(() => {
-    // הסרת dark mode בדפי הרשמה
-    document.body.classList.remove('dark-mode');
+    if (isDarkMode) {
+      toggleTheme();
+    }
   }, []);
 
   const handleSuccess = () => {
