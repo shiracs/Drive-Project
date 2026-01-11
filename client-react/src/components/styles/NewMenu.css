@@ -28,7 +28,7 @@
     min-width: 200px;
     border-radius: 8px;
     padding: 8px 0;
-    z-index: 9999;
+    z-index: 999;
     border: 1px solid var(--border-color);
 }
 

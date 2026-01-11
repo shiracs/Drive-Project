@@ -41,8 +41,6 @@ void System::run() {
         if (commandMap.count(commandName)) {
             try {
                 commandMap[commandName]->execute(args);
-                // אחרי ביצוע פקודה - נסגור את החיבור
-                // זה מאפשר ל-Node.js לדעת שהתגובה הושלמה
                 break;
             } catch (...) {
                 // Silent failure on exceptions

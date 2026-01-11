@@ -26,14 +26,8 @@ const ImageModal = ({ fileId, onClose }) => {
         }
         
         const data = await response.json();
-        
-        console.log(`[ImageModal] Loaded image ${fileId}`);
-        console.log(`[ImageModal] Content length: ${data.content?.length || 0}`);
-        console.log(`[ImageModal] Content preview: ${data.content?.substring(0, 50)}...`);
-        
-        // אם התוכן ריק, נסה שוב
+      
         if ((!data.content || data.content === "") && retryCount < maxRetries && isMounted) {
-          console.log(`[ImageModal] Retry ${retryCount + 1}/${maxRetries} - empty content`);
           retryCount++;
           setTimeout(() => {
             if (isMounted) fetchImage();
@@ -43,7 +37,6 @@ const ImageModal = ({ fileId, onClose }) => {
         
         if (isMounted) {
           if (data.content && !data.content.startsWith("data:")) {
-            console.log(`[ImageModal] Adding data URI prefix`);
             data.content = `data:image/png;base64,${data.content}`;
           }
           setImageData(data);

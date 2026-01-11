@@ -65,7 +65,6 @@ const NewMenu = ({ onUpload }) => {
   };
 
   const handleFolderCreated = (newFolder) => {
-    // רענון הדף או עדכון רשימת הקבצים
     window.location.reload();
   };
 

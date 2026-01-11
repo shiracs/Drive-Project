@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { REGISTER } from "../consts/Register";
 import { USER_API_URL } from "../consts/Urls";
-import { getTokenHeader, saveAuthData } from "../utils/auth";
+import {  saveAuthData } from "../utils/auth";
 import FileUploader from "../components/FileUploader";
-import { FILE } from "../consts/FilePage";
 import './styles/RegisterForm.css';
 
 const RegisterForm = ({ onRegisterSuccess }) => {
@@ -64,7 +63,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
     const data = await response.json();
 
     if (response.ok) {
-      saveAuthData();
+      saveAuthData(data.token, data.username, data.profilePic);
       onRegisterSuccess(); 
     } else {
       setError(data.error || "Registration failed");
