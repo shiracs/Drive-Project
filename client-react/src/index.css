@@ -52,3 +52,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Text color utility classes */
+.t-text-main {
+  color: var(--text-primary) !important;
+}
+
+.t-text-sub {
+  color: var(--text-secondary) !important;
+}
