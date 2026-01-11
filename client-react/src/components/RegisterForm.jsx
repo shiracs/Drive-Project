@@ -113,7 +113,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
           required
         />
       </div>
-      <div className="mb-4">
+      <div className="d-flex flex-column align-items-center gap-2 mb-3">
         <FileUploader
           label={REGISTER.UPLOAD_PROFILE_PIC}
           accept="image/*"
