@@ -18,6 +18,16 @@ const registerUser = (req, res) => {
     });
   }
 
+  const isLengthOK = password.length >= 8 && password.length <= 16;
+  const hasLetter = /\p{L}/u.test(password); 
+  const hasNumber = /[0-9]/.test(password);
+
+  if (!isLengthOK || !hasLetter || !hasNumber) {
+    return res.status(400).json({
+      error: "Password must be 8-16 characters long and contain at least one letter and one number",
+    });
+  }
+
   // Check if user already exists
   if (UserModel.findByUsername(username)) {
     return res.status(400).json({ error: "User already exists" });
