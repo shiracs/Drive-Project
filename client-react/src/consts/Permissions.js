@@ -27,4 +27,5 @@ export const PERMISSIONS = {
     DELETE_PERMISSION_CONFIRM: 'האם למחוק את ההרשאה עבור',
     DELETE_PERMISSION_TOOLTIP: 'מחק הרשאה',
     CANNOT_DELETE_LAST_OWNER: 'לא ניתן למחוק את הרשאת הבעלים האחרונה. חייב להיות לפחות בעלים אחד לקובץ.',
+    YOU_ARE_OWNER: 'אתה הבעלים של הקובץ, לא ניתן לתת לך הרשאה נמוכה יותר'
 };

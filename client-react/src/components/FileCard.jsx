@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, RESOURCE_API_URL } from "../consts/Urls";
 import { getTokenHeader } from "../utils/auth";
@@ -29,6 +29,7 @@ const FileCard = ({
   const [showPermissions, setShowPermissions] = useState(false);
   const [showUpdateName, setShowUpdateName] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const menuRef = useRef(null);
   
   // see usrer role for this file/folder
   useEffect(() => {
@@ -99,6 +100,19 @@ const FileCard = ({
       };
     }
   }, [id, isFolder, isDeleted]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
+
 
   const handleClick = (e) => {
     if (e.target.closest('.folder-menu-dots')) return;
@@ -228,7 +242,7 @@ const decodeBase64ToHebrew = (str) => {
   const isOwner = userRole === 'OWNER';
 
   const renderActionMenu = () => (
-    <div className="menu-container">
+    <div className="menu-container" ref={menuRef}>
       <div className="folder-menu-dots t-text-sub" onClick={toggleMenu}>
         ⋮
       </div>

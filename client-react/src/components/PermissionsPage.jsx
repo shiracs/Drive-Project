@@ -104,6 +104,11 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
       return;
     }
 
+    if (newUsername === localStorage.getItem("username")) {
+      alert(PERMISSIONS.YOU_ARE_OWNER);
+      return;
+    }
+
     setActionLoading(true);
     try {
       const auth = getTokenHeader();
