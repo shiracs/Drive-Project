@@ -118,6 +118,18 @@ const FileCard = ({
     return `data:image/png;base64,${fileContent}`;
   };
 
+const decodeBase64ToHebrew = (str) => {
+  if (!str || str === "Loading..." || str.includes("Error")) return str;
+  try {
+    const cleanStr = str.replace(/\s/g, '');
+    const binString = atob(cleanStr);
+    const bytes = Uint8Array.from(binString, (m) => m.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  } catch (e) {
+    return str;
+  }
+};
+
   const previewSrc = isImage ? getPreviewSrc() : null;
   const toggleMenu = (e) => {
     e.stopPropagation();
@@ -324,7 +336,7 @@ const FileCard = ({
               // File Card
               <div className="file-paper-preview t-bg-surface">
                 <div className="preview-text-content t-text-sub">
-                  {fileContent.substring(0, 2000)}
+                  {decodeBase64ToHebrew(fileContent).substring(0, 1000)}
                 </div>
               </div>
             )}
