@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, RESOURCE_API_URL } from "../consts/Urls";
 import { getTokenHeader } from "../utils/auth";
 import { DELETE } from "../consts/Delete";
-import "./styles/FileCard.css";
 import { PERMISSIONS } from '../consts/Permissions';
 import { RENAME } from '../consts/Rename';
 import PermissionsPage from './PermissionsPage';
 import UpdateName from './UpdateName';
+import "./styles/FileCard.css";
 
 const FileCard = ({
   file,
