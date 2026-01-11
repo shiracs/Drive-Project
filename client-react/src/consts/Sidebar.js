@@ -11,6 +11,8 @@ export const SIDEBAR_MENU = {
   NEW_FOLDER: "תיקייה חדשה",
   NEW_TXT_FILE: "צור קובץ txt",
   CREATE_FOLDER: "צור תיקייה",
+  NEW_FILE_NAME: "מסמך ללא שם",
+  CREATE_FILE_ERROR: "שגיאה ביצירת הקובץ",
   UPLOAD_SUCCESSFUL: "העלאה הסתיימה בהצלחה!",
   UPLOAD_ERROR: "אירעה שגיאה בזמן ההעלאה."
 };
