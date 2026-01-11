@@ -11,14 +11,14 @@ We use Docker Compose to manage the multi-container setup. This ensures the Web 
 from the root directory (/Drive-Project), run:
 
 ### 1. Build and Start the System
-This command builds the images and starts both servers in the background.
+This command builds the images and runs everything.
 ```bash
-docker-compose up --build -d server web-server
+docker-compose up --build
 ```
 
-### 2. Access the API
-The Web Server is exposed on `http://localhost:5000`. 
-You can use `curl` to interact with the endpoints defined in `web-server/routes/api.js`.
+### 2. Access the App
+The App is exposed on `http://localhost:3000`. 
+
 
 ### 3. Run the Unit Tests
 To run the automated test suite (Google Test) in an isolated container:
@@ -32,6 +32,3 @@ To stop the server and remove the containers:
 docker-compose down
 ```
 
-## Execution Example
-in the image we can see the server in the right terminal, and the two in the left are the cpp-client and the python-client, which are both being served simultaniousely
-![Execution Demo](execution_demo.png)

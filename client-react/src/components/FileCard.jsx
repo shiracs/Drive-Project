@@ -360,7 +360,7 @@ const decodeBase64ToHebrew = (str) => {
             <div className="file-header-row">
               <div className="file-name-container">
                 <div className="file-icon-small">{isImage ? "🖼️" : "📄"}</div>
-                <div className="file-name-text t-text-main">{isImage ? `${name}.png` : `${name}.txt`}</div>
+                <div className="file-name-text t-text-main">{name}</div>
               </div>
               {renderStar()}
               {renderActionMenu()}
