@@ -83,12 +83,7 @@ const uploadResource = async (req, res) => {
     } 
     // HANDLE FILES: send content to C++
     else {
-      console.log(`[ResourceController] Uploading ${type} ${resourceRecord.id}, content length: ${content?.length || 0}`);
-      if (type === 'IMAGE') {
-        console.log(`[ResourceController] Image content preview: ${content?.substring(0, 50)}...`);
-      }
       const cppResponse = await sendToCpp(`POST ${resourceRecord.id} ${content}`);
-      console.log(`[ResourceController] C++ response: ${cppResponse}`);
 
       if (cppResponse.includes("201 Created")) {
         return res.status(201).location(resourceUrl).json(resourceRecord);
@@ -136,10 +131,6 @@ const getResourceContent = async (req, res) => {
   try {
     const cppResponse = await sendToCpp(`GET ${id}`);
     const content = cppResponse.split("\n\n")[1] || "";
-    console.log(`[ResourceController] GET ${id}, type: ${resource.type}, content length: ${content?.length || 0}`);
-    if (resource.type === 'IMAGE') {
-      console.log(`[ResourceController] Image content preview: ${content?.substring(0, 50)}...`);
-    }
     res.status(200).json({...resource, content: content });
   } catch (error) {
     console.error(`[ResourceController] Error getting resource ${id}:`, error);

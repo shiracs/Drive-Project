@@ -75,12 +75,6 @@ const Sidebar = () => {
           const isImage = file.type.startsWith("image/");
           const contentToSend = isImage ? base64.split(",")[1] : base64;
           const resourceType = isImage ? "IMAGE" : "FILE";
-
-          console.log(`[Sidebar] Uploading ${fileName}, type: ${resourceType}, isImage: ${isImage}`);
-          console.log(`[Sidebar] File MIME type: ${file.type}`);
-          console.log(`[Sidebar] Content length: ${contentToSend?.length || 0}`);
-          console.log(`[Sidebar] Content preview: ${contentToSend?.substring(0, 50)}...`);
-
           await createResource(
             fileName,
             resourceType,
@@ -95,11 +89,6 @@ const Sidebar = () => {
           ? "IMAGE"
           : "FILE";
 
-        console.log(`[Sidebar] Uploading single file: ${uploadData.name}, type: ${resourceType}`);
-        console.log(`[Sidebar] MIME type: ${uploadData.type}`);
-        console.log(`[Sidebar] Content length: ${cleanBase64?.length || 0}`);
-        console.log(`[Sidebar] Content preview: ${cleanBase64?.substring(0, 50)}...`);
-
         await createResource(
           uploadData.name,
           resourceType,
@@ -108,7 +97,6 @@ const Sidebar = () => {
         );
       }
       alert("העלאה הושלמה בהצלחה!");
-      // המתן קצת לפני רענון כדי לוודא שהשרת סיים לשמור
       setTimeout(() => {
         window.location.reload();
       }, 300);

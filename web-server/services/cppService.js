@@ -15,13 +15,8 @@ export const sendToCpp = (command) => {
       host: CPP_SERVER_HOST,
     });
 
-    console.log(
-      `Connecting to C++ Server at ${CPP_SERVER_HOST}:${CPP_SERVER_PORT}`
-    );
-
     let responseData = "";
     let commandSent = false;
-    let responseClosed = false;
 
     client.on("connect", () => {
       client.write(command + "\n");
@@ -30,9 +25,6 @@ export const sendToCpp = (command) => {
 
     client.on("data", (data) => {
       responseData += data.toString();
-      
-      // לא נעשה כלום - נחכה שהשרת יסגור את החיבור או timeout
-      // זה מאפשר לנתונים גדולים (כמו תמונות) לעבור במלואם
     });
 
     client.on("end", () => {
@@ -43,7 +35,6 @@ export const sendToCpp = (command) => {
       reject(new Error(`TCP Error: ${err.message}`));
     });
 
-    // הגדלת timeout ל-10 שניות לתמונות גדולות
     client.setTimeout(10000);
     client.on("timeout", () => {
       client.destroy();

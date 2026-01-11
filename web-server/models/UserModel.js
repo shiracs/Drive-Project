@@ -1,27 +1,12 @@
 import { v4 as uuid } from "uuid";
 // !Volatile user storage for now
 const USERS = [
-  //Todo: remove hardcoded user for submission
   {
     id: "admin-123", 
     username: "admin",
     password: "123",
     fullName: "Admin User",
     profilePic: "https://via.placeholder.com/150"
-  },
-  {
-    id: "user_a_id",
-    username: "user_a",
-    password: "Password123",
-    fullName: "User Alpha",
-    profilePic: ""
-  },
-  {
-    id: "user_b_id",
-    username: "user_b",
-    password: "Password123",
-    fullName: "User Beta",
-    profilePic: ""
   }
 ];
 
@@ -37,7 +22,6 @@ const create = (userData) => {
     ...userData,
   };
   USERS.push(newUser);
-  console.log("Current Users in Store:", USERS);
   return newUser;
 };
 
