@@ -267,22 +267,40 @@ const searchResourcesByQuery = async (req, res) => {
   try {
     // First, get the user's permitted files
     const allUsersResources = ResourceModel.getAllResourcesByUser(userId);
-    const cppResponse = await sendToCpp(`SEARCH ${query}`);
-    let contentMatchIds = [];
+    const lowerQuery = query.toLowerCase();
 
-    if (cppResponse.includes("200 Ok")) {
-      const parts = cppResponse.split("\n\n");
-      contentMatchIds = parts.length > 1 ? parts[1].trim().split(" ") : [];
-    }
+    const searchPromises = allUsersResources.map(async (file) => {
+      if (file.name.toLowerCase().includes(lowerQuery)) {
+        return file;
+      }
 
-    // Filter resources that match by name or content
-    const foundResources = allUsersResources.filter(file => {
-      const nameMatch = file.name.includes(query);
-      const contentMatch = file.type !== 'IMAGE' && contentMatchIds.includes(file.id);
-      return nameMatch || contentMatch;
+      if (file.type === RESOURCE_TYPE.FILE) {
+        try {
+          const cppResponse = await sendToCpp(`GET ${file.id}`);
+          const content = cppResponse.split("\n\n")[1] || "";
+          if (content.toLowerCase().includes(lowerQuery)) {
+            return file;
+          }
+        } catch (err) {
+          console.error(`Error fetching content for ${file.id}:`, err.message);
+        }
+      }
+      return null;
     });
 
-    const finalResponse = foundResources.map(f => ({ id: f.id, name: f.name, type: f.type, isStarred: f.isStarred, isDeleted: f.isDeleted, isSpam: f.isSpam }));
+    const results = await Promise.all(searchPromises);
+    
+    const finalResponse = results
+      .filter(f => f !== null)
+      .map(f => ({
+        id: f.id,
+        name: f.name,
+        type: f.type,
+        isStarred: f.isStarred,
+        isDeleted: f.isDeleted,
+        isSpam: f.isSpam
+      }));
+
     return res.status(200).json(finalResponse);
 
   } catch (error) {
