@@ -61,9 +61,8 @@ const RegisterForm = ({ onRegisterSuccess }) => {
     });
 
     const data = await response.json();
-
     if (response.ok) {
-      saveAuthData(data.token, data.username, data.profilePic);
+      saveAuthData(data.token, data.username, data.id, data.profilePic);
       onRegisterSuccess(); 
     } else {
       setError(data.error || "Registration failed");

@@ -26,7 +26,8 @@ const getUserResourcesInDir = async (req, res) => {
       type: r.type,
       isStarred: r.isStarred,
       isDeleted: r.isDeleted,
-      isSpam: r.isSpam
+      isSpam: r.isSpam,
+      ownerId: r.ownerId
   })));
 };
 
@@ -219,7 +220,7 @@ const deleteResource = async (req, res) => {
     if (!targetResource) return res.status(404).json({ error: "Resource not found" });
 
     // Get ALL its descendants - if its a file, this will be an empty array
-    const descendants = ResourceModel.getDescendants(id);
+    const descendants = ResourceModel.getDescendants(id, true);
 
     // Combine into one list to delete
     const allToDelete = [targetResource, ...descendants];

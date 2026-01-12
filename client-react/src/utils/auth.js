@@ -10,9 +10,10 @@ export const getTokenHeader = () => {
 /**
  * Utility to save token correctly
  */
-export const saveAuthData = (token, username, profilePic) => {
+export const saveAuthData = (token, username, userId, profilePic) => {
     localStorage.setItem("userToken", token);
     localStorage.setItem("username", username);
+    localStorage.setItem("userId", userId);
     localStorage.setItem("profilePic", profilePic);
 };
 
@@ -22,5 +23,6 @@ export const saveAuthData = (token, username, profilePic) => {
 export const clearAuthData = () => {
     localStorage.removeItem("userToken");
     localStorage.removeItem("username");
+    localStorage.removeItem("userId");
     localStorage.removeItem("profilePic");
 }

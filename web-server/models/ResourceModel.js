@@ -90,10 +90,16 @@ const getResourcesByUserId = (userId, parentId = null) => {
  * Returns ALL descendants (children, grandchildren, etc.)
  * Used for flat deletion and permission granting
  */
-const getDescendants = (folderId) => {
-  // We search for resources whose path contains ",folderId,"
+const getDescendants = (folderId, includeDeleted = false) => {
   const searchPattern = `,${folderId},`;
-  return RESOURCES.filter((f) => f.path?.includes(searchPattern) && !f.isDeleted);
+  
+  return RESOURCES.filter((f) => {
+    const isMatch = f.path?.includes(searchPattern);
+    if (includeDeleted) {
+      return isMatch;
+    }
+    return isMatch && !f.isDeleted;
+  });
 };
 
 /**

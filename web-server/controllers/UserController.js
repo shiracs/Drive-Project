@@ -45,7 +45,8 @@ const registerUser = (req, res) => {
   res.status(201).json({
     username: newUser.username,
     token: token,
-    profilePic: newUser.profilePic
+    profilePic: newUser.profilePic,
+    id: newUser.id
   });
 };
 
@@ -114,7 +115,8 @@ const generateToken = (req, res) => {
     res.status(200).json({
       token: token,
       username: user.username,
-      profilePic: user.profilePic
+      profilePic: user.profilePic,
+      id: user.id
     });
   } else {
     res.status(401).json({ error: "Invalid username or password" });
