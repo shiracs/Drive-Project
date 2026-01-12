@@ -17,7 +17,11 @@ const FileGrid = ({
 }) => {
   const [selectedImageId, setSelectedImageId] = useState(null);
 
-  const safeResources = Array.isArray(resources) ? resources : [];
+  const safeResources = useMemo(
+    () => Array.isArray(resources) ? resources : [],
+    [resources]
+  );
+  
   const folders = useMemo(
     () => safeResources.filter((r) => r.type === "FOLDER"),
     [safeResources]

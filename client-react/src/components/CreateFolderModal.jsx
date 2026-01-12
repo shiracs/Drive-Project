@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { RESOURCE_API_URL } from '../consts/Urls';
-import { getTokenHeader } from '../utils/auth';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 import { CREATE_FOLDER } from '../consts/CreateFolder';
 import './styles/CreateFolderModal.css';
 
@@ -16,11 +16,9 @@ const CreateFolderModal = ({ onClose, onSuccess, parentId = null }) => {
     }
 
     try {
-      const auth = getTokenHeader();
-      const response = await fetch(RESOURCE_API_URL, {
+      const response = await fetchWithAuth(RESOURCE_API_URL, {
         method: 'POST',
         headers: {
-          ...auth,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 

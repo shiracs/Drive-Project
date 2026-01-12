@@ -11,8 +11,9 @@ import FilePage from "./pages/FilePage";
 import DocumentViewPage from "./pages/DocumentViewPage";
 import MainLayout from "./components/layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import SearchPage from "./pages/SearchPage";
 import { SIDEBAR_MENU, SIDEBAR_PATHS } from "./consts/Sidebar";
+import SearchPage from "./pages/SearchPage";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import {
   SHARED_API_URL,
   OWNED_API_URL,
@@ -21,7 +22,6 @@ import {
   TRASH_API_URL,
   SPAM_API_URL
 } from "./consts/Urls";
-import { ThemeProvider } from "./contexts/ThemeContext";
 
 function App() {
   return (
@@ -64,7 +64,7 @@ function App() {
               <FilePage
                 customUrl={RECENT_API_URL}
                 title={SIDEBAR_MENU.RECENT}
-                subTitle={"עד 10 אחרונים ששונו"}
+                subTitle={SIDEBAR_MENU.RECENT_SUBTITLE}
               />
             }
           />

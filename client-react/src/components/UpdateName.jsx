@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
-import { getTokenHeader } from '../utils/auth';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 import { RENAME } from '../consts/Rename';
 import './styles/UpdateName.css';
 
@@ -14,11 +14,9 @@ const UpdateName = ({ fileId, fileName, onClose, onSuccess }) => {
     }
 
     try {
-      const auth = getTokenHeader();
-      const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/files/${fileId}`, {
         method: 'PATCH',
         headers: {
-          ...auth,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ name: newName.trim() })
