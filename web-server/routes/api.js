@@ -8,6 +8,7 @@ const router = express.Router();
 
 // User Routes
 router.post('/users', UserController.registerUser);
+router.get('/users/me', isLoggedIn, UserController.getCurrentUser);
 router.get('/users/:id', UserController.getUserById);
 router.get('/users/username/:username', UserController.getUserByUsername);
 router.post('/tokens', UserController.generateToken);

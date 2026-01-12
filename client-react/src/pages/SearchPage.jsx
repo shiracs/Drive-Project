@@ -4,7 +4,7 @@ import { API_BASE_URL } from "../consts/Urls";
 import FileGrid from "../components/FileGrid";
 import { SEARCH } from "../consts/Search";
 import { GENERAL } from "../consts/General";
-import { getTokenHeader } from "../utils/auth";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import './styles/SearchPage.css';
 
 const SearchPage = () => {
@@ -21,16 +21,15 @@ const SearchPage = () => {
     // load data every time query or folderId changes
     const loadData = useCallback(async () => {
         setLoading(true);
-        const auth = getTokenHeader();
         try {
             let data;
             if (currentFolderId) {
                 // if we want to see contents of a specific folder from the search results
-                const response = await fetch(`${API_BASE_URL}/files?parentId=${currentFolderId}`, { headers: auth });
+                const response = await fetchWithAuth(`${API_BASE_URL}/files?parentId=${currentFolderId}`);
                 data = await response.json();
             } else if (query) {
                 // we are on the main search results page
-                const response = await fetch(`${API_BASE_URL}/search/${encodeURIComponent(query)}`, { headers: auth });
+                const response = await fetchWithAuth(`${API_BASE_URL}/search/${encodeURIComponent(query)}`);
                 data = await response.json();
             }
             setResources(data || []);

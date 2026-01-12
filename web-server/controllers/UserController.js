@@ -123,4 +123,27 @@ const generateToken = (req, res) => {
   }
 };
 
-export default { registerUser, getUserById, getUserByUsername, generateToken };
+/**
+ * Get current user info (requires authentication)
+ * @param {*} req
+ * @param {*} res
+ * @returns the current user data
+ */
+const getCurrentUser = (req, res) => {
+  const userId = req.userId;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const user = UserModel.findById(userId);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  // return the user data without the password
+  const { password: _, ...userResponse } = user;
+  res.status(200).json(userResponse);
+};
+
+export default { registerUser, getUserById, getUserByUsername, generateToken, getCurrentUser };

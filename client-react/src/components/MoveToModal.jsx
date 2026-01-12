@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
-import { getTokenHeader } from '../utils/auth';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 import { GENERAL } from '../consts/General';
 import './styles/MoveToModal.css';
 
@@ -18,9 +18,8 @@ const MoveToModal = ({ fileId, currentName, onClose, onRefresh }) => {
 
   const fetchContent = async (parentId) => {
     try {
-      const auth = getTokenHeader();
       const url = `${API_BASE_URL}/files${parentId ? `?parentId=${parentId}` : ''}`;
-      const response = await fetch(url, { headers: auth });
+      const response = await fetchWithAuth(url);
       const data = await response.json();
       setItems(data.filter(i => i.type === 'FOLDER' && i.id !== fileId && i.ownerId===userId));
     } catch (err) {
@@ -45,10 +44,9 @@ const MoveToModal = ({ fileId, currentName, onClose, onRefresh }) => {
   };
 
   const handleConfirm = async () => {
-    const auth = getTokenHeader();
-    const response = await fetch(`${API_BASE_URL}/files/move/${fileId}`, {
+    const response = await fetchWithAuth(`${API_BASE_URL}/files/move/${fileId}`, {
       method: 'PATCH',
-      headers: { ...auth, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ newParentId: selectedFolderId })
     });
 

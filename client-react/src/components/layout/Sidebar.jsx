@@ -1,7 +1,7 @@
 import { useSearchParams, useLocation, Link } from "react-router-dom";
 import { SIDEBAR_MENU, SIDEBAR_PATHS } from "../../consts/Sidebar";
 import { RESOURCE_API_URL } from "../../consts/Urls";
-import { getTokenHeader } from "../../utils/auth";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
 import NewMenu from "../NewMenu";
 import './styles/Sidebar.css';
 
@@ -19,12 +19,9 @@ const Sidebar = () => {
     });
 
   const createResource = async (name, type, content = "", parentId = null) => {
-    const auth = getTokenHeader();
-
-    const response = await fetch(RESOURCE_API_URL, {
+    const response = await fetchWithAuth(RESOURCE_API_URL, {
       method: "POST",
       headers: {
-        ...auth,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ name, type, content, parentId }),

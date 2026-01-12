@@ -4,7 +4,7 @@ import DocumentPaper from "../components/DocumentPaper";
 import { DOC_BUTTONS } from "../consts/DocumentBottons";
 import { DOC_VIEW_MESSAGES } from "../consts/DocumentView";
 import { API_BASE_URL } from "../consts/Urls";
-import { getTokenHeader } from "../utils/auth";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import "./styles/DocumentViewPage.css";
 
 const DocumentViewPage = () => {
@@ -40,8 +40,7 @@ const DocumentViewPage = () => {
     const fetchFile = async () => {
       setLoading(true);
       try {
-        const auth = getTokenHeader();
-        const response = await fetch(`${API_BASE_URL}/files/${id}`, { headers: auth });
+        const response = await fetchWithAuth(`${API_BASE_URL}/files/${id}`);
         if (!response.ok) {
           setError(DOC_VIEW_MESSAGES.FETCH_ERROR);
           return;
@@ -58,9 +57,9 @@ const DocumentViewPage = () => {
         }
 
         try {
-          const roleResponse = await fetch(`${API_BASE_URL}/files/${id}/my-role`, {
+          const roleResponse = await fetchWithAuth(`${API_BASE_URL}/files/${id}/my-role`, {
             method: 'GET',
-            headers: auth
+
           });
 
           if (roleResponse.ok) {
@@ -84,10 +83,9 @@ const DocumentViewPage = () => {
   }, [id]);
 
   const patchFile = async (data) => {
-    const auth = getTokenHeader();
-    const response = await fetch(`${API_BASE_URL}/files/${id}`, {
+    const response = await fetchWithAuth(`${API_BASE_URL}/files/${id}`, {
         method: 'PATCH',
-        headers: { ...auth, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
 

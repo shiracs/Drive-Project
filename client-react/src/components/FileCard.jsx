@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, RESOURCE_API_URL } from "../consts/Urls";
-import { getTokenHeader } from "../utils/auth";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import { DELETE } from "../consts/Delete";
 import { PERMISSIONS } from "../consts/Permissions";
 import { RENAME } from "../consts/Rename";
@@ -41,11 +41,12 @@ const FileCard = ({
 
     const fetchUserRole = async () => {
       try {
-        const auth = getTokenHeader();
-        const response = await fetch(`${API_BASE_URL}/files/${id}/my-role`, {
-          method: "GET",
-          headers: auth,
-        });
+        const response = await fetchWithAuth(
+          `${API_BASE_URL}/files/${id}/my-role`,
+          {
+            method: "GET",
+          }
+        );
 
         if (response.ok) {
           const role = await response.json();
@@ -73,12 +74,9 @@ const FileCard = ({
 
       const fetchPreview = async () => {
         try {
-          const auth = getTokenHeader();
-
           // fetch file content from server
-          const response = await fetch(`${API_BASE_URL}/files/${id}`, {
+          const response = await fetchWithAuth(`${API_BASE_URL}/files/${id}`, {
             method: "GET",
-            headers: auth,
           });
 
           if (!response.ok) {
@@ -192,10 +190,8 @@ const FileCard = ({
 
     if (window.confirm(`${DELETE.CONFIRM_MESSAGE} ${name}?`)) {
       try {
-        const auth = getTokenHeader();
-        const response = await fetch(deleteUrl, {
+        const response = await fetchWithAuth(deleteUrl, {
           method: "DELETE",
-          headers: auth,
         });
         if (response.ok) {
           setIsDeleted(true);
@@ -213,10 +209,8 @@ const FileCard = ({
   const handleStarToggle = async (e) => {
     e.stopPropagation();
     try {
-      const auth = getTokenHeader();
-      const response = await fetch(`${RESOURCE_API_URL}/star/${id}`, {
+      const response = await fetchWithAuth(`${RESOURCE_API_URL}/star/${id}`, {
         method: "PATCH",
-        headers: auth,
       });
       if (response.ok && onRefresh) {
         onRefresh();
@@ -229,10 +223,8 @@ const FileCard = ({
   const handleRestore = async (e) => {
     e.stopPropagation();
     try {
-      const auth = getTokenHeader();
-      const response = await fetch(`${RESOURCE_API_URL}/restore/${id}`, {
+      const response = await fetchWithAuth(`${RESOURCE_API_URL}/restore/${id}`, {
         method: "POST",
-        headers: auth,
       });
       if (response.ok && onRefresh) onRefresh();
     } catch (err) {
@@ -244,10 +236,8 @@ const FileCard = ({
     e.stopPropagation();
     setShowMenu(false);
     try {
-      const auth = getTokenHeader();
-      const response = await fetch(`${RESOURCE_API_URL}/spam/${id}`, {
+      const response = await fetchWithAuth(`${RESOURCE_API_URL}/spam/${id}`, {
         method: "PATCH",
-        headers: auth,
       });
       if (response.ok && onRefresh) onRefresh();
     } catch (err) {
