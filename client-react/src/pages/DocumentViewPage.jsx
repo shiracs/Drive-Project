@@ -65,7 +65,7 @@ const DocumentViewPage = () => {
           if (roleResponse.ok) {
             const data = await roleResponse.json();
             const myRole = data.role; 
-            setCanEdit(myRole == 'OWNER' || myRole == 'WRITER');
+            setCanEdit(myRole === 'OWNER' || myRole === 'WRITER');
           } else {
             setCanEdit(false);
           }
@@ -80,6 +80,7 @@ const DocumentViewPage = () => {
     };
 
     if (id) fetchFile();
+    // eslint-disable-next-line
   }, [id]);
 
   const patchFile = async (data) => {

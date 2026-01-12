@@ -14,6 +14,7 @@ const LoginPage = () => {
     if (isDarkMode) {
       toggleTheme();
     }
+    // eslint-disable-next-line
   }, []);
 
   const handleSuccess = () => {

@@ -14,6 +14,7 @@ const MoveToModal = ({ fileId, currentName, onClose, onRefresh }) => {
 
   useEffect(() => {
     fetchContent(currentFolderId);
+    // eslint-disable-next-line
   }, [currentFolderId]);
 
   const fetchContent = async (parentId) => {
