@@ -2,7 +2,9 @@ import { useState } from "react";
 import { REGISTER } from "../consts/Register";
 import { USER_API_URL } from "../consts/Urls";
 import {  saveAuthData } from "../utils/auth";
+
 import FileUploader from "../components/FileUploader";
+import ProfilePic from "../components/ProfilePic";
 import './styles/RegisterForm.css';
 
 const RegisterForm = ({ onRegisterSuccess }) => {
@@ -61,9 +63,8 @@ const RegisterForm = ({ onRegisterSuccess }) => {
     });
 
     const data = await response.json();
-
     if (response.ok) {
-      saveAuthData(data.token, data.username, data.profilePic);
+      saveAuthData(data.token, data.username, data.id, data.profilePic);
       onRegisterSuccess(); 
     } else {
       setError(data.error || "Registration failed");
@@ -120,13 +121,11 @@ const RegisterForm = ({ onRegisterSuccess }) => {
           onFileSelected={handleFileChange}
         />
         {fileName && (
-          <span 
-            onClick={openImageInNewTab} 
-            style={{ color: '#1a73e8', cursor: 'pointer', textDecoration: 'underline', fontSize: '14px' }}
-          >
-            {fileName}
-          </span>
+          <ProfilePic profilePic={formData.profilePic} displayName={formData.fullName || formData.username} initials={(formData.fullName || formData.username || '').slice(0,2).toUpperCase()} />
         )}
+      </div>
+      <div className="password-requirements text-muted small mb-2 text-center" style={{direction: 'rtl'}}>
+        {REGISTER.ERROR_NOT_STRONG_PASSWORD}
       </div>
       <button type="submit" className="google-btn w-100">
         {REGISTER.SIGN_IN}

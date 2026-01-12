@@ -10,6 +10,7 @@ const MoveToModal = ({ fileId, currentName, onClose, onRefresh }) => {
   const [currentFolderName, setCurrentFolderName] = useState(GENERAL.ROOT);
   const [selectedFolderId, setSelectedFolderId] = useState(null);
   const [history, setHistory] = useState([]);
+  const userId = localStorage.getItem("userId")
 
   useEffect(() => {
     fetchContent(currentFolderId);
@@ -20,7 +21,7 @@ const MoveToModal = ({ fileId, currentName, onClose, onRefresh }) => {
       const url = `${API_BASE_URL}/files${parentId ? `?parentId=${parentId}` : ''}`;
       const response = await fetchWithAuth(url);
       const data = await response.json();
-      setItems(data.filter(i => i.type === 'FOLDER' && i.id !== fileId));
+      setItems(data.filter(i => i.type === 'FOLDER' && i.id !== fileId && i.ownerId===userId));
     } catch (err) {
       console.error("Failed to load folder content", err);
     }
@@ -100,7 +101,7 @@ const MoveToModal = ({ fileId, currentName, onClose, onRefresh }) => {
             </div>
           ))}
           {items.length === 0 && (
-            <div className="empty-state t-text-sub">אין תיקיות במיקום זה</div>
+            <div className="empty-state t-text-sub">אין תיקיות שלך במיקום זה</div>
           )}
         </div>
 

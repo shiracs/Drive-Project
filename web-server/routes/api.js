@@ -40,5 +40,7 @@ router.get('/files/:id/permissions', isLoggedIn, PermissionsController.getResour
 router.post('/files/:id/permissions', isLoggedIn, PermissionsController.grantPermission);
 router.patch('/files/:id/permissions/:pId', isLoggedIn, PermissionsController.updatePermission);
 router.delete('/files/:id/permissions/:pId', isLoggedIn, PermissionsController.deletePermission);
+router.get('/files/:id/my-role', isLoggedIn, PermissionsController.getMyRoleOnResource);
+
 
 export default router; 

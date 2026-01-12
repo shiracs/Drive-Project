@@ -6,12 +6,12 @@ import { RESOURCE_TYPE } from "../enums/ResourceType.js";
 /**
  * Resource records structure:
  * {
- *  id: UUID,
- *  ownerId: USER_ID,
- *  name: ORIGINAL_RESOURCENAME,
- *  type: RESOURCE_TYPE,
- *  parentId: PARENT_FOLDER_ID (or null),
- *  path: STRING (e.g., ",parent_id,child_id,")
+ * id: UUID,
+ * ownerId: USER_ID,
+ * name: ORIGINAL_RESOURCENAME,
+ * type: RESOURCE_TYPE,
+ * parentId: PARENT_FOLDER_ID (or null),
+ * path: STRING (e.g., ",parent_id,child_id,")
  * }
  */
 let RESOURCES = [];
@@ -81,19 +81,44 @@ const updateTimestamp = (id) => {
  */
 const getResourcesByUserId = (userId, parentId = null) => {
   const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
-  return RESOURCES.filter(
-    (r) => permittedIds.includes(r.id) && r.parentId === parentId && !r.isDeleted && !r.isSpam
-  );
+  
+  return RESOURCES.filter((r) => {
+    const isPermitted = permittedIds.includes(r.id);
+    const notDeletedOrSpam = !r.isDeleted && !r.isSpam;
+
+    if (!isPermitted || !notDeletedOrSpam) return false;
+
+    if (parentId) {
+      // Inside a specific folder
+      return r.parentId === parentId;
+    } else {
+      // At the Root level:
+      // Show resources I own at the root
+      if (r.ownerId === userId && r.parentId === null) return true;
+      
+      // Show shared resources where I don't have permission on the parent (Entry Points)
+      const isNotOwner = r.ownerId !== userId;
+      const isParentPermitted = r.parentId && permittedIds.includes(r.parentId);
+      
+      return isNotOwner && !isParentPermitted;
+    }
+  });
 };
 
 /**
  * Returns ALL descendants (children, grandchildren, etc.)
  * Used for flat deletion and permission granting
  */
-const getDescendants = (folderId) => {
-  // We search for resources whose path contains ",folderId,"
+const getDescendants = (folderId, includeDeleted = false) => {
   const searchPattern = `,${folderId},`;
-  return RESOURCES.filter((f) => f.path?.includes(searchPattern) && !f.isDeleted);
+  
+  return RESOURCES.filter((f) => {
+    const isMatch = f.path?.includes(searchPattern);
+    if (includeDeleted) {
+      return isMatch;
+    }
+    return isMatch && !f.isDeleted;
+  });
 };
 
 /**
@@ -128,8 +153,8 @@ const validateParent = (parentId) => {
  * Removes a resource record by id
  */
 const removeResourceRecord = (id) => {
-  const index = RESOURCES.findIndex((r) => r.id === id);
-  if (index !== -1) RESOURCES.splice(index, 1);
+  const searchPattern = `,${id},`;
+  RESOURCES = RESOURCES.filter((r) => r.id !== id && !r.path?.includes(searchPattern));
 };
 
 /**
@@ -152,13 +177,21 @@ const renameResource = (id, newName) => {
  */
 const getSharedResourcesByUserId = (userId, parentId = null) => {
   const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
-  return RESOURCES.filter(
-    (r) =>
-      permittedIds.includes(r.id) &&
-      r.ownerId !== userId &&
-      r.parentId === parentId && 
-      !r.isDeleted && !r.isSpam
-  );
+  
+  return RESOURCES.filter((r) => {
+    const isPermitted = permittedIds.includes(r.id);
+    const isNotOwner = r.ownerId !== userId;
+    const notDeletedOrSpam = !r.isDeleted && !r.isSpam;
+
+    if (!isPermitted || !isNotOwner || !notDeletedOrSpam) return false;
+
+    if (parentId) {
+      return r.parentId === parentId;
+    } else {
+      const isParentPermitted = r.parentId && permittedIds.includes(r.parentId);
+      return !isParentPermitted;
+    }
+  });
 };
 
 /**
@@ -174,7 +207,6 @@ const getOwnedResources = (userId, parentId = null) => {
 const getRecentResources = (userId, parentId = null) => {
   const allResources = getResourcesByUserId(userId, parentId);
 
-  // sorting by the updatedAt property
   return [...allResources]
     .sort((a, b) => {
       const dateA = new Date(a.updatedAt || 0);
@@ -217,8 +249,11 @@ const toggleStarred = (id) => {
  * soft delete a resource
  */
 const softDeleteResource = (id) => {
-    const resource = RESOURCES.find(r => r.id === id);
+    const resource = findById(id);
     if (resource) {
+        const descendants = getDescendants(id);
+
+        descendants.forEach(d => d.isDeleted = true);
         resource.isDeleted = true;
         return true;
     }
@@ -226,13 +261,16 @@ const softDeleteResource = (id) => {
 };
 
 /**
- * restore a resource that wes soft deleted
+ * restore a resource that was soft deleted
  */
 const restoreResource = (id) => {
-    const resource = RESOURCES.find(r => r.id === id);
+    const resource = findById(id);
     if (resource) {
-        resource.isDeleted = false;
-        return true;
+      const descendants = getDescendants(id, true);
+
+      resource.isDeleted = false;
+      descendants.forEach(d => d.isDeleted = false);
+      return true;
     }
     return false;
 };
@@ -250,17 +288,28 @@ const getTrashResources = (userId, parentId) => {
     );
   }
   // else - we are in the root of the trash page, and we want to display ALL trashed resources no matter their parent
-  else{
-    return RESOURCES.filter(
-      (r) => permittedIds.includes(r.id) && r.isDeleted === true
-    );
-  }
+  return RESOURCES.filter((r) => {
+      const isPermitted = permittedIds.includes(r.id);
+      const isDeleted = r.isDeleted === true;
+      const parent = r.parentId ? findById(r.parentId) : null;
+      const isTopLevelDeleted = !parent || !parent.isDeleted;
+
+      return isPermitted && isDeleted && isTopLevelDeleted;
+    });
 };
 
 const toggleSpam = (id) => {
-    const resource = RESOURCES.find(r => r.id === id);
+    const resource = findById(id);
     if (resource) {
-        resource.isSpam = !resource.isSpam;
+        const descendants = getDescendants(id);
+        const newState = !resource.isSpam;
+
+        descendants.forEach(d => {
+            d.isSpam = newState;
+            d.updatedAt = new Date().toISOString();
+        });
+
+        resource.isSpam = newState;
         resource.updatedAt = new Date().toISOString();
         return resource;
     }
@@ -277,11 +326,13 @@ const getSpamResources = (userId, parentId) => {
       );
     }
     // else - we are in the root of the spam page, and we want to display ALL spam resources no matter their parent
-    else{
-      return RESOURCES.filter(
-        (r) => permittedIds.includes(r.id) && r.isSpam === true && !r.isDeleted
-      );
-    }
+    return RESOURCES.filter((r) => {
+    const isPermitted = permittedIds.includes(r.id);
+    const isSpam = r.isSpam === true;
+    const parent = r.parentId ? findById(r.parentId) : null;
+    const isTopLevelSpam = !parent || !parent.isSpam;
+    return isPermitted && isSpam && isTopLevelSpam && !r.isDeleted;
+  });
 };
 
 
@@ -292,7 +343,7 @@ const moveResource = (id, newParentId) => {
   // prevent moving a folder into itself or into one of its descendants
   if (newParentId) {
     if (newParentId === id) return false;
-    const descendants = getDescendants(id);
+    const descendants = getDescendants(id, true);
     if (descendants.some(d => d.id === newParentId)) return false;
   }
 
@@ -309,7 +360,7 @@ const moveResource = (id, newParentId) => {
   const newFullPathPrefix = `${newPath}${resource.id},`;
 
   // update the paths of all the resource's descendants
-  const descendants = getDescendants(id);
+  const descendants = getDescendants(id, true);
   descendants.forEach(child => {
       child.path = child.path.replace(oldFullPathPrefix, newFullPathPrefix);
   });
@@ -340,7 +391,6 @@ export default {
   softDeleteResource,
   restoreResource,
   getTrashResources,
-  softDeleteResource,
   toggleSpam,
   getSpamResources,
   moveResource
