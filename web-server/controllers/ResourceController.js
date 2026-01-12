@@ -277,11 +277,12 @@ const searchResourcesByQuery = async (req, res) => {
       if (file.type === RESOURCE_TYPE.FILE) {
         try {
           const cppResponse = await sendToCpp(`GET ${file.id}`);
-          const content = cppResponse.split("\n\n")[1] || "";
-          if (content.toLowerCase().includes(lowerQuery)) {
+          const base64Content = cppResponse.split("\n\n")[1] || "";
+                    const decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');
+          
+          if (decodedContent.toLowerCase().includes(lowerQuery)) {
             return file;
-          }
-        } catch (err) {
+        } }catch (err) {
           console.error(`Error fetching content for ${file.id}:`, err.message);
         }
       }
