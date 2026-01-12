@@ -1,7 +1,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { RESOURCE_API_URL } from "../consts/Urls";
-import { getTokenHeader } from "../utils/auth";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import FileGrid from "../components/FileGrid";
 import { GENERAL } from "../consts/General";
 
@@ -18,12 +18,10 @@ const FilePage = ({ customUrl, title, subTitle }) => {
     async (parentId) => {
       setLoading(true);
       try {
-        const auth = getTokenHeader();
-
         let baseUrl = customUrl || RESOURCE_API_URL;
         let finalUrl = parentId ? `${baseUrl}?parentId=${parentId}` : baseUrl;
 
-        const response = await fetch(finalUrl, { headers: auth });
+        const response = await fetchWithAuth(finalUrl);
 
         if (!response.ok) throw new Error("Failed to fetch resources");
 
