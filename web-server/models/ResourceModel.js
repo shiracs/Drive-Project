@@ -219,6 +219,9 @@ const toggleStarred = (id) => {
 const softDeleteResource = (id) => {
     const resource = RESOURCES.find(r => r.id === id);
     if (resource) {
+        const descendants = getDescendants(id);
+
+        descendants.forEach(d => d.isDeleted = true);
         resource.isDeleted = true;
         return true;
     }
@@ -226,13 +229,17 @@ const softDeleteResource = (id) => {
 };
 
 /**
- * restore a resource that wes soft deleted
+ * restore a resource that was soft deleted
  */
 const restoreResource = (id) => {
     const resource = RESOURCES.find(r => r.id === id);
     if (resource) {
-        resource.isDeleted = false;
-        return true;
+      const searchPattern = `,${id},`;
+      const descendants = RESOURCES.filter(f => f.path?.includes(searchPattern));
+
+      resource.isDeleted = false;
+      descendants.forEach(d => d.isDeleted = false);
+      return true;
     }
     return false;
 };
@@ -250,17 +257,33 @@ const getTrashResources = (userId, parentId) => {
     );
   }
   // else - we are in the root of the trash page, and we want to display ALL trashed resources no matter their parent
-  else{
-    return RESOURCES.filter(
-      (r) => permittedIds.includes(r.id) && r.isDeleted === true
-    );
-  }
+  // else{
+  //   return RESOURCES.filter(
+  //     (r) => permittedIds.includes(r.id) && r.isDeleted === true
+  //   );
+  // }
+  return RESOURCES.filter((r) => {
+      const isPermitted = permittedIds.includes(r.id);
+      const isDeleted = r.isDeleted === true;
+      const parent = r.parentId ? findById(r.parentId) : null;
+      const isTopLevelDeleted = !parent || !parent.isDeleted;
+
+      return isPermitted && isDeleted && isTopLevelDeleted;
+    });
 };
 
 const toggleSpam = (id) => {
     const resource = RESOURCES.find(r => r.id === id);
     if (resource) {
-        resource.isSpam = !resource.isSpam;
+        const descendants = getDescendants(id);
+        const newState = !resource.isSpam;
+
+        descendants.forEach(d => {
+            d.isSpam = newState;
+            d.updatedAt = new Date().toISOString();
+        });
+
+        resource.isSpam = newState;
         resource.updatedAt = new Date().toISOString();
         return resource;
     }
@@ -277,11 +300,13 @@ const getSpamResources = (userId, parentId) => {
       );
     }
     // else - we are in the root of the spam page, and we want to display ALL spam resources no matter their parent
-    else{
-      return RESOURCES.filter(
-        (r) => permittedIds.includes(r.id) && r.isSpam === true && !r.isDeleted
-      );
-    }
+    return RESOURCES.filter((r) => {
+    const isPermitted = permittedIds.includes(r.id);
+    const isSpam = r.isSpam === true;
+    const parent = r.parentId ? findById(r.parentId) : null;
+    const isTopLevelSpam = !parent || !parent.isSpam;
+    return isPermitted && isSpam && isTopLevelSpam && !r.isDeleted;
+  });
 };
 
 

@@ -97,6 +97,7 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
   useEffect(() => {
     if (!resourceId) return;
     fetchPermissions();
+    // eslint-disable-next-line
   }, [resourceId]);
 
   const handleAddUser = async () => {

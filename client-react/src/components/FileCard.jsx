@@ -17,8 +17,9 @@ const FileCard = ({
   onOpenImage,
   onDeleteSuccess,
   onRefresh,
+  isInsideContainer,
 }) => {
-  const { id, name, type, isStarred, isDeleted: isSoftDeleted } = file;
+  const { id, name, type, isStarred, isDeleted: isSoftDeleted, isSpam } = file;
 
   const navigate = useNavigate();
 
@@ -283,18 +284,29 @@ const FileCard = ({
         <div className="delete-dropdown">
           {isSoftDeleted && (
             <>
-              <button className="delete-button" onClick={handleRestore}>
+              <button
+                onClick={handleRestore}
+                className={`delete-button ${
+                  !isInsideContainer
+                    ? "update-name-button-enabled"
+                    : "update-name-button-disabled"
+                }`}
+              >
                 <span>♻️</span>
                 <span>{DELETE.RESTORE}</span>
               </button>
               <div className="menu-divider"></div>
             </>
           )}
-          {!isSoftDeleted && (
+          {!isSoftDeleted && !isOwner && (
             <>
-              <button className="delete-button" onClick={handleSpamToggle}>
+              <button className={`delete-button ${
+                  (isSpam && isInsideContainer)
+                    ? "update-name-button-disabled"
+                    : "update-name-button-enabled"
+                }`} onClick={handleSpamToggle}>
                 <span>⚠️</span>
-                <span>{file.isSpam ? "לא ספאם" : "דווח כספאם"}</span>
+                <span>{isSpam ? "לא ספאם" : "דווח כספאם"}</span>
               </button>
               <div className="menu-divider"></div>
             </>
@@ -335,12 +347,12 @@ const FileCard = ({
 
           <button
             className={`delete-button ${
-              canEdit
-                ? "update-name-button-enabled"
-                : "update-name-button-disabled"
+              !isOwner || (isSoftDeleted && isInsideContainer)
+                ? "update-name-button-disabled"
+                : "update-name-button-enabled"
             }`}
             onClick={handleDelete}
-            disabled={!canEdit}
+            disabled={!isOwner}
           >
             <span>🗑️</span>
             <span>
@@ -349,7 +361,7 @@ const FileCard = ({
           </button>
           <div className="menu-divider"></div>
 
-          {!isSoftDeleted && (
+          {!isSoftDeleted && !isSpam && (
             <button
               className={`delete-button ${canEdit ? "" : "disabled"}`}
               onClick={(e) => {
@@ -433,9 +445,7 @@ const FileCard = ({
             <div className="file-header-row">
               <div className="file-name-container">
                 <div className="file-icon-small">{isImage ? "🖼️" : "📄"}</div>
-                <div className="file-name-text t-text-main">
-                  {name}
-                </div>
+                <div className="file-name-text t-text-main">{name}</div>
               </div>
               {renderStar()}
               {renderActionMenu()}

@@ -61,6 +61,7 @@ const FileGrid = ({
                     onNavigate={onNavigate}
                     onDeleteSuccess={onDeleteSuccess}
                     onRefresh={onRefresh}
+                    isInsideContainer={showBackButton}
                   />
                 ))}
               </div>
@@ -79,6 +80,7 @@ const FileGrid = ({
                     onOpenImage={setSelectedImageId}
                     onDeleteSuccess={onDeleteSuccess}
                     onRefresh={onRefresh}
+                    isInsideContainer={showBackButton}
                   />
                 ))}
               </div>
