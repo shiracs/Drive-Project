@@ -4,7 +4,7 @@ import FileUploader from './FileUploader';
 import CreateFolderModal from './CreateFolderModal';
 import { SIDEBAR_MENU } from '../consts/Sidebar';
 import { RESOURCE_API_URL } from '../consts/Urls';
-import { getTokenHeader } from '../utils/auth';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 import './styles/NewMenu.css';
 
 const NewMenu = ({ onUpload }) => {
@@ -31,12 +31,9 @@ const NewMenu = ({ onUpload }) => {
   const handleCreateTextFile = async () => {
     setIsOpen(false);
     try {
-      const auth = getTokenHeader();
-      
-      const response = await fetch(RESOURCE_API_URL, {
+      const response = await fetchWithAuth(RESOURCE_API_URL, {
         method: "POST",
         headers: {
-          ...auth,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ 

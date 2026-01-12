@@ -3,6 +3,7 @@ export const SIDEBAR_MENU = {
   MY_STORAGE: "האחסון שלי",
   SHARED: "פריטים ששותפו איתי",
   RECENT: "לאחרונה",
+  RECENT_SUBTITLE: "עד 10 אחרונים ששונו",
   STARRED: "מסומן בכוכב",
   TRASH: "אשפה",
   SPAM: "ספאם",
@@ -13,7 +14,7 @@ export const SIDEBAR_MENU = {
   CREATE_FOLDER: "צור תיקייה",
   NEW_FILE_NAME: "מסמך ללא שם",
   CREATE_FILE_ERROR: "שגיאה ביצירת הקובץ",
-  UPLOAD_SUCCESSFUL: "העלאה הסתיימה בהצלחה!",
+  UPLOAD_SUCCESSFUL: "!העלאה הסתיימה בהצלחה",
   UPLOAD_ERROR: "אירעה שגיאה בזמן ההעלאה."
 };
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { RESOURCE_API_URL, API_BASE_URL } from "../consts/Urls";
 import FileUploader from "./FileUploader";
 import { GENERAL } from "../consts/General";
-import { getTokenHeader } from "../utils/auth";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import './styles/ImageModal.css';
 
 const ImageModal = ({ fileId, onClose }) => {
@@ -16,10 +16,7 @@ const ImageModal = ({ fileId, onClose }) => {
 
     const fetchImage = async () => {
       try {
-        const auth = getTokenHeader();
-        const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
-          headers: auth,
-        });
+        const response = await fetchWithAuth(`${API_BASE_URL}/files/${fileId}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -70,13 +67,11 @@ const ImageModal = ({ fileId, onClose }) => {
 
   const handleImageUpdate = async (fileData) => {
     try {
-      const auth = getTokenHeader();
       const cleanBase64 = fileData.base64.split(",")[1];
 
-      const response = await fetch(`${RESOURCE_API_URL}/${fileId}`, {
+      const response = await fetchWithAuth(`${RESOURCE_API_URL}/${fileId}`, {
         method: "PATCH",
         headers: {
-          ...auth,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

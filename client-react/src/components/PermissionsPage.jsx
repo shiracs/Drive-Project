@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { API_BASE_URL } from '../consts/Urls';
-import { getTokenHeader } from '../utils/auth';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 import { PERMISSIONS } from '../consts/Permissions';
 import { getRoleDisplay, getRoleColor } from '../enums/PermissionEnum';
 import './styles/PermissionsPage.css';
@@ -41,12 +41,7 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
     setError(null);
 
     try {
-      const auth = getTokenHeader();
-      
-      const response = await fetch(`${API_BASE_URL}/files/${resourceId}/permissions`, {
-        method: 'GET',
-        headers: auth
-      });
+      const response = await fetchWithAuth(`${API_BASE_URL}/files/${resourceId}/permissions`);
 
       if (response.status === 403) {
         setIsOwner(false);
@@ -67,10 +62,7 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
       // Fetch all users in parallel for better performance
       const userPromises = userIds.map(async (userId) => {
         try {
-          const userResponse = await fetch(`${API_BASE_URL}/users/${userId}`, {
-            method: 'GET',
-            headers: auth
-          });
+          const userResponse = await fetchWithAuth(`${API_BASE_URL}/users/${userId}`);
           return userResponse.ok ? await userResponse.json() : null;
         } catch (err) {
           console.error(`Failed to fetch user ${userId}:`, err);
@@ -112,14 +104,9 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
 
     setActionLoading(true);
     try {
-      const auth = getTokenHeader();
-      
       let targetUserId = null;
       try {
-        const userResponse = await fetch(`${API_BASE_URL}/users/username/${newUsername.trim()}`, {
-          method: 'GET',
-          headers: auth
-        });
+        const userResponse = await fetchWithAuth(`${API_BASE_URL}/users/username/${newUsername.trim()}`);
         
         if (userResponse.ok) {
           const userData = await userResponse.json();
@@ -135,10 +122,9 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
         return;
       }
       
-      const response = await fetch(`${API_BASE_URL}/files/${resourceId}/permissions`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/files/${resourceId}/permissions`, {
         method: 'POST',
         headers: {
-          ...auth,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -171,11 +157,9 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
 
     setActionLoading(true);
     try {
-      const auth = getTokenHeader();
-      const response = await fetch(`${API_BASE_URL}/files/${resourceId}/permissions/${permissionId}`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/files/${resourceId}/permissions/${permissionId}`, {
         method: 'PATCH',
         headers: {
-          ...auth,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ role: nextRole })
@@ -205,10 +189,8 @@ const PermissionsPage = ({ resourceId, resourceName, editable = false }) => {
 
     setActionLoading(true);
     try {
-      const auth = getTokenHeader();
-      const response = await fetch(`${API_BASE_URL}/files/${resourceId}/permissions/${permissionId}`, {
-        method: 'DELETE',
-        headers: auth
+      const response = await fetchWithAuth(`${API_BASE_URL}/files/${resourceId}/permissions/${permissionId}`, {
+        method: 'DELETE'
       });
 
       if (!response.ok) {

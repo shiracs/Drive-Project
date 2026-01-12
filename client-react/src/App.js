@@ -11,9 +11,17 @@ import FilePage from "./pages/FilePage";
 import DocumentViewPage from "./pages/DocumentViewPage";
 import MainLayout from "./components/layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { SIDEBAR_PATHS } from "./consts/Sidebar";
+import { SIDEBAR_MENU, SIDEBAR_PATHS } from "./consts/Sidebar";
 import SearchPage from "./pages/SearchPage";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import {
+  SHARED_API_URL,
+  OWNED_API_URL,
+  RECENT_API_URL,
+  STARRED_API_URL,
+  TRASH_API_URL,
+  SPAM_API_URL
+} from "./consts/Urls";
 
 function App() {
   return (
@@ -31,9 +39,61 @@ function App() {
             </ProtectedRoute>
           }
         >
+          <Route path={SIDEBAR_PATHS.HOME} element={<FilePage />} />
           <Route
-            path={`/${SIDEBAR_PATHS.HOME}/:folderId?`}
-            element={<FilePage />}
+            path="/shared"
+            element={
+              <FilePage
+                customUrl={SHARED_API_URL}
+                title={SIDEBAR_MENU.SHARED}
+              />
+            }
+          />
+          <Route
+            path="/my-storage"
+            element={
+              <FilePage
+                customUrl={OWNED_API_URL}
+                title={SIDEBAR_MENU.MY_STORAGE}
+              />
+            }
+          />
+          <Route
+            path="/recent"
+            element={
+              <FilePage
+                customUrl={RECENT_API_URL}
+                title={SIDEBAR_MENU.RECENT}
+                subTitle={SIDEBAR_MENU.RECENT_SUBTITLE}
+              />
+            }
+          />
+          <Route
+            path="/starred"
+            element={
+              <FilePage
+                customUrl={STARRED_API_URL}
+                title={SIDEBAR_MENU.STARRED}
+              />
+            }
+          />
+          <Route
+            path="/trash"
+            element={
+                <FilePage
+                  customUrl={TRASH_API_URL}
+                  title={SIDEBAR_MENU.TRASH}
+                />
+            }
+          />
+          <Route 
+              path="/spam" 
+              element={
+                  <FilePage 
+                      customUrl={SPAM_API_URL} 
+                      title={SIDEBAR_MENU.SPAM} 
+                  />
+              } 
           />
           <Route path="/search" element={<SearchPage />} />
           <Route
