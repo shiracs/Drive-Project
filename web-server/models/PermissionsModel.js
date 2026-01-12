@@ -111,6 +111,15 @@ const deletePermission = (pId) => {
   return false;
 };
 
+
+const getUserRoleOnResource = (userId, resourceId) => {
+  const permission = PERMISSIONS.find(
+    (p) => p.resourceId === resourceId && p.userId === userId
+  );
+
+  return permission ? permission.role : null;
+};
+
 export default {
   createResourcePermission,
   checkPermission,
@@ -119,4 +128,5 @@ export default {
   getPermissionsByResourceId,
   updatePermission,
   deletePermission,
+  getUserRoleOnResource
 };

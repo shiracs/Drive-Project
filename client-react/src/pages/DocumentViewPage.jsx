@@ -58,16 +58,17 @@ const DocumentViewPage = () => {
         }
 
         try {
-          const testResponse = await fetch(`${API_BASE_URL}/files/${id}`, {
-            method: 'PATCH',
-            headers: { ...auth, 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
+          const roleResponse = await fetch(`${API_BASE_URL}/files/${id}/my-role`, {
+            method: 'GET',
+            headers: auth
           });
-          
-          if (testResponse.status === 403) {
-            setCanEdit(false);
+
+          if (roleResponse.ok) {
+            const data = await roleResponse.json();
+            const myRole = data.role; 
+            setCanEdit(myRole == 'OWNER' || myRole == 'WRITER');
           } else {
-            setCanEdit(testResponse.ok || testResponse.status === 204);
+            setCanEdit(false);
           }
         } catch {
           setCanEdit(false);

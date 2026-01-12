@@ -43,8 +43,8 @@ const grantPermission = async (req, res) => {
     return res.status(403).json({ error: "Forbidden: Only owners can grant permissions" });
   }
 
-  // Get resource and ALL descendants
-  const descendants = ResourceModel.getDescendants(fileId);
+  // Get resource and ALL descendants (including deleted to maintain consistency)
+  const descendants = ResourceModel.getDescendants(fileId, true);
   const allIdsToGrant = [fileId, ...descendants.map(f => f.id)];
 
   // Grant permissions to all these files/folders
@@ -65,7 +65,7 @@ const grantPermission = async (req, res) => {
 
 /**
  * PATCH /api/files/:id/permissions/:pId
- * Updates a specific user's role for a file
+ * Updates a specific user's role for a file and all its descendants
  */
 const updatePermission = async (req, res) => {
   const userId = req.userId;
@@ -80,10 +80,23 @@ const updatePermission = async (req, res) => {
     return res.status(403).json({ error: "Forbidden: Only owners can update permissions" });
   }
 
-  const updated = PermissionsModel.updatePermission(pId, newRole);
-  if (!updated) return res.status(404).json({ error: "Permission record not found" });
+  const allPerms = PermissionsModel.getPermissionsByResourceId(fileId);
+  const rootPerm = allPerms.find(p => p.id === pId);
+  if (!rootPerm) return res.status(404).json({ error: "Permission record not found" });
 
-  res.status(200).json(updated);
+  const targetUserId = rootPerm.userId;
+  const descendants = ResourceModel.getDescendants(fileId, true);
+  const allFiles = [fileId, ...descendants.map(d => d.id)];
+
+  allFiles.forEach(fid => {
+    const perms = PermissionsModel.getPermissionsByResourceId(fid);
+    const userPerm = perms.find(p => p.userId === targetUserId);
+    if (userPerm) {
+      PermissionsModel.updatePermission(userPerm.id, newRole);
+    }
+  });
+
+  res.status(200).json({ message: "Permissions updated tree-wide" });
 };
 
 /**
@@ -109,8 +122,8 @@ const deletePermission = async (req, res) => {
   
   const revokedUserId = rootPermToDelete.userId;
 
-  // Get ALL descendants + current file
-  const descendants = ResourceModel.getDescendants(fileId);
+  // Get ALL descendants + current file (including deleted)
+  const descendants = ResourceModel.getDescendants(fileId, true);
   const allFilesToCheck = [fileId, ...descendants.map(f => f.id)];
 
   // Remove permission for this user on all these files
@@ -127,9 +140,38 @@ const deletePermission = async (req, res) => {
   res.status(204).send();
 };
 
+/**
+ * GET /api/files/:id/my-role
+ */
+const getMyRoleOnResource = async (req, res) => {
+  const userId = req.userId; 
+  const { id: resourceId } = req.params;
+
+  if (!UserModel.isValidId(userId)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const resource = ResourceModel.findById(resourceId);
+  if (!resource) {
+    return res.status(404).json({ error: "Resource not found" });
+  }
+
+  const role = PermissionsModel.getUserRoleOnResource(userId, resourceId);
+
+  if (!role) {
+    return res.status(403).json({ 
+      role: null, 
+      message: "You have no permissions for this resource" 
+    });
+  }
+
+  res.json({ role });
+};
+
 export default {
   getResourcePermissions,
   grantPermission,
   updatePermission,
   deletePermission,
+  getMyRoleOnResource
 };
