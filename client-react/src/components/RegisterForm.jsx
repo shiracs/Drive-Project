@@ -27,11 +27,6 @@ const RegisterForm = ({ onRegisterSuccess }) => {
     setFileName(fileData.name);
   };
 
-  const openImageInNewTab = () => {
-    const newTab = window.open();
-    newTab.document.write(`<img src="${formData.profilePic}" style="max-width:100%" />`);
-  };
-
   const validatePasswords = () => { 
     const lengthOK = formData.password.length >= 8 && formData.password.length <= 16; 
     const hasLetter = /\p{L}/u.test(formData.password); 
