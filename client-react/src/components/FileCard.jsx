@@ -279,6 +279,7 @@ const FileCard = ({
                     ? "update-name-button-enabled"
                     : "update-name-button-disabled"
                 }`}
+                disabled={isInsideContainer}
               >
                 <span>♻️</span>
                 <span>{DELETE.RESTORE}</span>
@@ -295,6 +296,7 @@ const FileCard = ({
                     : "update-name-button-enabled"
                 }`}
                 onClick={handleSpamToggle}
+                disabled={isSpam && isInsideContainer}
               >
                 <span>⚠️</span>
                 <span>{isSpam ? "לא ספאם" : "דווח כספאם"}</span>
@@ -310,6 +312,7 @@ const FileCard = ({
                   isOwner ? "" : "permissions-button-non-owner"
                 }`}
                 onClick={handleShowPermissions}
+                disabled={!isOwner}
               >
                 <span>👥</span>
                 <span>{PERMISSIONS.MENU_BUTTON}</span>
