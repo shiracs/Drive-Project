@@ -42,16 +42,14 @@ const FileCard = ({
     const fetchUserRole = async () => {
       try {
         const auth = getTokenHeader();
-        const response = await fetch(
-          `${API_BASE_URL}/files/${id}/permissions`,
-          {
-            method: "GET",
-            headers: auth,
-          }
-        );
+        const response = await fetch(`${API_BASE_URL}/files/${id}/my-role`, {
+          method: "GET",
+          headers: auth,
+        });
 
         if (response.ok) {
-          setUserRole("OWNER");
+          const role = await response.json();
+          setUserRole(role.role);
         } else if (response.status === 403) {
           setUserRole("READER");
         }
@@ -300,11 +298,14 @@ const FileCard = ({
           )}
           {!isSoftDeleted && !isOwner && (
             <>
-              <button className={`delete-button ${
-                  (isSpam && isInsideContainer)
+              <button
+                className={`delete-button ${
+                  isSpam && isInsideContainer
                     ? "update-name-button-disabled"
                     : "update-name-button-enabled"
-                }`} onClick={handleSpamToggle}>
+                }`}
+                onClick={handleSpamToggle}
+              >
                 <span>⚠️</span>
                 <span>{isSpam ? "לא ספאם" : "דווח כספאם"}</span>
               </button>
@@ -363,7 +364,9 @@ const FileCard = ({
 
           {!isSoftDeleted && !isSpam && (
             <button
-              className={`delete-button ${canEdit ? "" : "disabled"}`}
+              className={`delete-button ${
+                isOwner ? "" : "update-name-button-disabled"
+              }`}
               onClick={(e) => {
                 e.stopPropagation();
                 setShowMoveTo(true);
