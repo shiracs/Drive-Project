@@ -45,21 +45,23 @@ const grantPermission = async (req, res) => {
   }
 
   // Get resource and ALL descendants (including deleted to maintain consistency)
+  // TODO: 
   const descendants = await ResourceModel.getDescendants(fileId, true);
   const allIdsToGrant = [fileId, ...descendants.map(f => f.id)];
 
-  // Grant permissions to all these files/folders
-  allIdsToGrant.forEach(async rid => {
-    // Check if permission already exists
-    const existingPerm = await permissionsService.getPermissionByUserAndResource(targetUserId, rid);
-    if (existingPerm) {
-      // Update role if permission exists
-      await permissionsService.updatePermission(existingPerm.id, role);
-    } else {
-      // Create new permission
-      await permissionsService.createResourcePermission(rid, targetUserId, role);
-    }
-  });
+  // Grant permission for this user on all these files
+  for (const rid of allIdsToGrant) {
+      // Check if permission already exists
+      const roleOnResource = await permissionsService.getUserRoleOnResource(targetUserId, rid);
+      if (roleOnResource) {
+          // Update existing permission
+          const perms = await permissionsService.getPermissionsByResourceId(rid);
+          const userPerm = perms.find(p => p.userId === targetUserId);
+          if (userPerm) await permissionsService.updatePermission(userPerm.id, role);
+      } else {
+          await permissionsService.createResourcePermission(rid, targetUserId, role);
+      }
+  }
   
   res.status(201).json({ message: "Permission granted tree-wide" });
 };

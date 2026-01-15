@@ -99,6 +99,10 @@ const getUserRoleOnResource = async (userId, resourceId) => {
   return permission ? permission.role : null;
 };
 
+const getPermissionByUserAndResource = async (userId, resourceId) => {
+  return await PermissionModel.findOne({ userId, resourceId });
+};
+
 export default {
   createResourcePermission,
   checkPermission,
@@ -107,5 +111,6 @@ export default {
   getPermissionsByResourceId,
   updatePermission,
   deletePermission,
-  getUserRoleOnResource
+  getUserRoleOnResource,
+  getPermissionByUserAndResource
 };
