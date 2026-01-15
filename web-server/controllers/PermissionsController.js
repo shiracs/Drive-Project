@@ -1,5 +1,5 @@
 import UserModel from "../models/UserModel.js";
-import PermissionsModel from "../models/PermissionsModel.js";
+import * as permissionsService from "../services/PermissionsService.js";
 import ResourceModel from "../models/ResourceModel.js"; 
 import { ROLES } from "../enums/Roles.js";
 
@@ -11,16 +11,17 @@ const getResourcePermissions = async (req, res) => {
   const userId = req.userId;
   const { id: resourceId } = req.params;
 
+  // TODO:
   if (!UserModel.isValidId(userId)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
   // Only the OWNER can see the list of permissions
-  if (!PermissionsModel.checkPermission(userId, resourceId, ROLES.OWNER)) {
+  if (!await permissionsService.checkPermission(userId, resourceId, ROLES.OWNER)) {
     return res.status(403).json({ error: "Forbidden: Only owners can view permission lists" });
   }
 
-  const permissions = PermissionsModel.getPermissionsByResourceId(resourceId);
+  const permissions = await permissionsService.getPermissionsByResourceId(resourceId);
   res.json(permissions);
 };
 
@@ -39,25 +40,25 @@ const grantPermission = async (req, res) => {
   if (!UserModel.isValidId(targetUserId)) return res.status(404).json({ error: "Target user not found" });
 
   // Only the OWNER of the file can grant new permissions
-  if (!PermissionsModel.checkPermission(userId, fileId, ROLES.OWNER)) {
+  if (!await permissionsService.checkPermission(userId, fileId, ROLES.OWNER)) {
     return res.status(403).json({ error: "Forbidden: Only owners can grant permissions" });
   }
 
   // Get resource and ALL descendants (including deleted to maintain consistency)
-  const descendants = ResourceModel.getDescendants(fileId, true);
+  const descendants = await ResourceModel.getDescendants(fileId, true);
   const allIdsToGrant = [fileId, ...descendants.map(f => f.id)];
 
   // Grant permissions to all these files/folders
-  allIdsToGrant.forEach(targetId => {
-      // Check for EXISTING permission record for this user&file
-      const filePerms = PermissionsModel.getPermissionsByResourceId(targetId);
-      const existingPerm = filePerms.find(p => p.userId === targetUserId);
-
-      if (existingPerm) {
-          PermissionsModel.updatePermission(existingPerm.id, role);
-      } else {
-          PermissionsModel.createResourcePermission(targetId, targetUserId, role);
-      }
+  allIdsToGrant.forEach(async rid => {
+    // Check if permission already exists
+    const existingPerm = await permissionsService.getPermissionByUserAndResource(targetUserId, rid);
+    if (existingPerm) {
+      // Update role if permission exists
+      await permissionsService.updatePermission(existingPerm.id, role);
+    } else {
+      // Create new permission
+      await permissionsService.createResourcePermission(rid, targetUserId, role);
+    }
   });
   
   res.status(201).json({ message: "Permission granted tree-wide" });
@@ -76,25 +77,27 @@ const updatePermission = async (req, res) => {
   if (!newRole) return res.status(400).json({ error: "Missing new role" });
 
   // Only the OWNER can modify permissions
-  if (!PermissionsModel.checkPermission(userId, fileId, ROLES.OWNER)) {
+  if (!await permissionsService.checkPermission(userId, fileId, ROLES.OWNER)) {
     return res.status(403).json({ error: "Forbidden: Only owners can update permissions" });
   }
 
-  const allPerms = PermissionsModel.getPermissionsByResourceId(fileId);
+  const allPerms = await permissionsService.getPermissionsByResourceId(fileId);
   const rootPerm = allPerms.find(p => p.id === pId);
   if (!rootPerm) return res.status(404).json({ error: "Permission record not found" });
 
   const targetUserId = rootPerm.userId;
-  const descendants = ResourceModel.getDescendants(fileId, true);
+  const descendants = await ResourceModel.getDescendants(fileId, true);
   const allFiles = [fileId, ...descendants.map(d => d.id)];
 
-  allFiles.forEach(fid => {
-    const perms = PermissionsModel.getPermissionsByResourceId(fid);
-    const userPerm = perms.find(p => p.userId === targetUserId);
-    if (userPerm) {
-      PermissionsModel.updatePermission(userPerm.id, newRole);
-    }
-  });
+  // Update permission for this user on all these files
+  for (const fid of allFiles) {
+      const filePerms = await permissionsService.getPermissionsByResourceId(fid);
+      const userPerm = filePerms.find(p => p.userId === targetUserId);
+      
+      if (userPerm) {
+          await permissionsService.updatePermission(userPerm.id, newRole);
+      }
+  }
 
   res.status(200).json({ message: "Permissions updated tree-wide" });
 };
@@ -110,12 +113,12 @@ const deletePermission = async (req, res) => {
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
   // Only the OWNER can revoke permissions
-  if (!PermissionsModel.checkPermission(userId, fileId, ROLES.OWNER)) {
+  if (!await permissionsService.checkPermission(userId, fileId, ROLES.OWNER)) {
     return res.status(403).json({ error: "Forbidden: Only owners can delete permissions" });
   }
 
   // Find the permission to know WHO we are revoking from
-  const allPerms = PermissionsModel.getPermissionsByResourceId(fileId);
+  const allPerms = await permissionsService.getPermissionsByResourceId(fileId);
   const rootPermToDelete = allPerms.find(p => p.id === pId);
   
   if (!rootPermToDelete) return res.status(404).json({ error: "Permission record not found" });
@@ -123,19 +126,18 @@ const deletePermission = async (req, res) => {
   const revokedUserId = rootPermToDelete.userId;
 
   // Get ALL descendants + current file (including deleted)
-  const descendants = ResourceModel.getDescendants(fileId, true);
+  const descendants = await ResourceModel.getDescendants(fileId, true);
   const allFilesToCheck = [fileId, ...descendants.map(f => f.id)];
 
   // Remove permission for this user on all these files
-  allFilesToCheck.forEach(fid => {
-      // Find the specific permission ID for this user on this file
-      const filePerms = PermissionsModel.getPermissionsByResourceId(fid);
-      const userPermToDelete = filePerms.find(p => p.userId === revokedUserId);
+  for (const fid of allFilesToCheck) {
+      const filePerms = await permissionsService.getPermissionsByResourceId(fid);
+      const userPerm = filePerms.find(p => p.userId === revokedUserId);
       
-      if (userPermToDelete) {
-          PermissionsModel.deletePermission(userPermToDelete.id);
+      if (userPerm) {
+          await permissionsService.deletePermission(userPerm.id);
       }
-  });
+  }
 
   res.status(204).send();
 };
@@ -151,12 +153,13 @@ const getMyRoleOnResource = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
+  // TODO:
   const resource = ResourceModel.findById(resourceId);
   if (!resource) {
     return res.status(404).json({ error: "Resource not found" });
   }
 
-  const role = PermissionsModel.getUserRoleOnResource(userId, resourceId);
+  const role = await permissionsService.getUserRoleOnResource(userId, resourceId);
 
   if (!role) {
     return res.status(403).json({ 

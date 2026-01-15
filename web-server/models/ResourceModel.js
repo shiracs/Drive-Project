@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import PermissionsModel from "./PermissionsModel.js";
+import * as PermissionsModel from "../services/PermissionsService.js";
 import { RESOURCE_TYPE } from "../enums/ResourceType.js";
 
 //! Volatile storage for resources
@@ -79,8 +79,8 @@ const updateTimestamp = (id) => {
  * @param {string | null} parentId - The folder we are listing (or null for root)
  * @returns {Array} List of authorized resource objects
  */
-const getResourcesByUserId = (userId, parentId = null) => {
-  const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
+const getResourcesByUserId = async (userId, parentId = null) => {
+  const permittedIds = await PermissionsModel.getPermittedResourcesOfUser(userId);
   
   return RESOURCES.filter((r) => {
     const isPermitted = permittedIds.includes(r.id);
@@ -124,8 +124,8 @@ const getDescendants = (folderId, includeDeleted = false) => {
 /**
  * Helper to get ALL resources (used for search)
  */
-const getAllResourcesByUser = (userId) => {
-  const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
+const getAllResourcesByUser = async (userId) => {
+  const permittedIds = await PermissionsModel.getPermittedResourcesOfUser(userId);
   return RESOURCES.filter((r) => permittedIds.includes(r.id) && !r.isDeleted && !r.isSpam);
 };
 
@@ -175,8 +175,8 @@ const renameResource = (id, newName) => {
 /**
  * Returns all resources shared with the user (where user is NOT the owner)
  */
-const getSharedResourcesByUserId = (userId, parentId = null) => {
-  const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
+const getSharedResourcesByUserId = async (userId, parentId = null) => {
+  const permittedIds = await PermissionsModel.getPermittedResourcesOfUser(userId);
   
   return RESOURCES.filter((r) => {
     const isPermitted = permittedIds.includes(r.id);
@@ -216,9 +216,9 @@ const getRecentResources = (userId, parentId = null) => {
     .slice(0, 10);
 };
 
-const getStarredResources = (userId, parentId = null) => {
+const getStarredResources = async (userId, parentId = null) => {
   // all resources permitted for the user
-  const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
+  const permittedIds = await PermissionsModel.getPermittedResourcesOfUser(userId);
 
   // if we have parentId - it means user is inside a starred folder,so we want to display ALL its contents
   if (parentId) {
@@ -278,8 +278,8 @@ const restoreResource = (id) => {
 /**
  * get all soft deleted resources
  */
-const getTrashResources = (userId, parentId) => {
-  const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
+const getTrashResources = async (userId, parentId) => {
+  const permittedIds = await PermissionsModel.getPermittedResourcesOfUser(userId);
 
   // if we have parentId - it means user is inside a trashed folder,so we want to display ALL its contents
   if (parentId) {
@@ -316,8 +316,8 @@ const toggleSpam = (id) => {
     return null;
 };
 
-const getSpamResources = (userId, parentId) => {
-    const permittedIds = PermissionsModel.getPermittedResourcesOfUser(userId);
+const getSpamResources = async (userId, parentId) => {
+    const permittedIds = await PermissionsModel.getPermittedResourcesOfUser(userId);
 
     // if we have parentId - it means user is inside a spam folder,so we want to display ALL its contents
     if (parentId) {

@@ -1,16 +1,5 @@
-import { v4 as uuidv4 } from "uuid";
 import { ROLES, isValidRole } from "../enums/Roles.js";
-
-//! Volatile storage for permissions
-/**
- * Permissions structure:
- * {
- *   id: PERMISSION_ID,
- *   resourceId: RESOURCE_ID,
- *   userId: USER_ID,
- *   role: READER | WRITER | OWNER
- */
-let PERMISSIONS = [];
+import PermissionModel from "../models/PermissionsSchema.js";
 
 /**
  * Creates a new permission record for a user on a specific resource
@@ -19,15 +8,13 @@ let PERMISSIONS = [];
  * @param {*} role
  * @returns the permission record
  */
-const createResourcePermission = (resourceId, userId, role) => {
-  const permission = {
-    id: uuidv4(), //This is the pId
+const createResourcePermission = async (resourceId, userId, role) => {
+  const newPermission = PermissionModel.create({
     resourceId,
     userId,
     role,
-  };
-  PERMISSIONS.push(permission);
-  return permission;
+  });
+  return await newPermission.save();
 };
 
 /**
@@ -37,13 +24,16 @@ const createResourcePermission = (resourceId, userId, role) => {
  * @param {string} requiredRole - Minimum role required (reader/writer/owner)
  * @returns true if user has permission
  */
-const checkPermission = (userId, resourceId, requiredRole) => {
-  // find the permission record for the userId and resourceId
-  const permission = PERMISSIONS.find(
-    (p) => p.resourceId === resourceId && p.userId === userId
-  );
+const checkPermission = async (userId, resourceId, requiredRole) => {
 
-  if (!permission) return false;
+  // find the permission record for the userId and resourceId
+  const permission = await PermissionModel.findOne({
+    resourceId,
+    userId,
+  });
+
+  if (!permission) return false;   
+
   if (requiredRole === ROLES.READER) return true; // Anyone with a permission record can read
   if (requiredRole === ROLES.WRITER)
     return permission.role === ROLES.OWNER || permission.role === ROLES.WRITER;
@@ -57,26 +47,20 @@ const checkPermission = (userId, resourceId, requiredRole) => {
  * @param {string} userId - ID of the user
  * @returns {Array} List of authorized resource objects
  */
-const getPermittedResourcesOfUser = (userId) => {
-  const resourceIds = PERMISSIONS.filter((p) => p.userId === userId).map(
-    (p) => p.resourceId
-  );
-  return resourceIds;
+const getPermittedResourcesOfUser = async (userId) => {
+    const resourceIds = await PermissionModel.find({ userId })
+    returns.map(p => p.resourceId);
 };
 
 /**
  * Removes all permission records associated with a resource
  * @param {*} resourceId
  */
-const removeAllPermissionsOfResource = (resourceId) => {
-  for (let i = PERMISSIONS.length - 1; i >= 0; i--) {
-    if (PERMISSIONS[i].resourceId === resourceId) {
-      PERMISSIONS.splice(i, 1);
-    }
-  }
+const removeAllPermissionsOfResource = async (resourceId) => {
+    await PermissionModel.deleteMany({ resourceId });
 };
-const getPermissionsByResourceId = (resourceId) => {
-  return PERMISSIONS.filter(p => p.resourceId === resourceId);
+const getPermissionsByResourceId = async(resourceId) => {
+    return await PermissionModel.find({ resourceId });
 };
 
 /**
@@ -85,14 +69,13 @@ const getPermissionsByResourceId = (resourceId) => {
  * @param {string} newRole - The new role to assign
  * @returns {Object|null} The updated record or null if not found
  */
-const updatePermission = (pId, newRole) => {
+const updatePermission = async (pId, newRole) => {
   if (!isValidRole(newRole)) {
     throw new Error(`Invalid role: ${newRole}. Must be one of: ${Object.values(ROLES).join(", ")}`);
   }
-  const permission = PERMISSIONS.find((p) => p.id === pId);
-  if (permission) {
-    permission.role = newRole;
-    return permission;
+  const updatedPermission = await PermissionModel.findByIdAndUpdate(pId, { role: newRole }, { new: true });
+  if (updatedPermission) {
+    return updatedPermission;
   }
   return null;
 };
@@ -102,21 +85,17 @@ const updatePermission = (pId, newRole) => {
  * @param {string} pId - The permission record ID
  * @returns {boolean} true if deleted
  */
-const deletePermission = (pId) => {
-  const index = PERMISSIONS.findIndex((p) => p.id === pId);
-  if (index !== -1) {
-    PERMISSIONS.splice(index, 1);
-    return true;
-  }
-  return false;
+const deletePermission = async (pId) => {
+  const result = await PermissionModel.findByIdAndDelete(pId);
+  return result !== null;
 };
 
 
-const getUserRoleOnResource = (userId, resourceId) => {
-  const permission = PERMISSIONS.find(
-    (p) => p.resourceId === resourceId && p.userId === userId
-  );
-
+const getUserRoleOnResource = async (userId, resourceId) => {
+  const permission = await PermissionModel.findOne({
+    resourceId,
+    userId,
+  });
   return permission ? permission.role : null;
 };
 
