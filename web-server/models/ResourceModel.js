@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import * as PermissionsModel from "../services/PermissionsService.js";
+import PermissionsModel from "../services/PermissionsService.js";
 import { RESOURCE_TYPE } from "../enums/ResourceType.js";
 
 //! Volatile storage for resources

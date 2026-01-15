@@ -1,5 +1,5 @@
 import UserModel from "../models/UserModel.js";
-import * as permissionsService from "../services/PermissionsService.js";
+import permissionsService from "../services/PermissionsService.js";
 import ResourceModel from "../models/ResourceModel.js"; 
 import { ROLES } from "../enums/Roles.js";
 

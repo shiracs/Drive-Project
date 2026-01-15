@@ -1,6 +1,6 @@
 import ResourceModel from "../models/ResourceModel.js";
 import UserModel from "../models/UserModel.js";
-import * as PermissionsModel from "../services/PermissionsService.js";
+import PermissionsModel from "../services/PermissionsService.js";
 import { sendToCpp } from "../services/cppService.js";
 import { ROLES } from "../enums/Roles.js";
 import { RESOURCE_TYPE, isValidResourceType } from "../enums/ResourceType.js";

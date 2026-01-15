@@ -1,5 +1,5 @@
 import { ROLES, isValidRole } from "../enums/Roles.js";
-import PermissionModel from "../models/PermissionsSchema.js";
+import PermissionModel from "../models/PermissionsModel.js";
 
 /**
  * Creates a new permission record for a user on a specific resource
@@ -9,12 +9,12 @@ import PermissionModel from "../models/PermissionsSchema.js";
  * @returns the permission record
  */
 const createResourcePermission = async (resourceId, userId, role) => {
-  const newPermission = PermissionModel.create({
+  const newPermission = await PermissionModel.create({
     resourceId,
     userId,
     role,
   });
-  return await newPermission.save();
+  return newPermission;
 };
 
 /**
@@ -48,8 +48,8 @@ const checkPermission = async (userId, resourceId, requiredRole) => {
  * @returns {Array} List of authorized resource objects
  */
 const getPermittedResourcesOfUser = async (userId) => {
-    const resourceIds = await PermissionModel.find({ userId })
-    returns.map(p => p.resourceId);
+    const permissions = await PermissionModel.find({ userId })
+    return permissions.map(p => p.resourceId);
 };
 
 /**
