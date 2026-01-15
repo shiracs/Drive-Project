@@ -1,6 +1,12 @@
 import { v4 as uuid } from "uuid";
 // !Volatile user storage for now
-const USERS = [];
+const USERS = [{
+  id:'1',
+  username:'admin',
+    password:'111',
+    fullName:'admino',
+    profilePic:'hh',
+}];
 
 
 /**
