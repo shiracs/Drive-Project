@@ -1,9 +1,19 @@
 import express from 'express';
 import apiRoutes from './routes/api.js';
 import cors from 'cors';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: `./config/.env.${process.env.NODE_ENV || 'local'}` });
 
 const app = express();
-const PORT =  5000;
+const PORT =  process.env.PORT || 5000;
+const mongoURI = process.env.CONNECTION_STRING;
+
+mongoose.connect(mongoURI)
+    .then(() => console.log('Successfully connected to MongoDB'))
+    .catch((err) => {console.error('MongoDB connection error:', err); process.exit(1);});
+
 app.use(cors({
     origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
