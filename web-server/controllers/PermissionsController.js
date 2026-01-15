@@ -17,7 +17,8 @@ const getResourcePermissions = async (req, res) => {
   }
 
   // Only the OWNER can see the list of permissions
-  if (!await permissionsService.checkPermission(userId, resourceId, ROLES.OWNER)) {
+  const checkPermission = await permissionsService.checkPermission(userId, resourceId, ROLES.OWNER);
+	if(!checkPermission) {
     return res.status(403).json({ error: "Forbidden: Only owners can view permission lists" });
   }
 
@@ -40,7 +41,12 @@ const grantPermission = async (req, res) => {
   if (!UserModel.isValidId(targetUserId)) return res.status(404).json({ error: "Target user not found" });
 
   // Only the OWNER of the file can grant new permissions
-  if (!await permissionsService.checkPermission(userId, fileId, ROLES.OWNER)) {
+  const hasOwnerPermission = await permissionsService.checkPermission(
+    userId, 
+    fileId, 
+    ROLES.OWNER
+  );
+  if (!hasOwnerPermission) {
     return res.status(403).json({ error: "Forbidden: Only owners can grant permissions" });
   }
 
