@@ -38,8 +38,8 @@ router.get('/search/:query', isLoggedIn, ResourceController.searchResourcesByQue
 // Permissions Routes
 router.get('/files/:id/permissions', isLoggedIn, PermissionsController.getResourcePermissions);
 router.post('/files/:id/permissions', isLoggedIn, PermissionsController.grantPermission);
-router.patch('/files/:id/permissions/:pId', isLoggedIn, PermissionsController.updatePermission);
-router.delete('/files/:id/permissions/:pId', isLoggedIn, PermissionsController.deletePermission);
+router.patch('/files/:id/permissions/:permissionId', isLoggedIn, PermissionsController.updatePermission);
+router.delete('/files/:id/permissions/:permissionId', isLoggedIn, PermissionsController.deletePermission);
 router.get('/files/:id/my-role', isLoggedIn, PermissionsController.getMyRoleOnResource);
 
 
