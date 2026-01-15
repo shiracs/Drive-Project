@@ -103,6 +103,43 @@ const getPermissionByUserAndResource = async (userId, resourceId) => {
   return await PermissionModel.findOne({ userId, resourceId });
 };
 
+/// Bulk update permissions for a user across multiple resources
+const updatePermissionsBulk = async (resourceIds, userId, newRole) => {
+    return await PermissionModel.updateMany(
+        { 
+            resourceId: { $in: resourceIds }, 
+            userId: userId 
+        },
+        { $set: { role: newRole } }
+    );
+};
+
+// Bulk delete permissions for a user across multiple resources
+const deletePermissionsBulk = async (resourceIds, userId) => {
+    return await PermissionModel.deleteMany({
+        resourceId: { $in: resourceIds },
+        userId: userId
+    });
+};
+
+/// Bulk create permission records
+const createPermissionsBulk = async (permissionRecords) => {
+    return await PermissionModel.insertMany(permissionRecords);
+};
+
+// Get permission by its ID
+const getPermissionById = async (pId) => {
+    return await PermissionModel.findById(pId);
+};
+
+// Get userID from permission ID
+const getUserIdFromPermissionId = async (pId) => {
+    const permission = await PermissionModel.findById(pId);
+    return permission ? permission.userId : null;
+};
+
+
+
 export default {
   createResourcePermission,
   checkPermission,
@@ -112,5 +149,11 @@ export default {
   updatePermission,
   deletePermission,
   getUserRoleOnResource,
-  getPermissionByUserAndResource
+  getPermissionByUserAndResource,
+  updatePermissionsBulk,
+  deletePermissionsBulk,
+  createPermissionsBulk,
+  getPermissionById,
+  getUserIdFromPermissionId,
 };
+

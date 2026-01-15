@@ -17,11 +17,11 @@ const getUserResourcesInDir = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
 
   // Get resources only for this specific level (right now we use null for root)
-  const userResources = ResourceModel.getResourcesByUserId(userId, parentId);
+  const userResources = await ResourceModel.getResourcesByUserId(userId, parentId);
     
     // Return list with types so client knows if it's a folder or file
   res.json(userResources.map((r) => ({ 
-      id: r.id, 
+      id: r.id || r.id, 
       name: r.name, 
       type: r.type,
       isStarred: r.isStarred,
@@ -55,7 +55,7 @@ const uploadResource = async (req, res) => {
   }
 
   // Validate Parent Id
-  const parentCheck = ResourceModel.validateParent(parentId);
+  const parentCheck = await ResourceModel.validateParent(parentId);
   if (!parentCheck.valid) {
     return res.status(parentCheck.status).json({ error: parentCheck.error });
   }
@@ -68,7 +68,7 @@ const uploadResource = async (req, res) => {
   // --- CREATION LOGIC --- //
   try {
     // Create resource record and create OWNER permission to uploader
-    const resourceRecord = ResourceModel.createResourceRecord(
+    const resourceRecord = await ResourceModel.createResourceRecord(
       userId,
       name,
       type,
@@ -267,7 +267,7 @@ const searchResourcesByQuery = async (req, res) => {
 
   try {
     // First, get the user's permitted files
-    const allUsersResources = await permissionsService.getAllResourcesByUser(userId);
+    const allUsersResources = await ResourceModel.getAllResourcesByUser(userId);
     const lowerQuery = query.toLowerCase();
 
     const searchPromises = allUsersResources.map(async (file) => {
@@ -324,7 +324,7 @@ const getSharedResources = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
 
   // Get resources only for this specific level (right now we use null for root)
-  const sharedResources = await permissionsService.getSharedResourcesByUserId(userId, parentId);
+  const sharedResources = await ResourceModel.getSharedResourcesByUserId(userId, parentId);
   
   res.json(sharedResources.map((r) => ({ 
       id: r.id, 
@@ -346,7 +346,7 @@ const getOwnedResources = async (req, res) => {
 
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
-  const resources = ResourceModel.getOwnedResources(userId, parentId);
+  const resources = await ResourceModel.getOwnedResources(userId, parentId);
   res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
 };
 
@@ -375,7 +375,7 @@ const getStarredResources = async (req, res) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const resources = ResourceModel.getStarredResources(userId, parentId);
+        const resources = await ResourceModel.getStarredResources(userId, parentId);
 
         res.json(resources.map(r => ({ 
             id: r.id, 
@@ -392,7 +392,7 @@ const getStarredResources = async (req, res) => {
 
 const toggleStarred = async (req, res) => {
     const { id } = req.params;
-    const updated = ResourceModel.toggleStarred(id);
+    const updated = await ResourceModel.toggleStarred(id);
     if (!updated) return res.status(404).json({ error: "Not found" });
     res.json(updated);
 };

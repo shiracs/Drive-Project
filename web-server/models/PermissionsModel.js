@@ -18,7 +18,19 @@ const permissionSchema = new mongoose.Schema({
         enum: Object.values(ROLES)
     }
 }, {
-    timestamps: true 
+    timestamps: true,
+    toJSON: {
+        virtuals: true,
+        transform: function (doc, ret) {
+            ret.id = ret._id;
+            delete ret._id;
+            delete ret.__v;
+        }
+    }
+});
+
+permissionSchema.virtual('id').get(function () {
+    return this._id.toString();
 });
 
 permissionSchema.index({ resourceId: 1, userId: 1 }, { unique: true });
