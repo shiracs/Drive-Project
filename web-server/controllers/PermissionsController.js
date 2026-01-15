@@ -67,7 +67,7 @@ const grantPermission = async (req, res) => {
  */
 const updatePermission = async (req, res) => {
   const userId = req.userId;
-  const { id: fileId , permissionId : permissionId } = req.params;
+  const { id: fileId , permissionId } = req.params;
   const { role: newRole } = req.body;
 
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });

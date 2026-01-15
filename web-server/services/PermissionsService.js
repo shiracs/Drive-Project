@@ -1,5 +1,5 @@
 import { ROLES, isValidRole } from "../enums/Roles.js";
-import PermissionModel from "../models/PermissionsModel.js";
+import Permission from "../models/Permission.js";
 
 /**
  * Creates a new permission record for a user on a specific resource
@@ -9,7 +9,7 @@ import PermissionModel from "../models/PermissionsModel.js";
  * @returns the permission record
  */
 const createResourcePermission = async (resourceId, userId, role) => {
-  const newPermission = await PermissionModel.create({
+  const newPermission = await Permission.create({
     resourceId,
     userId,
     role,
@@ -27,7 +27,7 @@ const createResourcePermission = async (resourceId, userId, role) => {
 const checkPermission = async (userId, resourceId, requiredRole) => {
 
   // find the permission record for the userId and resourceId
-  const permission = await PermissionModel.findOne({
+  const permission = await Permission.findOne({
     resourceId,
     userId,
   });
@@ -48,7 +48,7 @@ const checkPermission = async (userId, resourceId, requiredRole) => {
  * @returns {Array} List of authorized resource objects
  */
 const getPermittedResourcesOfUser = async (userId) => {
-    const permissions = await PermissionModel.find({ userId })
+    const permissions = await Permission.find({ userId })
     return permissions.map(p => p.resourceId);
 };
 
@@ -57,10 +57,10 @@ const getPermittedResourcesOfUser = async (userId) => {
  * @param {*} resourceId
  */
 const removeAllPermissionsOfResource = async (resourceId) => {
-    await PermissionModel.deleteMany({ resourceId });
+    await Permission.deleteMany({ resourceId });
 };
 const getPermissionsByResourceId = async(resourceId) => {
-    return await PermissionModel.find({ resourceId });
+    return await Permission.find({ resourceId });
 };
 
 /**
@@ -73,7 +73,7 @@ const updatePermission = async (pId, newRole) => {
   if (!isValidRole(newRole)) {
     throw new Error(`Invalid role: ${newRole}. Must be one of: ${Object.values(ROLES).join(", ")}`);
   }
-  const updatedPermission = await PermissionModel.findByIdAndUpdate(pId, { role: newRole }, { new: true });
+  const updatedPermission = await Permission.findByIdAndUpdate(pId, { role: newRole }, { new: true });
   if (updatedPermission) {
     return updatedPermission;
   }
@@ -86,13 +86,13 @@ const updatePermission = async (pId, newRole) => {
  * @returns {boolean} true if deleted
  */
 const deletePermission = async (pId) => {
-  const result = await PermissionModel.findByIdAndDelete(pId);
+  const result = await Permission.findByIdAndDelete(pId);
   return result !== null;
 };
 
 
 const getUserRoleOnResource = async (userId, resourceId) => {
-  const permission = await PermissionModel.findOne({
+  const permission = await Permission.findOne({
     resourceId,
     userId,
   });
@@ -100,12 +100,12 @@ const getUserRoleOnResource = async (userId, resourceId) => {
 };
 
 const getPermissionByUserAndResource = async (userId, resourceId) => {
-  return await PermissionModel.findOne({ userId, resourceId });
+  return await Permission.findOne({ userId, resourceId });
 };
 
 /// Bulk update permissions for a user across multiple resources
 const updatePermissionsBulk = async (resourceIds, userId, newRole) => {
-    return await PermissionModel.updateMany(
+    return await Permission.updateMany(
         { 
             resourceId: { $in: resourceIds }, 
             userId: userId 
@@ -116,7 +116,7 @@ const updatePermissionsBulk = async (resourceIds, userId, newRole) => {
 
 // Bulk delete permissions for a user across multiple resources
 const deletePermissionsBulk = async (resourceIds, userId) => {
-    return await PermissionModel.deleteMany({
+    return await Permission.deleteMany({
         resourceId: { $in: resourceIds },
         userId: userId
     });
@@ -124,17 +124,17 @@ const deletePermissionsBulk = async (resourceIds, userId) => {
 
 /// Bulk create permission records
 const createPermissionsBulk = async (permissionRecords) => {
-    return await PermissionModel.insertMany(permissionRecords);
+    return await Permission.insertMany(permissionRecords);
 };
 
 // Get permission by its ID
 const getPermissionById = async (pId) => {
-    return await PermissionModel.findById(pId);
+    return await Permission.findById(pId);
 };
 
 // Get userID from permission ID
 const getUserIdFromPermissionId = async (pId) => {
-    const permission = await PermissionModel.findById(pId);
+    const permission = await Permission.findById(pId);
     return permission ? permission.userId : null;
 };
 

@@ -93,7 +93,7 @@ const uploadResource = async (req, res) => {
 
       // Rollback records if C++ storage fails
       ResourceModel.removeResourceRecord(resourceRecord.id);
-      await PermissionsModel.removeAllPermissionsOfResource(resourceRecord.id);
+      await permissionsService.removeAllPermissionsOfResource(resourceRecord.id);
       res.status(500).json({ error: "Storage error", detail: cppResponse });
     }
   } catch (error) {

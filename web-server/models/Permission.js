@@ -35,6 +35,6 @@ permissionSchema.virtual('id').get(function () {
 
 permissionSchema.index({ resourceId: 1, userId: 1 }, { unique: true });
 
-const PermissionModel = mongoose.model('Permission', permissionSchema);
+const Permissions = mongoose.model('Permission', permissionSchema);
 
-export default PermissionModel;
+export default Permissions;
