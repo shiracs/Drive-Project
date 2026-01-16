@@ -31,12 +31,22 @@ const getResourcePermissions = async (req, res) => {
 const grantPermission = async (req, res) => {
   const userId = req.userId;
   const { id: fileId } = req.params;
-  const { targetUserId, role } = req.body;
+  const { username, targetUserId, role } = req.body;
 
   // Validations
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
-  if (!targetUserId || !role) return res.status(400).json({ error: "Missing fields" });
-  if (!UserModel.isValidId(targetUserId)) return res.status(404).json({ error: "Target user not found" });
+  
+  let finalTargetUserId = targetUserId;
+  
+  // If username provided, look up the user ID
+  if (username && !targetUserId) {
+    const targetUser = UserModel.findByUsername(username);
+    if (!targetUser) return res.status(404).json({ error: "משתמש לא נמצא" });
+    finalTargetUserId = targetUser.id;
+  }
+  
+  if (!finalTargetUserId || !role) return res.status(400).json({ error: "Missing fields" });
+  if (!UserModel.isValidId(finalTargetUserId)) return res.status(404).json({ error: "Target user not found" });
 
   // Only the OWNER of the file can grant new permissions
   if (!PermissionsModel.checkPermission(userId, fileId, ROLES.OWNER)) {
@@ -51,7 +61,7 @@ const grantPermission = async (req, res) => {
   allIdsToGrant.forEach(targetId => {
       // Check for EXISTING permission record for this user&file
       const filePerms = PermissionsModel.getPermissionsByResourceId(targetId);
-      const existingPerm = filePerms.find(p => p.userId === targetUserId);
+      const existingPerm = filePerms.find(p => p.userId === finalTargetUserId);
 
       if (existingPerm) {
           PermissionsModel.updatePermission(existingPerm.id, role);

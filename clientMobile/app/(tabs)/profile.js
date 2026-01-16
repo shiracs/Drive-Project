@@ -1,9 +1,8 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { getAuthData, clearAuthData } from '../../utils/auth';
-import AppButton from '../../components/MainButton';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -14,6 +13,8 @@ export default function ProfilePage() {
     const loadUserData = async () => {
       try {
         const data = await getAuthData();
+        console.log("Loaded user data:", data);
+        console.log("Profile pic:", data.profilePic);
         setUserData(data);
       } catch (err) {
         console.error("Failed to load user data:", err);
@@ -43,71 +44,51 @@ export default function ProfilePage() {
     );
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color="#1a73e8" />
+          <Text style={styles.loadingText}>טוען...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.card}>
-          <Text style={styles.title}>הפרופיל שלי</Text>
-
-          {loading ? (
-            <Text style={styles.loadingText}>טוען...</Text>
-          ) : userData ? (
-            <View style={styles.userInfo}>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>שם משתמש:</Text>
-                <Text style={styles.value}>{userData.username}</Text>
+      <View style={styles.content}>
+        {userData ? (
+          <>
+            <View style={styles.profileCard}>
+              <View style={styles.profilePicContainer}>
+                {userData.profilePic && userData.profilePic.trim() ? (
+                  <Image
+                    source={{ uri: userData.profilePic }}
+                    style={styles.profilePicImage}
+                    onError={(error) => console.error("Image load error:", error)}
+                  />
+                ) : (
+                  <Text style={styles.profilePicPlaceholder}>👤</Text>
+                )}
               </View>
 
-              {userData.userId && (
-                <View style={styles.infoRow}>
-                  <Text style={styles.label}>ID:</Text>
-                  <Text style={styles.value}>{userData.userId}</Text>
-                </View>
-              )}
-
-              <AppButton
-                title="התנתק"
-                onPress={handleLogout}
-              />
-
-              <TouchableOpacity 
-                style={styles.debugButton}
-                onPress={async () => {
-                  await debugAuthStatus();
-                  await testAPIConnection();
-                }}
-              >
-                <Text style={styles.debugButtonText}>🔍 Debug Auth</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[styles.debugButton, styles.resetButton]}
-                onPress={async () => {
-                  Alert.alert(
-                    "Reset Auth",
-                    "This will clear all authentication. Are you sure?",
-                    [
-                      { text: "Cancel", style: "cancel" },
-                      { 
-                        text: "Reset", 
-                        style: "destructive",
-                        onPress: async () => {
-                          await resetAuth();
-                          router.replace("/login");
-                        }
-                      }
-                    ]
-                  );
-                }}
-              >
-                <Text style={styles.resetButtonText}>⚠️ Reset All</Text>
-              </TouchableOpacity>
+              <Text style={styles.userName}>{userData.username || 'משתמש'}</Text>
             </View>
-          ) : (
-            <Text style={styles.errorText}>לא ניתן לטעון נתונים</Text>
-          )}
-        </View>
-      </ScrollView>
+
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <Text style={styles.logoutButtonText}>התנתק</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={styles.centerContent}>
+            <Text style={styles.errorText}>לא ניתן לטעון את פרטי הפרופיל</Text>
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
@@ -117,90 +98,87 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    paddingBottom: 100,
+  content: {
+    flex: 1,
+    padding: 16,
     justifyContent: 'center',
-    minHeight: '100%',
+    alignItems: 'center',
   },
-  card: {
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    paddingHorizontal: 24,
-    paddingVertical: 32,
-    borderWidth: 1,
-    borderColor: '#e8eaed',
+    padding: 32,
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 320,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginBottom: 24,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
+  profilePicContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#e8eaed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  profilePicPlaceholder: {
+    fontSize: 40,
+  },
+  profilePicImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: '600',
     color: '#202124',
-    marginBottom: 28,
+    marginBottom: 8,
     textAlign: 'center',
-    letterSpacing: 0.5,
   },
-  userInfo: {
-    gap: 16,
-  },
-  infoRow: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderLeftWidth: 3,
-    borderLeftColor: '#1a73e8',
-  },
-  label: {
+  userId: {
     fontSize: 12,
     color: '#5f6368',
-    fontWeight: '600',
-    marginBottom: 6,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    textAlign: 'center',
   },
-  value: {
+  logoutButton: {
+    backgroundColor: '#d32f2f',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 4,
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+    shadowColor: '#d32f2f',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  logoutButtonText: {
+    color: '#fff',
     fontSize: 16,
-    color: '#202124',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   loadingText: {
     fontSize: 14,
     color: '#5f6368',
-    textAlign: 'center',
+    marginTop: 12,
   },
   errorText: {
     fontSize: 14,
     color: '#d32f2f',
     textAlign: 'center',
-  },
-  debugButton: {
-    backgroundColor: '#f3f3f3',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: '#dadce0',
-    alignItems: 'center',
-  },
-  debugButtonText: {
-    fontSize: 14,
-    color: '#5f6368',
-    fontWeight: '500',
-  },
-  resetButton: {
-    backgroundColor: '#ffebee',
-    borderColor: '#ffcdd2',
-  },
-  resetButtonText: {
-    fontSize: 14,
-    color: '#c62828',
-    fontWeight: '500',
   },
 });

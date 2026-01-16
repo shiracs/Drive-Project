@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, RefreshControl, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RESOURCE_API_URL } from '../../consts/Urls';
 import { getTokenHeader } from '../../utils/auth';
-import { GENERAL } from '../../consts/General';
 import FileGrid from '../../components/FileGrid';
 
-export default function FilePage() {
+export default function MyStoragePage() {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(false);
   const [parentId, setParentId] = useState(null);
@@ -20,7 +19,7 @@ export default function FilePage() {
           : RESOURCE_API_URL;
 
         const auth = await getTokenHeader();
-        
+
         const response = await fetch(finalUrl, {
           headers: {
             ...auth,
@@ -34,9 +33,6 @@ export default function FilePage() {
         setResources(data);
       } catch (err) {
         console.error("Fetch error:", err);
-        if (err instanceof SyntaxError) {
-          console.error("Invalid JSON response from server");
-        }
         setResources([]);
       } finally {
         setLoading(false);
@@ -53,14 +49,12 @@ export default function FilePage() {
     setResources((prev) => prev.filter((item) => item.id !== deletedId));
   };
 
-  const displayTitle = parentId ? GENERAL.GO_BACK : GENERAL.MY_FILES;
-
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <FileGrid
         resources={resources}
         loading={loading}
-        title={displayTitle}
+        title="האחסון שלי"
         onNavigate={(id) => setParentId(id)}
         onBack={() => setParentId(null)}
         showBackButton={!!parentId}

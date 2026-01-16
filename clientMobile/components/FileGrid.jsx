@@ -33,7 +33,7 @@ const FileGrid = ({
     <View style={styles.header}>
       {showBackButton && (
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← חזור</Text>
+          <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
       )}
       <View style={styles.titleContainer}>

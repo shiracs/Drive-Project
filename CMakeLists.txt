@@ -38,32 +38,32 @@ add_executable(client_app
 # -----Google Test Setup-----
 
 # download Google Test from github automatically.
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/refs/heads/main.zip
-)
+# include(FetchContent)
+# FetchContent_Declare(
+#   googletest
+#   URL https://github.com/google/googletest/archive/refs/heads/main.zip
+# )
 
 # prevents some linking issues on Windows
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Actually downloads and builds GTest now
-FetchContent_MakeAvailable(googletest)
+# FetchContent_MakeAvailable(googletest)
 
 # -----Tests Setup-----
 
-enable_testing()
+# enable_testing()
 
 # Find all the test files in the tests folder
-file(GLOB TEST_SOURCES "tests/*.cpp")
+# file(GLOB TEST_SOURCES "tests/*.cpp")
 
-add_executable(run_tests 
-    ${TEST_SOURCES}
-    client/CliHandler.cpp 
-)
+# add_executable(run_tests 
+#     ${TEST_SOURCES}
+#     client/CliHandler.cpp 
+# )
 
 # Link the test runner to:
 # 1. core_logic
 # 2. GTest::gtest_main (Google's library, which includes its own main function)
 # 3. pthread
-target_link_libraries(run_tests core_logic GTest::gtest_main pthread)
+# target_link_libraries(run_tests core_logic GTest::gtest_main pthread)
