@@ -21,7 +21,7 @@ const Sidebar = ({ visible, onClose, onNavigate, currentFolderId = null, onRefre
       icon: '🏠',
       path: SIDEBAR_PATHS.HOME,
       action: () => {
-        router.push('/(tabs)/index');
+        router.push('/');
         onClose();
       }
     },

@@ -1,13 +1,21 @@
 import { v4 as uuid } from "uuid";
 // !Volatile user storage for now
-const USERS = [{
-  id:'1',
-  username:'admin',
-    password:'111',
-    fullName:'admino',
-    profilePic:'hh',
-}];
-
+const USERS = [
+  {
+    id: "1",
+    username: "admin",
+    password: "111",
+    fullName: "admino ll",
+    profilePic: "hh",
+  },
+  {
+    id: "2",
+    username: "b",
+    password: "111",
+    fullName: "bebe ll",
+    profilePic: "bbb",
+  },
+];
 
 /**
  * Create and store a new user
@@ -43,8 +51,8 @@ const findByUsername = (username) => {
 
 /**
  * Check if userId is valid
- * @param {*} userId 
- * @returns 
+ * @param {*} userId
+ * @returns
  */
 const isValidId = (userId) => {
   return userId && findById(userId);

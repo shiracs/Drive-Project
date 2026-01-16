@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, DeviceEventEmitter } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RESOURCE_API_URL } from '../../consts/Urls';
 import { getTokenHeader } from '../../utils/auth';
 import { GENERAL } from '../../consts/General';
 import FileGrid from '../../components/FileGrid';
+import ImageModal from '../../components/ImageModal';
 
 export default function FilePage() {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(false);
   const [parentId, setParentId] = useState(null);
+  const [selectedImageId, setSelectedImageId] = useState(null);
 
   const fetchResources = useCallback(
     async (folderId) => {
@@ -47,6 +49,12 @@ export default function FilePage() {
 
   useEffect(() => {
     fetchResources(parentId);
+
+    const subscription = DeviceEventEmitter.addListener('refreshFiles', () => {
+      fetchResources(parentId);
+    });
+
+    return () => subscription.remove();
   }, [parentId, fetchResources]);
 
   const handleDeleteSuccess = (deletedId) => {
@@ -66,7 +74,14 @@ export default function FilePage() {
         showBackButton={!!parentId}
         onDeleteSuccess={handleDeleteSuccess}
         onRefresh={() => fetchResources(parentId)}
+        onOpenImage={(id) => setSelectedImageId(id)}
       />
+      {Boolean(selectedImageId) && (
+        <ImageModal 
+          imageId={selectedImageId} 
+          onClose={() => setSelectedImageId(null)} 
+        />
+      )}
     </SafeAreaView>
   );
 }

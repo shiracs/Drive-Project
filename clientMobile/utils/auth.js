@@ -13,30 +13,41 @@ export const getTokenHeader = async () => {
  * Utility to save auth data
  */
 export const saveAuthData = async (token, username, userId, profilePic) => {
-  await AsyncStorage.setItem("userToken", token);
-  await AsyncStorage.setItem("username", username);
-  await AsyncStorage.setItem("userId", userId);
-  await AsyncStorage.setItem("profilePic", profilePic);
+  try {
+    await AsyncStorage.setItem("userToken", String(token || ""));
+    await AsyncStorage.setItem("username", String(username || ""));
+    await AsyncStorage.setItem("userId", String(userId || ""));
+    await AsyncStorage.setItem("profilePic", String(profilePic || ""));
+  } catch (error) {
+    console.error("Error saving auth data:", error);
+  }
 };
 
 /**
  * Utility to clear auth data on logout
  */
 export const clearAuthData = async () => {
-  await AsyncStorage.removeItem("userToken");
-  await AsyncStorage.removeItem("username");
-  await AsyncStorage.removeItem("userId");
-  await AsyncStorage.removeItem("profilePic");
+  try {
+    const keys = ["userToken", "username", "userId", "profilePic"];
+    await AsyncStorage.multiRemove(keys);
+  } catch (error) {
+    console.error("Error clearing auth data:", error);
+  }
 };
 
 /**
  * Utility to get auth data
  */
 export const getAuthData = async () => {
-  const token = await AsyncStorage.getItem("userToken");
-  const username = await AsyncStorage.getItem("username");
-  const userId = await AsyncStorage.getItem("userId");
-  const profilePic = await AsyncStorage.getItem("profilePic");
-  
-  return { token, username, userId, profilePic };
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+    const username = await AsyncStorage.getItem("username");
+    const userId = await AsyncStorage.getItem("userId");
+    const profilePic = await AsyncStorage.getItem("profilePic");
+    
+    return { token, username, userId, profilePic };
+  } catch (error) {
+    console.error("Error getting auth data:", error);
+    return { token: null, username: null, userId: null, profilePic: null };
+  }
 };

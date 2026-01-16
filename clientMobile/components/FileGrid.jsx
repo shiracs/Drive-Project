@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GENERAL } from "../consts/General";
 import FileCard from "./FileCard";
@@ -14,6 +14,7 @@ const FileGrid = ({
   loading,
   onDeleteSuccess,
   onRefresh,
+  onOpenImage
 }) => {
   const safeResources = useMemo(
     () => Array.isArray(resources) ? resources : [],
@@ -53,6 +54,7 @@ const FileGrid = ({
           onNavigate={onNavigate}
           onDeleteSuccess={onDeleteSuccess}
           onRefresh={onRefresh}
+          onOpenImage={onOpenImage}
         />
       ))}
     </View>
@@ -67,6 +69,7 @@ const FileGrid = ({
           file={file}
           onDeleteSuccess={onDeleteSuccess}
           onRefresh={onRefresh}
+          onOpenImage={onOpenImage}
         />
       ))}
     </View>
