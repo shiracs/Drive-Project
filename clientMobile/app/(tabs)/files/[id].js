@@ -1,275 +1,251 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { 
+  View, 
+  StyleSheet, 
+  Text, 
+  ScrollView, 
+  TouchableOpacity, 
+  Alert, 
+  ActivityIndicator, 
+  TextInput,
+  Image,
+  DeviceEventEmitter 
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { RESOURCE_API_URL } from '../../../consts/Urls';
-import { getTokenHeader } from '../../../utils/auth';
+import * as ImagePicker from 'expo-image-picker';
+import { RESOURCE_API_URL, API_BASE_URL } from '../../../consts/Urls';
+import { fetchWithAuth } from '../../../utils/fetchWithAuth';
 
-export default function FilePage() {
+export default function FileDetailsPage() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  
   const [file, setFile] = useState(null);
+  const [content, setContent] = useState(''); 
+  const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false); 
 
   useEffect(() => {
     if (id) {
-      fetchFileDetails();
+      fetchData();
     }
   }, [id]);
 
-  const fetchFileDetails = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const auth = await getTokenHeader();
-      const response = await fetch(`${RESOURCE_API_URL}/${id}`, {
-        headers: {
-          ...auth,
-          "Content-Type": "application/json",
-        },
-      });
+      const fileRes = await fetchWithAuth(`${RESOURCE_API_URL}/${id}`);
+      if (!fileRes.ok) throw new Error("Failed to fetch file");
+      const fileData = await fileRes.json();
+      
+      setFile(fileData);
+      setContent(fileData.content || '');
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch file details");
+      const roleRes = await fetchWithAuth(`${API_BASE_URL}/files/${id}/my-role`);
+      if (roleRes.ok) {
+        const roleData = await roleRes.json();
+        setUserRole(roleData.role);
       }
-
-      const data = await response.json();
-      setFile(data);
     } catch (err) {
-      console.error("Fetch error:", err);
-      if (err instanceof SyntaxError) {
-        console.error("Invalid JSON response from server");
-      }
-      Alert.alert("Error", "Failed to load file details");
+      console.error(err);
+      Alert.alert("שגיאה", "נכשל בטעינת הקובץ");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoBack = () => {
-    router.back();
+  const saveContent = async (newContent) => {
+    setSaving(true);
+    try {
+      const response = await fetchWithAuth(`${RESOURCE_API_URL}/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ content: newContent }),
+      });
+
+      if (response.ok) {
+        Alert.alert("הצלחה", "הקובץ עודכן בהצלחה");
+        setIsDirty(false);
+        fetchData(); 
+        DeviceEventEmitter.emit('refreshFiles');
+      } else {
+        throw new Error("Update failed");
+      }
+    } catch (err) {
+      Alert.alert("שגיאה", "העדכון נכשל");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleImagePick = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('שגיאה', 'אין הרשאה לגישה לגלריה');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      base64: true,
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      saveContent(result.assets[0].base64);
+    }
+  };
+
+  const canEdit = userRole === 'OWNER' || userRole === 'WRITER';
+  const isImage = file?.type === 'IMAGE';
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color="#1a73e8" />
-          <Text style={styles.loadingText}>טוען...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!file) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-        <View style={styles.centerContent}>
-          <Text style={styles.errorText}>הקובץ לא נמצא</Text>
-          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-            <Text style={styles.backButtonText}>חזור</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <View style={styles.centerContent}>
+        <ActivityIndicator size="large" color="#1a73e8" />
+      </View>
     );
   }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
           <Text style={styles.backIcon}>{'<'}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{file.name}</Text>
-        <View style={{ width: 32 }} />
+        
+        <Text style={styles.headerTitle} numberOfLines={1}>{file?.name}</Text>
+        
+        {canEdit && !isImage ? (
+          <TouchableOpacity 
+            onPress={() => saveContent(content)} 
+            disabled={!isDirty || saving}
+            style={[styles.headerButton, !isDirty && styles.disabledButton]}
+          >
+            {saving ? (
+              <ActivityIndicator size="small" color="#1a73e8" />
+            ) : (
+              <Text style={[styles.saveText, !isDirty && styles.disabledText]}>שמור</Text>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 60 }} />
+        )}
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.fileInfoCard}>
-          <Text style={styles.fileName}>{file.name}</Text>
-          <View style={styles.metadataRow}>
-            <Text style={styles.metadataLabel}>סוג:</Text>
-            <Text style={styles.metadataValue}>{file.type}</Text>
-          </View>
-          {file.createdAt && (
-            <View style={styles.metadataRow}>
-              <Text style={styles.metadataLabel}>תאריך יצירה:</Text>
-              <Text style={styles.metadataValue}>
-                {new Date(file.createdAt).toLocaleDateString('he-IL')}
-              </Text>
-            </View>
-          )}
-          {file.updatedAt && (
-            <View style={styles.metadataRow}>
-              <Text style={styles.metadataLabel}>עדכון אחרון:</Text>
-              <Text style={styles.metadataValue}>
-                {new Date(file.updatedAt).toLocaleDateString('he-IL')}
-              </Text>
-            </View>
-          )}
-        </View>
+      // בתוך ה-Return של FileDetailsPage, החליפי את ה-ScrollView וה-TextInput בזה:
 
-        {(file.type === 'IMAGE' || file.type === 'FILE') && file.content && (
-          <View style={styles.contentCard}>
-            <Text style={styles.contentTitle}>תצוגה מקדימה</Text>
-            {file.type === 'IMAGE' ? (
-              <View style={styles.imagePreview}>
-                <Text style={styles.previewPlaceholder}>🖼️ תמונה</Text>
-              </View>
-            ) : (
-              <Text style={styles.fileContent} numberOfLines={30}>
-                {typeof file.content === 'string'
-                  ? file.content.length > 500
-                    ? file.content.substring(0, 500) + '...'
-                    : file.content
-                  : JSON.stringify(file.content)}
-              </Text>
-            )}
-          </View>
-        )}
+<ScrollView 
+  style={styles.scrollView} 
+  contentContainerStyle={{ flexGrow: 1 }} // חשוב מאוד להצגת תוכן ארוך
+  keyboardShouldPersistTaps="handled"
+>
+  {!isImage ? (
+    <View style={styles.editorWrapper}>
+      <TextInput
+        style={styles.fullTextEditor}
+        multiline={true}
+        scrollEnabled={false} // מאפשר ל-ScrollView החיצוני לשלוט בגובה
+        value={content}
+        onChangeText={(text) => {
+          setContent(text);
+          setIsDirty(true);
+        }}
+        editable={canEdit}
+        textAlignVertical="top"
+        placeholder="הקלד תוכן כאן..."
+      />
+    </View>
+  ) : (
+    /* תצוגת תמונה כפי שהייתה */
+    <View style={styles.imageContainer}>
+        <Image 
+          source={{ uri: content.startsWith('data:') ? content : `data:image/png;base64,${content}` }} 
+          style={styles.fullImage}
+          resizeMode="contain"
+        />
+    </View>
+  )}
+</ScrollView>
 
-        {!file.content && (
-          <View style={styles.contentCard}>
-            <Text style={styles.emptyStateText}>אין תוכן להצגה</Text>
-          </View>
-        )}
-      </ScrollView>
+
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          סוג: {file?.type} | {canEdit ? "מצב עריכה" : "מצב קריאה בלבד"}
+        </Text>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
   header: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e8eaed',
   },
-  backIcon: {
-    fontSize: 24,
-    color: '#202124',
-    width: 32,
-    textAlign: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#202124',
-    textAlign: 'center',
-  },
-  content: {
-    flex: 1,
+  headerTitle: { fontSize: 16, fontWeight: '600', color: '#202124', flex: 1, textAlign: 'center' },
+  headerButton: { width: 60, alignItems: 'center' },
+  saveText: { color: '#1a73e8', fontWeight: 'bold', fontSize: 15 },
+  disabledText: { color: '#dadce0' },
+  backIcon: { fontSize: 24, color: '#5f6368' },
+  
+  scrollView: { flex: 1 },
+  scrollContent: { flexGrow: 1 }, // חשוב כדי שהתוכן יתפוס את כל הגובה
+
+  // Editor Styles
+  editorContainer: { 
+    flex: 1, 
     padding: 16,
+    minHeight: '100%' // מבטיח שהעורך תמיד גבוה מספיק
   },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  textEditor: { 
+    flex: 1, 
+    fontSize: 16, 
+    color: '#3c4043', 
+    textAlign: 'right', 
+    lineHeight: 24,
+    minHeight: 500, // גובה מינימלי התחלתי גדול
   },
-  fileInfoCard: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  fileName: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#202124',
-    marginBottom: 16,
-    textAlign: 'right',
-  },
-  metadataRow: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f3f4',
-  },
-  metadataLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#5f6368',
-  },
-  metadataValue: {
-    fontSize: 13,
-    color: '#202124',
-  },
-  contentCard: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  contentTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#202124',
-    marginBottom: 12,
-    textAlign: 'right',
-  },
-  fileContent: {
-    fontSize: 12,
-    color: '#3c4043',
-    fontFamily: 'monospace',
-    lineHeight: 18,
-    textAlign: 'right',
-  },
-  imagePreview: {
-    height: 200,
-    backgroundColor: '#f1f3f4',
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  previewPlaceholder: {
-    fontSize: 48,
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: '#5f6368',
-    textAlign: 'center',
-    paddingVertical: 32,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: '#5f6368',
-    marginTop: 12,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#d32f2f',
-    textAlign: 'center',
-  },
-  backButton: {
-    marginTop: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
+  readOnlyEditor: { color: '#70757a' },
+  
+  // Image Styles
+  imageContainer: { flex: 1, padding: 20, alignItems: 'center', justifyContent: 'center' },
+  fullImage: { width: '100%', height: 350, backgroundColor: '#f8f9fa', borderRadius: 10 },
+  changeImageButton: {
+    marginTop: 20,
     backgroundColor: '#1a73e8',
-    borderRadius: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    elevation: 3,
+  },editorWrapper: {
+    flex: 1,
+    minHeight: 500, // גובה מינימלי התחלתי
+    paddingBottom: 50, // מרווח מהתחתית
   },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
+  fullTextEditor: {
+    flex: 1,
+    padding: 15,
+    fontSize: 16,
+    color: '#3c4043',
+    textAlign: 'right',
+    lineHeight: 24,
   },
+  changeImageText: { color: '#fff', fontWeight: 'bold' },
+
+  centerContent: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  footer: { padding: 8, backgroundColor: '#f8f9fa', borderTopWidth: 1, borderTopColor: '#e8eaed', alignItems: 'center' },
+  footerText: { fontSize: 11, color: '#5f6368' },
 });
