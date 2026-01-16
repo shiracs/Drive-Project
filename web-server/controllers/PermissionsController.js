@@ -1,6 +1,6 @@
 import UserModel from "../models/UserModel.js";
 import permissionsService from "../services/PermissionsService.js";
-import ResourceModel from "../models/ResourceModel.js"; 
+import ResourcesService from "../services/ResourcesService.js";
 import { ROLES } from "../enums/Roles.js";
 
 /**
@@ -51,7 +51,7 @@ const grantPermission = async (req, res) => {
   }
 
   // Get resource and ALL descendants (including deleted to maintain consistency)
-  const descendants = await ResourceModel.getDescendants(fileId, true);
+  const descendants = await ResourcesService.getDescendants(fileId, true);
   const allIds = [fileId, ...descendants.map(f => f.id)];
   
   await permissionsService.deletePermissionsBulk(allIds, targetUserId);
@@ -98,7 +98,7 @@ const updatePermission = async (req, res) => {
   }
 
   // Get resource and ALL descendants (including deleted to maintain consistency)
-  const descendants = await ResourceModel.getDescendants(fileId, true);
+  const descendants = await ResourcesService.getDescendants(fileId, true);
   const allIds = [fileId, ...descendants.map(f => f.id)];
   const allResourceIds = allIds.map(id => id.toString());
   const targetUserId = permission.userId;
@@ -156,7 +156,7 @@ const deletePermission = async (req, res) => {
   const targetUserId = permission.userId;
 
   // Get resource and ALL descendants (including deleted to maintain consistency)
-  const descendants = await ResourceModel.getDescendants(fileId, true);
+  const descendants = await ResourcesService.getDescendants(fileId, true);
   const allIds = [fileId, ...descendants.map(f => f.id)];
   const allResourceIds = allIds.map(id => id.toString());
 
@@ -183,7 +183,7 @@ const getMyRoleOnResource = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const resource = await ResourceModel.findById(resourceId);
+  const resource = await ResourcesService.findById(resourceId);
   if (!resource) {
     return res.status(404).json({ error: "Resource not found" });
   }
