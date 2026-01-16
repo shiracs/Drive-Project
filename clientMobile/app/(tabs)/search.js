@@ -1,132 +1,138 @@
-import { View, Text, StyleSheet, TextInput, FlatList, DeviceEventEmitter } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import useState from 'react';
-import { getTokenHeader } from '../../utils/auth';
-import { RESOURCE_API_URL } from '../../consts/Urls';
-import FileCard from '../../components/FileCard';
+import React, { useState, useEffect, useCallback } from "react";
+import { View, StyleSheet, DeviceEventEmitter, TextInput, TouchableOpacity, Text } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { API_BASE_URL } from "../../consts/Urls";
+import FileGrid from "../../components/FileGrid";
+import ImageModal from "../../components/ImageModal";
+import { GENERAL } from "../../consts/General";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
 
-export default function SearchPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
+const SearchPage = () => {
+    const { q: initialQuery, folderId } = useLocalSearchParams();
+    const router = useRouter();
+    
+    const [searchQuery, setSearchQuery] = useState(initialQuery || "");
+    const [resources, setResources] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [selectedImageId, setSelectedImageId] = useState(null);
 
-  const handleSearch = async (query) => {
-    setSearchQuery(query);
-    if (query.trim().length === 0) {
-      setResults([]);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const auth = await getTokenHeader();
-      const response = await fetch(
-        `${RESOURCE_API_URL}/search?query=${encodeURIComponent(query)}`,
-        {
-          method: "GET",
-          headers: {
-            ...auth,
-            "Content-Type": "application/json",
-          }
+    const loadData = useCallback(async (queryToUse, currentFolderId) => {
+        if (!queryToUse && !currentFolderId) {
+            setResources([]);
+            return;
         }
-      );
 
-      if (!response.ok) throw new Error("Search failed");
+        setLoading(true);
+        try {
+            let data;
+            if (currentFolderId) {
+                const response = await fetchWithAuth(`${API_BASE_URL}/files?parentId=${currentFolderId}`);
+                data = await response.json();
+            } else if (queryToUse) {
+                const response = await fetchWithAuth(`${API_BASE_URL}/search/${encodeURIComponent(queryToUse)}`);
+                data = await response.json();
+            }
+            setResources(data || []);
+        } catch (err) {
+            console.error("Search error:", err);
+            setResources([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
-      const data = await response.json();
-      setResults(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Search error:", err);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    useEffect(() => {
+        loadData(initialQuery, folderId);
+        
+        const subscription = DeviceEventEmitter.addListener('refreshFiles', () => {
+            loadData(searchQuery, folderId);
+        });
+        return () => subscription.remove();
+    }, [initialQuery, folderId, loadData]);
 
-  useEffect(() => {
-    fetchRecentResources(parentId);
+    const handleSearchSubmit = () => {
+        router.setParams({ q: searchQuery, folderId: undefined });
+        loadData(searchQuery, null);
+    };
 
-    const subscription = DeviceEventEmitter.addListener("refreshFiles", () => {
-      fetchRecentResources(parentId);
-    });
+    const handleDeleteSuccess = (deletedId) => {
+        setResources((prev) => prev.filter((item) => item.id !== deletedId));
+    };
 
-    return () => subscription.remove();
-  }, [parentId, fetchRecentResources]);
+    return (
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+            <View style={styles.searchBarContainer}>
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder={"חפש ב-Drive..."}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={handleSearchSubmit} 
+                    returnKeyType="search"
+                    placeholderTextColor="#5f6368"
+                />
+                {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => {setSearchQuery(""); setResources([]);}}>
+                        <Text style={styles.clearText}>✕</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="חפש קבצים..."
-          placeholderTextColor="#999"
-          value={searchQuery}
-          onChangeText={handleSearch}
-        />
-      </View>
-      {results.length > 0 && (
-        <FlatList
-          data={results}
-          renderItem={({ item }) => (
-            <FileCard
-              file={item}
-              onRefresh={() => handleSearch(searchQuery)}
+            <FileGrid 
+                resources={resources} 
+                loading={loading}
+                title={folderId ? GENERAL.GO_BACK : (initialQuery ? `תוצאות חיפוש עבור "${initialQuery}"` : "חיפוש")} 
+                onNavigate={(id) => router.setParams({ q: searchQuery, folderId: id })}
+                onBack={() => router.back()}
+                showBackButton={!!folderId} 
+                onDeleteSuccess={handleDeleteSuccess}
+                onRefresh={() => loadData(searchQuery, folderId)}
+                onOpenImage={(id) => setSelectedImageId(id)}
             />
-          )}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.resultsList}
-        />
-      )}
-      {searchQuery && results.length === 0 && !loading && (
-        <View style={styles.noResults}>
-          <Text style={styles.noResultsText}>לא נמצאו תוצאות</Text>
-        </View>
-      )}
-    </SafeAreaView>
-  );
-}
+
+            {selectedImageId && (
+                <ImageModal 
+                    imageId={selectedImageId} 
+                    onClose={() => setSelectedImageId(null)} 
+                />
+            )}
+        </SafeAreaView>
+    );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e8eaed',
-  },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: '#dadce0',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: '#f8f9fa',
-    textAlign: 'right',
-    color: '#202124',
-  },
-  resultsList: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: 100,
-  },
-  cardContainer: {
-    marginBottom: 12,
-  },
-  noResults: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  noResultsText: {
-    fontSize: 16,
-    color: '#5f6368',
-    textAlign: 'center',
-    lineHeight: 24,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#f8f9fa',
+    },
+    searchBarContainer: {
+        flexDirection: 'row-reverse', 
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        margin: 16,
+        paddingHorizontal: 16,
+        borderRadius: 24,
+        height: 48,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        textAlign: 'right', 
+        color: '#202124',
+        paddingVertical: 8,
+    },
+    clearText: {
+        fontSize: 18,
+        color: '#5f6368',
+        marginLeft: 8,
+        padding: 4,
+    }
 });
+
+export default SearchPage;
