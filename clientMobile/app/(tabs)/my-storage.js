@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Alert, RefreshControl, ScrollView } from 'react-native';
+import { View, StyleSheet, DeviceEventEmitter, RefreshControl, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RESOURCE_API_URL } from '../../consts/Urls';
+import { OWNED_API_URL } from '../../consts/Urls';
 import { getTokenHeader } from '../../utils/auth';
 import FileGrid from '../../components/FileGrid';
 
@@ -15,8 +15,8 @@ export default function MyStoragePage() {
       setLoading(true);
       try {
         let finalUrl = folderId
-          ? `${RESOURCE_API_URL}?parentId=${folderId}`
-          : RESOURCE_API_URL;
+          ? `${OWNED_API_URL}?parentId=${folderId}`
+          : OWNED_API_URL;
 
         const auth = await getTokenHeader();
 
@@ -43,7 +43,14 @@ export default function MyStoragePage() {
 
   useEffect(() => {
     fetchResources(parentId);
+
+    const subscription = DeviceEventEmitter.addListener("refreshFiles", () => {
+      fetchResources(parentId);
+    });
+
+    return () => subscription.remove();
   }, [parentId, fetchResources]);
+
 
   const handleDeleteSuccess = (deletedId) => {
     setResources((prev) => prev.filter((item) => item.id !== deletedId));

@@ -9,7 +9,6 @@ import {
   ScrollView,
   Alert,
   Modal,
-  DeviceEventEmitter,
 } from "react-native";
 import { API_BASE_URL } from "../consts/Urls";
 import { fetchWithAuth } from "../utils/fetchWithAuth";

@@ -20,7 +20,7 @@ const getUserResourcesInDir = async (req, res) => {
   const userResources = ResourceModel.getResourcesByUserId(userId, parentId);
   
   // Return list with types so client knows if it's a folder or file
-  res.json(userResources.map((r) => ({ 
+  res.status(200).json(userResources.map((r) => ({ 
       id: r.id, 
       name: r.name, 
       type: r.type,

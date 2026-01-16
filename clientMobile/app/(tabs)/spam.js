@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { DeviceEventEmitter, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SPAM_API_URL } from '../../consts/Urls';
 import { getTokenHeader } from '../../utils/auth';
@@ -35,9 +35,15 @@ export default function SpamPage() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchSpamResources();
-  }, [fetchSpamResources]);
+    useEffect(() => {
+      fetchSpamResources();
+  
+      const subscription = DeviceEventEmitter.addListener("refreshFiles", () => {
+        fetchSpamResources();
+      });
+  
+      return () => subscription.remove();
+    }, [fetchSpamResources]);
 
   const handleDeleteSuccess = (deletedId) => {
     setResources((prev) => prev.filter((item) => item.id !== deletedId));

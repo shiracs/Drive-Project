@@ -7,13 +7,18 @@ import {
   ScrollView,
   SafeAreaView,
   Modal,
+  DeviceEventEmitter
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import NewMenu from './NewMenu';
 import { SIDEBAR_MENU, SIDEBAR_PATHS } from '../consts/Sidebar';
 
-const Sidebar = ({ visible, onClose, onNavigate, currentFolderId = null, onRefresh }) => {
+const Sidebar = ({ visible, onClose, currentFolderId = null, onRefresh }) => {
   const router = useRouter();
+  const handleRefresh = () => {
+    DeviceEventEmitter.emit('refreshFiles'); 
+    if (onRefresh) onRefresh();
+  };
 
   const menuItems = [
     {
@@ -106,7 +111,7 @@ const Sidebar = ({ visible, onClose, onNavigate, currentFolderId = null, onRefre
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
             <View style={styles.newMenuContainer}>
               <NewMenu
-                onUpload={onRefresh}
+                onUpload={handleRefresh}
                 currentFolderId={currentFolderId}
               />
             </View>

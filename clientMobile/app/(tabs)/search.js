@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, FlatList, DeviceEventEmitter } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import useState from 'react';
 import { getTokenHeader } from '../../utils/auth';
 import { RESOURCE_API_URL } from '../../consts/Urls';
 import FileCard from '../../components/FileCard';
@@ -42,6 +42,16 @@ export default function SearchPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchRecentResources(parentId);
+
+    const subscription = DeviceEventEmitter.addListener("refreshFiles", () => {
+      fetchRecentResources(parentId);
+    });
+
+    return () => subscription.remove();
+  }, [parentId, fetchRecentResources]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>

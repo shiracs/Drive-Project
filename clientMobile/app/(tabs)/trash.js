@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { DeviceEventEmitter, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TRASH_API_URL } from '../../consts/Urls';
 import { getTokenHeader } from '../../utils/auth';
@@ -35,9 +35,15 @@ export default function TrashPage() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchTrashResources();
-  }, [fetchTrashResources]);
+    useEffect(() => {
+      fetchTrashResources();
+  
+      const subscription = DeviceEventEmitter.addListener("refreshFiles", () => {
+        fetchTrashResources();
+      });
+  
+      return () => subscription.remove();
+    }, [fetchTrashResources]);
 
   const handleDeleteSuccess = (deletedId) => {
     setResources((prev) => prev.filter((item) => item.id !== deletedId));

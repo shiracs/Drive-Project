@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { DeviceEventEmitter, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SHARED_API_URL } from '../../consts/Urls';
 import { getTokenHeader } from '../../utils/auth';
@@ -35,9 +35,16 @@ export default function SharedPage() {
     }
   }, []);
 
+
   useEffect(() => {
-    fetchSharedResources();
-  }, [fetchSharedResources]);
+      fetchSharedResources();
+  
+      const subscription = DeviceEventEmitter.addListener("refreshFiles", () => {
+        fetchSharedResources();
+      });
+  
+      return () => subscription.remove();
+    }, [fetchSharedResources]);
 
   const handleDeleteSuccess = (deletedId) => {
     setResources((prev) => prev.filter((item) => item.id !== deletedId));

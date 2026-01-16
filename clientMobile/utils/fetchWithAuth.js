@@ -3,7 +3,6 @@ import {router } from "expo-router";
 import { Alert } from "react-native";
 
 export const fetchWithAuth = async (url, options = {}) => {
-  const router = useRouter();
   try {
     const authHeaders = await getTokenHeader();
 
@@ -26,6 +25,7 @@ export const fetchWithAuth = async (url, options = {}) => {
       }
       return response;
     }
+    return response;
   } catch (error) {
     console.error("FetchWithAuth error:", error);
     throw error;

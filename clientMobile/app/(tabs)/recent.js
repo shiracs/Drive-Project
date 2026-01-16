@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { DeviceEventEmitter, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RECENT_API_URL } from '../../consts/Urls';
 import { getTokenHeader } from '../../utils/auth';
@@ -35,9 +35,16 @@ export default function RecentPage() {
     }
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
     fetchRecentResources();
+
+    const subscription = DeviceEventEmitter.addListener("refreshFiles", () => {
+      fetchRecentResources();
+    });
+
+    return () => subscription.remove();
   }, [fetchRecentResources]);
+
 
   const handleDeleteSuccess = (deletedId) => {
     setResources((prev) => prev.filter((item) => item.id !== deletedId));

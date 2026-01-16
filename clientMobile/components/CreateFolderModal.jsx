@@ -7,7 +7,7 @@ import {
   Text,
   StyleSheet,
   Alert,
-  Keyboard,
+  DeviceEventEmitter,
 } from 'react-native';
 import { RESOURCE_API_URL } from '../consts/Urls';
 import { getTokenHeader } from '../utils/auth';
@@ -47,6 +47,7 @@ const CreateFolderModal = ({ visible, onClose, onSuccess, parentId = null }) => 
         const newFolder = await response.json();
         Alert.alert('הצלחה', CREATE_FOLDER.SUCCESS_MESSAGE);
         setFolderName('');
+        DeviceEventEmitter.emit('refreshFiles');
         onSuccess && onSuccess(newFolder);
         onClose();
       } else {
