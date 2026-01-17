@@ -52,7 +52,7 @@ const grantPermission = async (req, res) => {
 
   // Get resource and ALL descendants (including deleted to maintain consistency)
   const descendants = await ResourcesService.getDescendants(fileId, true);
-  const allIds = [fileId, ...descendants.map(f => f.id)];
+  const allIds = [fileId, ...descendants.map(f => (f._id || f.id).toString())];
   
   await permissionsService.deletePermissionsBulk(allIds, targetUserId);
 
@@ -99,7 +99,7 @@ const updatePermission = async (req, res) => {
 
   // Get resource and ALL descendants (including deleted to maintain consistency)
   const descendants = await ResourcesService.getDescendants(fileId, true);
-  const allIds = [fileId, ...descendants.map(f => f.id)];
+  const allIds = [fileId, ...descendants.map(f => (f._id || f.id).toString())];
   const allResourceIds = allIds.map(id => id.toString());
   const targetUserId = permission.userId;
   
@@ -157,7 +157,7 @@ const deletePermission = async (req, res) => {
 
   // Get resource and ALL descendants (including deleted to maintain consistency)
   const descendants = await ResourcesService.getDescendants(fileId, true);
-  const allIds = [fileId, ...descendants.map(f => f.id)];
+  const allIds = [fileId, ...descendants.map(f => (f._id || f.id).toString())];
   const allResourceIds = allIds.map(id => id.toString());
 
   // Delete permissions for this user on all resources in the tree

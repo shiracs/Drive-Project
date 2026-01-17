@@ -120,7 +120,7 @@ try {
   // HANDLE FOLDER: Return list of children names
   if (resource && resource.type === RESOURCE_TYPE.FOLDER) {
     // We use the existing function, passing the current folder ID as the parentId
-    const children = await ResourcesService.getDescendants(id);
+    const children = await ResourcesService.getResourcesByUserId(userId, id);
     return res.status(200).json(children.map(c => ({ id: c.id, name: c.name, type: c.type })));
   }
 
@@ -239,18 +239,18 @@ try {
 
     // Delete each one
     for (const resource of allToDelete) {
+      const rId = resource._id || resource.id;
       // If it's a file, delete from C++, otherwise skip
       if (resource.type === RESOURCE_TYPE.FILE) {
         try {
-          await sendToCpp(`DELETE ${resource.id}`);
+          await sendToCpp(`DELETE ${rId}`);
         } catch (e) {
-          console.error(`Failed to delete physical file ${resource.id}`, e.message);
+          console.error(`Failed to delete physical file ${rId}`, e.message);
         }
       }
-      // Remove Metadata & Permissions
-      await ResourcesService.removeResourceRecord(resource.id);
-      await permissionsService.removeAllPermissionsOfResource(resource.id);
+      await permissionsService.removeAllPermissionsOfResource(rId)
     }
+    await ResourcesService.softDeleteResource(id);
 
     res.status(204).send();
   } catch (error) {
@@ -266,7 +266,7 @@ try {
  * Searches resources by name or content containing the query string 
  */
 const searchResourcesByQuery = async (req, res) => {
-try{
+try {
   const userId = req.userId;
   const { query } = req.params;
 
@@ -279,44 +279,55 @@ try{
   if (!query) {
     return res.status(400).json({ error: "Missing search query" });
   }
-  // TODO:
-  try {
-    // First, get the user's permitted files
-    const allUsersResources = await ResourcesService.getAllResourcesByUser(userId);
-    const lowerQuery = query.toLowerCase();
 
-    const searchPromises = allUsersResources.map(async (file) => {
-      if (file.name.toLowerCase().includes(lowerQuery)) {
-        return file;
-      }
+  const lowerQuery = query.toLowerCase();
+  const permittedIds = await PermissionsService.getPermittedResourcesOfUser(userId);
+  
+  const nameMatches = await Resource.find({
+      _id: { $in: permittedIds },
+      isDeleted: false,
+      isSpam: false,
+      name: { $regex: query, $options: 'i' }
+    }).lean();
 
-      if (file.type === RESOURCE_TYPE.FILE) {
-        try {
-          const cppResponse = await sendToCpp(`GET ${file.id}`);
-          const base64Content = cppResponse.split("\n\n")[1] || "";
-                    const decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');
-          
-          if (decodedContent.toLowerCase().includes(lowerQuery)) {
-            return file;
-        } }catch (err) {
-          console.error(`Error fetching content for ${file.id}:`, err.message);
+  const foundIds = new Set(nameMatches.map(m => m._id.toString()));
+
+  const potentialFilesForContentSearch = await Resource.find({
+      _id: { $in: permittedIds },
+      isDeleted: false,
+      isSpam: false,
+      type: RESOURCE_TYPE.FILE,
+      _id: { $nin: Array.from(foundIds) }
+    }).lean();
+
+    const contentSearchPromises = potentialFilesForContentSearch.map(async (file) => {
+      try {
+        const cppResponse = await sendToCpp(`GET ${file._id}`);
+        const base64Content = cppResponse.split("\n\n")[1] || "";
+        const decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');
+
+        if (decodedContent.toLowerCase().includes(lowerQuery)) {
+          return file;
         }
+      } catch (err) {
+        console.error(`Error fetching content for ${file._id}:`, err.message);
       }
       return null;
     });
 
-    const results = await Promise.all(searchPromises);
-    
-    const finalResponse = results
-      .filter(f => f !== null)
-      .map(f => ({
-        id: f.id,
-        name: f.name,
-        type: f.type,
-        isStarred: f.isStarred,
-        isDeleted: f.isDeleted,
-        isSpam: f.isSpam
-      }));
+    const contentMatches = (await Promise.all(contentSearchPromises)).filter(f => f !== null);
+
+    const allMatches = [...nameMatches, ...contentMatches];
+
+    const finalResponse = allMatches.map(f => ({
+      id: f.ןid || f._id,
+      name: f.name,
+      type: f.type,
+      isStarred: f.isStarred,
+      isDeleted: f.isDeleted,
+      isSpam: f.isSpam,
+      ownerId: f.ownerId
+    }));
 
     return res.status(200).json(finalResponse);
 
@@ -324,7 +335,7 @@ try{
     console.error("Search Error:", error);
     return res.status(500).json({ error: "Search failed", detail: error.message });
   }
-}
+};
 
 /**
  * GET /api/shared
@@ -334,12 +345,11 @@ const getSharedResources = async (req, res) => {
   const userId = req.userId;
   const parentId = req.query.parentId || null;
 
-
   if (!UserModel.isValidId(userId))
     return res.status(401).json({ error: "Unauthorized" });
 
   // Get resources only for this specific level (right now we use null for root)
-  const sharedResources = await ResourceModel.getSharedResourcesByUserId(userId, parentId);
+  const sharedResources = await ResourcesService.getSharedResourcesByUserId(userId, parentId);
   
   res.json(sharedResources.map((r) => ({ 
       id: r.id, 
@@ -361,7 +371,7 @@ const getOwnedResources = async (req, res) => {
 
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
-  const resources = await ResourceModel.getOwnedResources(userId, parentId);
+  const resources = await ResourcesService.getOwnedResources(userId, parentId);
   res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
 };
 
@@ -377,7 +387,7 @@ const getRecentResources = async (req, res) => {
 
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    const resources = ResourceModel.getRecentResources(userId, parentId);
+    const resources = await ResourcesService.getRecentResources(userId, parentId);
     res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
 };
 
@@ -390,7 +400,7 @@ const getStarredResources = async (req, res) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const resources = await ResourceModel.getStarredResources(userId, parentId);
+        const resources = await ResourcesService.getStarredResources(userId, parentId);
 
         res.json(resources.map(r => ({ 
             id: r.id, 
@@ -407,7 +417,7 @@ const getStarredResources = async (req, res) => {
 
 const toggleStarred = async (req, res) => {
     const { id } = req.params;
-    const updated = await ResourceModel.toggleStarred(id);
+    const updated = await ResourcesService.toggleStarred(id);
     if (!updated) return res.status(404).json({ error: "Not found" });
     res.json(updated);
 };
@@ -422,7 +432,7 @@ export const getTrashResources = async (req, res) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const resources = ResourceModel.getTrashResources(userId, parentId);
+        const resources = await ResourcesService.getTrashResources(userId, parentId);
         res.json(resources.map(r => ({ 
             id: r.id, 
             name: r.name, 
@@ -439,7 +449,7 @@ export const getTrashResources = async (req, res) => {
 export const restoreResource = async (req, res) => {
     try {
         const { id } = req.params;
-        const success = ResourceModel.restoreResource(id);
+        const success = await ResourcesService.restoreResource(id);
         if (!success) return res.status(404).json({ error: "Resource not found" });
         res.json({ message: "Resource restored" });
     } catch (err) {
@@ -456,20 +466,25 @@ const softDeleteResource = async (req, res) => {
 
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
-  if (!await permissionsService.checkPermission(userId, id, ROLES.OWNER)) {
+  const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
+  if (!checkPermission) {
     return res.status(403).json({ error: "Forbidden: Only owners can delete" });
   }
 
   try {
-    const targetResource = ResourceModel.findById(id);
-    if (!targetResource) return res.status(404).json({ error: "Resource not found" });
+    const targetResource = await ResourcesService.findById(id);
+    const descendants = await ResourcesService.getDescendants(id, true);
+    const allToRemove = [targetResource, ...descendants];
 
-    const descendants = ResourceModel.getDescendants(id);
-    const allToTrash = [targetResource, ...descendants];
+    for (const resource of allToRemove) {
+        const rId = resource._id || resource.id;
 
-    for (const resource of allToTrash) {
-      ResourceModel.softDeleteResource(resource.id);
+        if (resource.type === RESOURCE_TYPE.FILE) {
+            await sendToCpp(`DELETE ${rId}`);
+        }
+        await permissionsService.removeAllPermissionsOfResource(rId);
     }
+    await ResourcesService.softDeleteResource(id); 
 
     res.status(204).send();
   } catch (error) {
@@ -485,7 +500,7 @@ const getSpamResources = async (req, res) => {
          if (!UserModel.isValidId(userId)) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        const resources = ResourceModel.getSpamResources(userId, parentId);
+        const resources = await ResourcesService.getSpamResources(userId, parentId);
         res.json(resources.map(r => ({ 
             id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam
         })));
@@ -496,7 +511,7 @@ const getSpamResources = async (req, res) => {
 
 const toggleSpam = async (req, res) => {
     const { id } = req.params;
-    const updated = ResourceModel.toggleSpam(id);
+    const updated = await ResourcesService.toggleSpam(id);
     if (!updated) return res.status(404).json({ error: "Resource not found" });
     res.json(updated);
 };
@@ -509,11 +524,12 @@ const moveResource = async (req, res) => {
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
   // moving is only allowed for owners
-  if (!await permissionsService.checkPermission(userId, id, ROLES.OWNER)) {
+  const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
+  if (!checkPermission) {
     return res.status(403).json({ error: "Forbidden: No owner access" });
   }
 
-  const success = ResourceModel.moveResource(id, newParentId);
+  const success = await ResourcesService.moveResource(id, newParentId);
   if (!success) return res.status(400).json({ error: "Move failed" });
 
   res.status(200).json({ message: "Moved successfully" });
