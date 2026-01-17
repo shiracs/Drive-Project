@@ -34,29 +34,29 @@ export default function FileDetailsPage() {
   }, [id]);
 
   const decodeBase64 = (str) => {
-  if (!str) return "";
+    if (!str) return "";
 
-  const isBase64 = /^[A-Za-z0-9+/]*={0,2}$/.test(str.replace(/\s/g, ""));
+    const isBase64 = /^[A-Za-z0-9+/]*={0,2}$/.test(str.replace(/\s/g, ""));
 
-  if (!isBase64) {
-    return str;
-  }
-
-  try {
-    const cleanStr = str.replace(/[\s\n\r]/g, "");
-    const binString = atob(cleanStr);
-    
-    const bytes = new Uint8Array(binString.length);
-    for (let i = 0; i < binString.length; i++) {
-      bytes[i] = binString.charCodeAt(i);
+    if (!isBase64) {
+      return str;
     }
 
-    return new TextDecoder("utf-8").decode(bytes);
-  } catch (e) {
-    console.log("Not a Base64 or invalid, returning raw string");
-    return str;
-  }
-};
+    try {
+      const cleanStr = str.replace(/[\s\n\r]/g, "");
+      const binString = atob(cleanStr);
+
+      const bytes = new Uint8Array(binString.length);
+      for (let i = 0; i < binString.length; i++) {
+        bytes[i] = binString.charCodeAt(i);
+      }
+
+      return new TextDecoder("utf-8").decode(bytes);
+    } catch (e) {
+      console.log("Not a Base64 or invalid, returning raw string");
+      return str;
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -64,8 +64,9 @@ export default function FileDetailsPage() {
       const fileRes = await fetchWithAuth(`${RESOURCE_API_URL}/${id}`);
       if (!fileRes.ok) throw new Error("Failed to fetch file");
       const fileData = await fileRes.json();
-      const decodedText = fileData.content ? decodeBase64(fileData.content) : "";
-
+      const decodedText = fileData.content
+        ? decodeBase64(fileData.content)
+        : "";
 
       setFile(fileData);
       setContent(decodedText || "");
@@ -86,12 +87,14 @@ export default function FileDetailsPage() {
   };
 
   const saveContent = async (newContent) => {
-    console.log({content})
+    console.log({ content });
     setSaving(true);
     try {
       // encode before sending to server
       const bytes = new TextEncoder().encode(content);
-      const binString = Array.from(bytes, (byte) => String.fromCodePoint(byte)).join("");
+      const binString = Array.from(bytes, (byte) =>
+        String.fromCodePoint(byte)
+      ).join("");
       const encodedContent = btoa(binString);
 
       const response = await fetchWithAuth(`${RESOURCE_API_URL}/${id}`, {
@@ -99,7 +102,7 @@ export default function FileDetailsPage() {
         body: JSON.stringify({ content: encodedContent }),
       });
 
-      console.log('Response status:', response.status);
+      console.log("Response status:", response.status);
 
       if (response.ok) {
         Alert.alert("הצלחה", "הקובץ עודכן בהצלחה");
@@ -113,25 +116,6 @@ export default function FileDetailsPage() {
       Alert.alert("שגיאה", "העדכון נכשל");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleImagePick = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("שגיאה", "אין הרשאה לגישה לגלריה");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      base64: true,
-      quality: 0.7,
-    });
-
-    if (!result.canceled) {
-      saveContent(result.assets[0].base64);
     }
   };
 
@@ -204,16 +188,9 @@ export default function FileDetailsPage() {
             />
           </View>
         ) : (
-          <View style={styles.imageContainer}>
-            <Image
-              source={{
-                uri: content.startsWith("data:")
-                  ? content
-                  : `data:image/png;base64,${content}`,
-              }}
-              style={styles.fullImage}
-              resizeMode="contain"
-            />
+          <View style={styles.centerContent}>
+            <ActivityIndicator size="small" color="#1a73e8" />
+            <Text style={{ marginTop: 10 }}>פותח תמונה...</Text>
           </View>
         )}
       </ScrollView>
