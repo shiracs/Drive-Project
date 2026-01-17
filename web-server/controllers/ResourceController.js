@@ -1,6 +1,6 @@
 import ResourceModel from "../models/ResourceModel.js";
 import UserModel from "../models/UserModel.js";
-import PermissionsModel from "../models/PermissionsModel.js";
+import permissionsService from "../services/PermissionsService.js";
 import { sendToCpp } from "../services/cppService.js";
 import { ROLES } from "../enums/Roles.js";
 import { RESOURCE_TYPE, isValidResourceType } from "../enums/ResourceType.js";
@@ -17,11 +17,11 @@ const getUserResourcesInDir = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
 
   // Get resources only for this specific level (right now we use null for root)
-  const userResources = ResourceModel.getResourcesByUserId(userId, parentId);
-  
-  // Return list with types so client knows if it's a folder or file
+  const userResources = await ResourceModel.getResourcesByUserId(userId, parentId);
+    
+    // Return list with types so client knows if it's a folder or file
   res.json(userResources.map((r) => ({ 
-      id: r.id, 
+      id: r.id || r.id, 
       name: r.name, 
       type: r.type,
       isStarred: r.isStarred,
@@ -55,7 +55,7 @@ const uploadResource = async (req, res) => {
   }
 
   // Validate Parent Id
-  const parentCheck = ResourceModel.validateParent(parentId);
+  const parentCheck = await ResourceModel.validateParent(parentId);
   if (!parentCheck.valid) {
     return res.status(parentCheck.status).json({ error: parentCheck.error });
   }
@@ -68,13 +68,14 @@ const uploadResource = async (req, res) => {
   // --- CREATION LOGIC --- //
   try {
     // Create resource record and create OWNER permission to uploader
-    const resourceRecord = ResourceModel.createResourceRecord(
+    const resourceRecord = await ResourceModel.createResourceRecord(
       userId,
       name,
       type,
       parentId
     );
-    PermissionsModel.createResourcePermission(resourceRecord.id, userId, ROLES.OWNER);
+    
+    await permissionsService.createResourcePermission(resourceRecord.id, userId, ROLES.OWNER);
 
     const resourceUrl = `/api/files/${resourceRecord.id}`;
 
@@ -92,7 +93,7 @@ const uploadResource = async (req, res) => {
 
       // Rollback records if C++ storage fails
       ResourceModel.removeResourceRecord(resourceRecord.id);
-      PermissionsModel.removeAllPermissionsOfResource(resourceRecord.id);
+      await permissionsService.removeAllPermissionsOfResource(resourceRecord.id);
       res.status(500).json({ error: "Storage error", detail: cppResponse });
     }
   } catch (error) {
@@ -117,7 +118,7 @@ const getResourceContent = async (req, res) => {
   if (!resource) return res.status(404).json({ error: "File not found" });
 
   // Check permission in storage here before going to C++ server
-  if (!PermissionsModel.checkPermission(userId, id, ROLES.READER)) {
+  if (!await permissionsService.checkPermission(userId, id, ROLES.READER)) {
     return res.status(403).json({ error: "Forbidden: No read access" });
   }
 
@@ -158,7 +159,7 @@ const updateResource = async (req, res) => {
   }
 
   // Check permission in storage here before going to C++ server
-  if (!PermissionsModel.checkPermission(userId, id, ROLES.WRITER)) {
+  if (!await permissionsService.checkPermission(userId, id, ROLES.WRITER)) {
     return res.status(403).json({ error: "Forbidden: No write access" });
   }
 
@@ -210,7 +211,7 @@ const deleteResource = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+  if (!await permissionsService.checkPermission(userId, id, ROLES.OWNER)) {
     return res.status(403).json({ error: "Forbidden: Only owners can delete" });
   }
 
@@ -237,7 +238,7 @@ const deleteResource = async (req, res) => {
       }
       // Remove Metadata & Permissions
       ResourceModel.removeResourceRecord(resource.id);
-      PermissionsModel.removeAllPermissionsOfResource(resource.id);
+      await permissionsService.removeAllPermissionsOfResource(resource.id);
     }
 
     res.status(204).send();
@@ -266,7 +267,7 @@ const searchResourcesByQuery = async (req, res) => {
 
   try {
     // First, get the user's permitted files
-    const allUsersResources = ResourceModel.getAllResourcesByUser(userId);
+    const allUsersResources = await ResourceModel.getAllResourcesByUser(userId);
     const lowerQuery = query.toLowerCase();
 
     const searchPromises = allUsersResources.map(async (file) => {
@@ -323,7 +324,7 @@ const getSharedResources = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
 
   // Get resources only for this specific level (right now we use null for root)
-  const sharedResources = ResourceModel.getSharedResourcesByUserId(userId, parentId);
+  const sharedResources = await ResourceModel.getSharedResourcesByUserId(userId, parentId);
   
   res.json(sharedResources.map((r) => ({ 
       id: r.id, 
@@ -345,7 +346,7 @@ const getOwnedResources = async (req, res) => {
 
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
-  const resources = ResourceModel.getOwnedResources(userId, parentId);
+  const resources = await ResourceModel.getOwnedResources(userId, parentId);
   res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
 };
 
@@ -374,7 +375,7 @@ const getStarredResources = async (req, res) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const resources = ResourceModel.getStarredResources(userId, parentId);
+        const resources = await ResourceModel.getStarredResources(userId, parentId);
 
         res.json(resources.map(r => ({ 
             id: r.id, 
@@ -391,7 +392,7 @@ const getStarredResources = async (req, res) => {
 
 const toggleStarred = async (req, res) => {
     const { id } = req.params;
-    const updated = ResourceModel.toggleStarred(id);
+    const updated = await ResourceModel.toggleStarred(id);
     if (!updated) return res.status(404).json({ error: "Not found" });
     res.json(updated);
 };
@@ -440,7 +441,7 @@ const softDeleteResource = async (req, res) => {
 
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
-  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+  if (!await permissionsService.checkPermission(userId, id, ROLES.OWNER)) {
     return res.status(403).json({ error: "Forbidden: Only owners can delete" });
   }
 
@@ -493,7 +494,7 @@ const moveResource = async (req, res) => {
   if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
 
   // moving is only allowed for owners
-  if (!PermissionsModel.checkPermission(userId, id, ROLES.OWNER)) {
+  if (!await permissionsService.checkPermission(userId, id, ROLES.OWNER)) {
     return res.status(403).json({ error: "Forbidden: No owner access" });
   }
 
