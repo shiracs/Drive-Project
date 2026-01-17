@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -7,82 +6,71 @@ import {
   ScrollView,
   SafeAreaView,
   Modal,
-  DeviceEventEmitter
+  DeviceEventEmitter,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import NewMenu from './NewMenu';
 import { SIDEBAR_MENU, SIDEBAR_PATHS } from '../consts/Sidebar';
 
 const Sidebar = ({ visible, onClose, currentFolderId = null, onRefresh }) => {
   const router = useRouter();
+  const pathname = usePathname();
+
   const handleRefresh = () => {
-    DeviceEventEmitter.emit('refreshFiles'); 
+    DeviceEventEmitter.emit('refreshFiles');
     if (onRefresh) onRefresh();
   };
 
   const menuItems = [
     {
       name: SIDEBAR_MENU.HOME,
-      icon: '🏠',
-      path: SIDEBAR_PATHS.HOME,
-      action: () => {
-        router.push('/');
-        onClose();
-      }
+      icon: 'folder-outline',
+      activeIcon: 'folder',
+      path: '/',
+      action: () => { router.push('/'); onClose(); }
     },
     {
       name: SIDEBAR_MENU.MY_STORAGE,
-      icon: '💾',
-      path: SIDEBAR_PATHS.MY_STORAGE,
-      action: () => {
-        router.push('/(tabs)/my-storage');
-        onClose();
-      }
+      icon: 'cloud-outline',
+      activeIcon: 'cloud',
+      path: '/my-storage',
+      action: () => { router.push('/(tabs)/my-storage'); onClose(); }
     },
     {
       name: SIDEBAR_MENU.SHARED,
-      icon: '👥',
-      path: SIDEBAR_PATHS.SHARED,
-      action: () => {
-        router.push('/(tabs)/shared');
-        onClose();
-      }
+      icon: 'account-group-outline',
+      activeIcon: 'account-group',
+      path: '/shared',
+      action: () => { router.push('/(tabs)/shared'); onClose(); }
     },
     {
       name: SIDEBAR_MENU.RECENT,
-      icon: '🕐',
-      path: SIDEBAR_PATHS.RECENT,
-      action: () => {
-        router.push('/(tabs)/recent');
-        onClose();
-      }
+      icon: 'clock-outline',
+      activeIcon: 'clock',
+      path: '/recent',
+      action: () => { router.push('/(tabs)/recent'); onClose(); }
     },
     {
       name: SIDEBAR_MENU.STARRED,
-      icon: '⭐',
-      path: SIDEBAR_PATHS.STARRED,
-      action: () => {
-        router.push('/(tabs)/starred');
-        onClose();
-      }
+      icon: 'star-outline',
+      activeIcon: 'star',
+      path: '/starred',
+      action: () => { router.push('/(tabs)/starred'); onClose(); }
     },
     {
       name: SIDEBAR_MENU.TRASH,
-      icon: '🗑️',
-      path: SIDEBAR_PATHS.TRASH,
-      action: () => {
-        router.push('/(tabs)/trash');
-        onClose();
-      }
+      icon: 'delete-outline',
+      activeIcon: 'delete',
+      path: '/trash',
+      action: () => { router.push('/(tabs)/trash'); onClose(); }
     },
     {
       name: SIDEBAR_MENU.SPAM,
-      icon: '⚠️',
-      path: SIDEBAR_PATHS.SPAM,
-      action: () => {
-        router.push('/(tabs)/spam');
-        onClose();
-      }
+      icon: 'alert-octagon-outline',
+      activeIcon: 'alert-octagon',
+      path: '/spam',
+      action: () => { router.push('/(tabs)/spam'); onClose(); }
     },
   ];
 
@@ -90,7 +78,7 @@ const Sidebar = ({ visible, onClose, currentFolderId = null, onRefresh }) => {
     <Modal
       transparent
       visible={visible}
-      animationType="none"
+      animationType="fade"
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
@@ -102,33 +90,44 @@ const Sidebar = ({ visible, onClose, currentFolderId = null, onRefresh }) => {
         <SafeAreaView style={styles.container}>
           <View style={styles.header}>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>✕</Text>
+              <MaterialCommunityIcons name="close" size={24} color="#5f6368" />
             </TouchableOpacity>
-            <Text style={styles.headerText}>תפריט</Text>
-            <View style={{ width: 40 }} />
           </View>
 
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-            <View style={styles.newMenuContainer}>
+            <View style={styles.newMenuWrapper}>
               <NewMenu
                 onUpload={handleRefresh}
                 currentFolderId={currentFolderId}
               />
             </View>
 
-            <View style={styles.divider} />
-
             <View style={styles.menuItemsContainer}>
-              {menuItems.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.sidebarItem}
-                  onPress={item.action}
-                >
-                  <Text style={styles.sidebarItemIcon}>{item.icon}</Text>
-                  <Text style={styles.sidebarItemText}>{item.name}</Text>
-                </TouchableOpacity>
-              ))}
+              {menuItems.map((item, index) => {
+                const isActive = pathname === item.path;
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.sidebarItem,
+                      isActive && styles.activeSidebarItem
+                    ]}
+                    onPress={item.action}
+                  >
+                    <MaterialCommunityIcons 
+                      name={isActive ? item.activeIcon : item.icon} 
+                      size={22} 
+                      color={isActive ? "#041E49" : "#444746"} 
+                    />
+                    <Text style={[
+                      styles.sidebarItemText,
+                      isActive && styles.activeSidebarItemText
+                    ]}>
+                      {item.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -137,83 +136,67 @@ const Sidebar = ({ visible, onClose, currentFolderId = null, onRefresh }) => {
   );
 };
 
-export default Sidebar;
-
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    flexDirection: 'row-reverse',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   overlayTouchable: {
     flex: 1,
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F9FA',
     width: '80%',
-    maxWidth: 320,
+    maxWidth: 280,
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e8eaed',
-    backgroundColor: '#fff',
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#202124',
+    alignItems: 'flex-start', 
   },
   closeButton: {
     padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 40,
+    borderRadius: 20,
+    alignSelf: 'flex-end'
   },
-  closeButtonText: {
-    fontSize: 20,
-    color: '#5f6368',
-  },
-  scrollView: {
-    flex: 1,
-    paddingVertical: 8,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#e8eaed',
-    marginVertical: 8,
-  },
-  newMenuContainer: {
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+  newMenuWrapper: {
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    alignItems: 'flex-start',
   },
   menuItemsContainer: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
   },
   sidebarItem: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     marginVertical: 2,
-    marginHorizontal: 8,
-    borderRadius: 24,
-    backgroundColor: 'transparent',
-    gap: 16,
+    borderRadius: 28,
+    gap: 12,
   },
-  sidebarItemIcon: {
-    fontSize: 20,
+  activeSidebarItem: {
+    backgroundColor: '#C2E7FF',
   },
   sidebarItemText: {
     fontSize: 14,
-    color: '#202124',
+    color: '#444746',
     fontWeight: '500',
     flex: 1,
     textAlign: 'right',
   },
+  activeSidebarItemText: {
+    color: '#041E49',
+    fontWeight: '700',
+  },
+  scrollView: {
+    flex: 1,
+  },
 });
+
+export default Sidebar;

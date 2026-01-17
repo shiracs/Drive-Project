@@ -119,7 +119,7 @@ const MoveToModal = ({ fileId, currentName, onClose, onRefresh }) => {
                 onPress={goBack}
                 style={styles.backButton}
               >
-                <Text style={styles.backButtonText}>← חזור</Text>
+                <Text style={styles.backButtonText}> חזור{">"}</Text>
               </TouchableOpacity>
             )}
             <Text style={styles.pathText}>{currentFolderName}</Text>

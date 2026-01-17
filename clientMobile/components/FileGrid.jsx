@@ -32,15 +32,15 @@ const FileGrid = ({
 
   const renderHeader = () => (
     <View style={styles.header}>
-      {showBackButton && (
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-      )}
       <View style={styles.titleContainer}>
         <Text style={styles.title}>{title}</Text>
         {Boolean(subTitle) && <Text style={styles.subTitle}>{subTitle}</Text>}
       </View>
+      {showBackButton && (
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Text style={styles.backButtonText}>{">"}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   backButton: {
-    marginRight: 12,
+    marginLeft: 12,
     padding: 8,
   },
   backButtonText: {
@@ -142,10 +142,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#202124",
     marginBottom: 4,
+    textAlign: "right",
   },
   subTitle: {
     fontSize: 14,
     color: "#5f6368",
+    textAlign: "right",
   },
   section: {
     marginBottom: 24,
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#5f6368",
     marginBottom: 12,
+    textAlign: "right",
   },
   centerContainer: {
     justifyContent: "center",

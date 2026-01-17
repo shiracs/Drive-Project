@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Modal, Alert, DeviceEventEmitter, ActivityIndicator } from 'react-native';
-import { Buffer } from 'buffer'; // חובה לטיפול מלא בתוכן ללא חיתוך
+import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import FileUploader from './FileUploader';
 import CreateFolderModal from './CreateFolderModal';
 import { SIDEBAR_MENU } from '../consts/Sidebar';
@@ -18,66 +18,50 @@ const NewMenu = ({ onUpload, currentFolderId = null }) => {
         method: "POST",
         body: JSON.stringify({ name, type, content, parentId }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error("Server error");
       return await response.json();
-    } catch (error) {
-      console.error("Create resource error:", error);
-      throw error;
-    }
+    } catch (error) { throw error; }
   };
 
   const handleUpload = async (uploadData) => {
-  const files = Array.isArray(uploadData) ? uploadData : 
-                (uploadData.files ? uploadData.files : [uploadData]);
+    const files = Array.isArray(uploadData) ? uploadData : [uploadData];
+    if (!files.length) return;
+    setLoading(true);
+    setIsOpen(false);
+    try {
+      for (const file of files) {
+        await createResource(file.name, file.type, file.base64, currentFolderId);
+      }
+      DeviceEventEmitter.emit('refreshFiles');
+      if (onUpload) onUpload();
+    } catch (err) {
+      Alert.alert('שגיאה', 'העלאה נכשלה');
+    } finally { setLoading(false); }
+  };
 
-  if (!files || files.length === 0) return;
-
-  setLoading(true);
-  setIsOpen(false);
-
-  try {
-    for (const file of files) {
-      let contentToSend = file.base64; 
-
-      await createResource(file.name, file.type, contentToSend, currentFolderId);
-    }
-
-    Alert.alert('הצלחה', `הועלו ${files.length} קבצים בהצלחה`);
-    DeviceEventEmitter.emit('refreshFiles');
-    if (onUpload) onUpload();
-    
-  } catch (err) {
-    console.error("Upload failed:", err);
-    Alert.alert('שגיאה', 'חלק מהקבצים לא הועלו: ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-};
   const handleCreateTextFile = async () => {
     setLoading(true);
     setIsOpen(false);
     try {
       await createResource(SIDEBAR_MENU.NEW_FILE_NAME || "קובץ חדש.txt", "FILE", "", currentFolderId);
-      Alert.alert('הצלחה', 'קובץ טקסט נוצר בהצלחה');
       DeviceEventEmitter.emit('refreshFiles');
       if (onUpload) onUpload();
-    } catch (error) {
-      Alert.alert('שגיאה', 'יצירת קובץ נכשלה');
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { Alert.alert('שגיאה', 'יצירת קובץ נכשלה'); }
+    finally { setLoading(false); }
   };
 
   return (
     <View>
-      <TouchableOpacity style={styles.newButton} onPress={() => setIsOpen(!isOpen)} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : (
+      <TouchableOpacity 
+        style={styles.newButton} 
+        onPress={() => setIsOpen(!isOpen)} 
+        disabled={loading}
+      >
+        {loading ? <ActivityIndicator color="#1a73e8" /> : (
           <>
-            <Text style={styles.newButtonIcon}>➕</Text>
+            <View style={styles.plusIconContainer}>
+               <MaterialCommunityIcons name="plus" size={32} color="#1a73e8" />
+            </View>
             <Text style={styles.newButtonText}>{SIDEBAR_MENU.NEW_BTN || "חדש"}</Text>
           </>
         )}
@@ -87,12 +71,12 @@ const NewMenu = ({ onUpload, currentFolderId = null }) => {
         <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setIsOpen(false)}>
           <View style={styles.menuContainer}>
             <TouchableOpacity style={styles.menuItem} onPress={handleCreateTextFile}>
-              <Text style={styles.menuItemIcon}>📄</Text>
+              <MaterialCommunityIcons name="file-document-outline" size={24} color="#5f6368" />
               <Text style={styles.menuItemText}>קובץ טקסט חדש</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem} onPress={() => { setIsOpen(false); setShowCreateFolderModal(true); }}>
-              <Text style={styles.menuItemIcon}>📁</Text>
+              <MaterialCommunityIcons name="folder-plus-outline" size={24} color="#5f6368" />
               <Text style={styles.menuItemText}>תיקייה חדשה</Text>
             </TouchableOpacity>
 
@@ -100,8 +84,8 @@ const NewMenu = ({ onUpload, currentFolderId = null }) => {
 
             <FileUploader onFileSelected={handleUpload} isDirectory={true}>
               <View style={styles.menuItem}>
-                <Text style={styles.menuItemIcon}>📤</Text>
-                <Text style={styles.menuItemText}>העלאת קבצים / תיקייה</Text>
+                <MaterialCommunityIcons name="upload-outline" size={24} color="#5f6368" />
+                <Text style={styles.menuItemText}>העלאת קבצים</Text>
               </View>
             </FileUploader>
           </View>
@@ -121,13 +105,65 @@ const NewMenu = ({ onUpload, currentFolderId = null }) => {
 export default NewMenu;
 
 const styles = StyleSheet.create({
-  newButton: { backgroundColor: '#1a73e8', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 24, marginHorizontal: 10, marginVertical: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', elevation: 4, gap: 10 },
-  newButtonIcon: { fontSize: 18, color: '#fff' },
-  newButtonText: { fontSize: 16, fontWeight: '600', color: '#fff' },
-  overlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)', justifyContent: 'center', alignItems: 'center' },
-  menuContainer: { backgroundColor: '#fff', borderRadius: 12, paddingVertical: 10, minWidth: 250, elevation: 10 },
-  menuItem: { flexDirection: 'row-reverse', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 20, gap: 15 },
-  menuItemIcon: { fontSize: 20 },
-  menuItemText: { fontSize: 16, color: '#3c4043', fontWeight: '500' },
-  divider: { height: 1, backgroundColor: '#e8eaed', marginVertical: 5 },
+  newButton: { 
+    backgroundColor: '#fff', 
+    paddingVertical: 12, 
+    paddingHorizontal: 20, 
+    borderRadius: 16,
+    flexDirection: 'row-reverse', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    elevation: 6, 
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    minWidth: 150,
+    alignSelf: 'center',
+    margin: 10,
+    gap: 8
+  },
+  plusIconContainer: {
+    marginRight: -4,
+  },
+  newButtonText: { 
+    fontSize: 14, 
+    fontWeight: '500', 
+    color: '#1f1f1f',
+    fontFamily: 'sans-serif-medium' 
+  },
+  overlay: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  menuContainer: { 
+    backgroundColor: '#fff', 
+    borderRadius: 12, 
+    paddingVertical: 8, 
+    minWidth: 200, 
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+  },
+  menuItem: { 
+    flexDirection: 'row-reverse', 
+    alignItems: 'center', 
+    paddingVertical: 12, 
+    paddingHorizontal: 20, 
+    gap: 15 
+  },
+  menuItemText: { 
+    fontSize: 14, 
+    color: '#3c4043', 
+    fontWeight: '400' 
+  },
+  divider: { 
+    height: 1, 
+    backgroundColor: '#e8eaed', 
+    marginVertical: 4 
+  },
 });

@@ -32,11 +32,9 @@ export default function BaseFilePage({ apiUrl, title }) {
 
   useEffect(() => {
     fetchResources(parentId);
-
     const subscription = DeviceEventEmitter.addListener("refreshFiles", () => {
       fetchResources(parentId);
     });
-
     return () => subscription.remove();
   }, [parentId, fetchResources]);
 

@@ -1,13 +1,16 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Sidebar from '../../components/Sidebar';
 
 export default function TabsLayout() {
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <Tabs
         screenOptions={{
           headerShown: true,
@@ -16,7 +19,7 @@ export default function TabsLayout() {
               onPress={() => setSidebarVisible(true)}
               style={{ marginRight: 16 }}
             >
-              <Text style={{ fontSize: 24 }}>☰</Text>
+              <MaterialCommunityIcons name="menu" size={28} color="#5f6368" />
             </TouchableOpacity>
           ),
           headerTitle: '',
@@ -27,7 +30,11 @@ export default function TabsLayout() {
           },
           tabBarActiveTintColor: '#1a73e8',
           tabBarInactiveTintColor: '#80868b',
-          tabBarStyle: styles.tabBar,
+          tabBarStyle: {
+            ...styles.tabBar,
+            height: 60 + insets.bottom,
+            paddingBottom: insets.bottom,
+          },
           tabBarLabelStyle: styles.tabBarLabel,
         }}
       >
@@ -35,21 +42,39 @@ export default function TabsLayout() {
           name="index"
           options={{
             tabBarLabel: 'הקבצים שלי',
-            tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📁</Text>,
+            tabBarIcon: ({ color, focused }) => (
+              <MaterialCommunityIcons 
+                name={focused ? "folder" : "folder-outline"} 
+                size={24} 
+                color={color} 
+              />
+            ),
           }}
         />
         <Tabs.Screen
           name="search"
           options={{
             tabBarLabel: 'חיפוש',
-            tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🔍</Text>,
+            tabBarIcon: ({ color, focused }) => (
+              <MaterialCommunityIcons 
+                name="magnify" 
+                size={24} 
+                color={color} 
+              />
+            ),
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             tabBarLabel: 'פרופיל',
-            tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>👤</Text>,
+            tabBarIcon: ({ color, focused }) => (
+              <MaterialCommunityIcons 
+                name={focused ? "account" : "account-outline"} 
+                size={24} 
+                color={color} 
+              />
+            ),
           }}
         />
         <Tabs.Screen
@@ -87,7 +112,6 @@ export default function TabsLayout() {
         onClose={() => setSidebarVisible(false)}
         onRefresh={() => {
           setSidebarVisible(false);
-          // Trigger refresh in current screen
         }}
       />
     </View>
@@ -99,12 +123,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e8eaed',
-    height: 56,
-    paddingBottom: 4,
+    paddingTop: 8,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   tabBarLabel: {
-    fontSize: 11,
-    marginTop: 4,
+    fontSize: 12,
     fontWeight: '500',
   },
 });
