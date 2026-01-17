@@ -24,28 +24,35 @@ const resourceSchema = new mongoose.Schema(
     path: {
       type: String,
       required: true
-    }
+    },
+    isDeleted: { type: Boolean, default: false },
+    isSpam: { type: Boolean, default: false },
+    isStarred: { type: Boolean, default: false },
   },
   {
     timestamps: true,
     toJSON: {
       virtuals: true,
+      versionKey: false,
       transform(doc, ret) {
-        ret.id = ret._id.toString();
+        ret.id = ret._id;
         delete ret._id;
-        delete ret.__v;
       }
     },
     toObject: {
         virtuals: true,
         transform(doc, ret) {
-            ret.id = ret._id.toString();
+            ret.id = ret._id;
             delete ret._id;
             delete ret.__v;
         }
     }
   }
 );
+
+resourceSchema.virtual('id').get(function () {
+    return this._id.toString();
+});
 
 resourceSchema.index({ ownerId: 1 });
 resourceSchema.index({ parentId: 1 });

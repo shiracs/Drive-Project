@@ -23,7 +23,7 @@ const getResourcePermissions = async (req, res) => {
   }
 
   const permissions = await permissionsService.getPermissionsByResourceId(resourceId);
-  res.json(permissions);
+  res.json(permissions.map(p => p.toJSON()));
 };
 
 /**

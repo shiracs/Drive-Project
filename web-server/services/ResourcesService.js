@@ -1,4 +1,4 @@
-import PermissionsService from "./services/PermissionsService.js";
+import PermissionsService from "./PermissionsService.js";
 import { RESOURCE_TYPE } from "../enums/ResourceType.js";
 import Resource from "../models/Resource.js";
 
