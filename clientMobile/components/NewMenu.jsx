@@ -31,40 +31,32 @@ const NewMenu = ({ onUpload, currentFolderId = null }) => {
   };
 
   const handleUpload = async (uploadData) => {
-    // פתרון בעיית הקובץ הבודד: הפיכת כל קלט למערך אחיד
-    const files = Array.isArray(uploadData) ? uploadData : 
-                  (uploadData.files ? uploadData.files : [uploadData]);
+  const files = Array.isArray(uploadData) ? uploadData : 
+                (uploadData.files ? uploadData.files : [uploadData]);
 
-    if (!files || files.length === 0) return;
+  if (!files || files.length === 0) return;
 
-    setLoading(true);
-    setIsOpen(false);
+  setLoading(true);
+  setIsOpen(false);
 
-    try {
-      // פתרון העלאת מספר קבצים: לולאה טורית שמחכה לכל קובץ
-      for (const file of files) {
-        let contentToSend = file.base64;
+  try {
+    for (const file of files) {
+      let contentToSend = file.base64; 
 
-        // פתרון חיתוך התוכן: המרה בטוחה של Base64 לטקסט UTF-8
-        if (file.type === "FILE" && file.base64) {
-          contentToSend = Buffer.from(file.base64, 'base64').toString('utf8');
-        }
-
-        await createResource(file.name, file.type, contentToSend, currentFolderId);
-      }
-
-      Alert.alert('הצלחה', `הועלו ${files.length} קבצים בהצלחה`);
-      DeviceEventEmitter.emit('refreshFiles');
-      if (onUpload) onUpload();
-      
-    } catch (err) {
-      console.error("Upload failed:", err);
-      Alert.alert('שגיאה', 'חלק מהקבצים לא הועלו: ' + err.message);
-    } finally {
-      setLoading(false);
+      await createResource(file.name, file.type, contentToSend, currentFolderId);
     }
-  };
 
+    Alert.alert('הצלחה', `הועלו ${files.length} קבצים בהצלחה`);
+    DeviceEventEmitter.emit('refreshFiles');
+    if (onUpload) onUpload();
+    
+  } catch (err) {
+    console.error("Upload failed:", err);
+    Alert.alert('שגיאה', 'חלק מהקבצים לא הועלו: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
   const handleCreateTextFile = async () => {
     setLoading(true);
     setIsOpen(false);
