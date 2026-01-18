@@ -24,10 +24,7 @@ const resourceSchema = new mongoose.Schema(
     path: {
       type: String,
       required: true
-    },
-    isDeleted: { type: Boolean, default: false },
-    isSpam: { type: Boolean, default: false },
-    isStarred: { type: Boolean, default: false },
+    }
   },
   {
     timestamps: true,

@@ -16,6 +16,18 @@ const permissionSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: Object.values(ROLES)
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
+    isSpam: {
+        type: Boolean,
+        default: false
+    },
+    isStarred: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true,
