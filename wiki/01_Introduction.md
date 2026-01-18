@@ -1,9 +1,7 @@
 # 📘 Introduction
 
 This project is a **File Storage System** (like a simplified Google Drive).
-It allows users to upload, download, and manage files from a Website and a Mobile App.
-
-The system uses **Docker** to run everything. You can build and start the whole project with just one command.
+It allows users to upload and manage files from a Website and a Mobile App.
 
 ## System Architecture
 The project has 5 parts working together:
