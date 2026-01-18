@@ -1,27 +1,46 @@
-# How to Run the System
+# Drive Project - Setup and Run Instructions
 
-We use **Docker Compose** to build and run the entire project automatically. You don't need to run separate commands for each server.
+## Native App Client - Preparation
 
-## Start Command
-Open a terminal in the main project folder and run:
+### 0. Prerequisites
+Install the **Expo Go** app on your physical phone or emulator.
+
+### Option A: Running on an Emulator
+1. Open the emulator **before** running the docker-compose command
+2. Ensure **Expo Go** is installed on the emulator
+
+### Option B: Running on Physical Device
+1. Ensure the device is connected to the **same Wi-Fi** as your computer
+2. Make sure **Windows Firewall** allows connections to Docker on port 19000
+
+---
+
+## 1. Building and Running Containers
+
+From the root of the project, run:
+```bash
+HOST_IP=192.168.X.X docker-compose up --build
+```
+> *HOST_IP should be your computer's IP address!(the instructions to get it are in the previous page)*
+
+---
+
+## 2. Accessing the Applications
+
+### React Web Client
+Available at: http://localhost:3000
+
+### Mobile Client (Expo Go)
+1. In the `client-mobile` logs, find: `Metro Bundler ready exp://192.168.X.X:19000`
+2. Open **Expo Go** → "Enter URL manually" → enter the URL from the log
+3. Alternatively, scan the QR code displayed in the logs
+
+---
+
+## 3. Cleanup
+
+To stop and remove all containers:
 
 ```bash
-docker compose up --build
+docker-compose down
 ```
-
-**This command will automatically:**
-1.  Compile the C++ server code.
-2.  Install all the necessary libraries for the Web and Mobile apps.
-3.  Start the database (MongoDB), the servers, and the clients.
-
-## How to know it's working?
-It might take a few minutes the first time. Wait for the logs to stop scrolling fast. Look for these signs to know everything is ready:
-
-1.  **MongoDB:** You will see a log saying `Waiting for connections`.
-2.  **Web Server:** You will see `Connected to MongoDB`.
-3.  **Mobile Client:** You will see a large **QR Code** generated in the terminal.
-
-## Connect Your Phone
-1.  Download and open the **Expo Go** app on your phone.
-2.  Scan the QR Code displayed in your terminal.
-3.  Wait a moment for the Javascript bundle to load (it might take a minute).

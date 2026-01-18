@@ -1,8 +1,15 @@
-// For Android Emulator use: http://10.0.2.2:5000/api
-// For iOS Simulator use: http://localhost:5000/api
-// For Physical Device use: http://<YOUR_MACHINE_IP>:5000/api
-export const API_BASE_URL = "http://10.0.2.2:5000/api";
-// export const API_BASE_URL = "http://localhost:5000/api";
+import { Platform } from 'react-native';
+
+// const EMULATOR_URL = Platform.OS === 'android' 
+//   ? "http://10.0.2.2:5000/api" 
+//   : "http://localhost:5000/api";
+
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
+  "http://localhost:5000/api";
+
+
+
 export const USER_API_URL = `${API_BASE_URL}/users`;
 export const LOGIN_API_URL = `${API_BASE_URL}/tokens`;
 export const RESOURCE_API_URL = `${API_BASE_URL}/files`;

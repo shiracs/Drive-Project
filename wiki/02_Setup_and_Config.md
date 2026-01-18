@@ -4,8 +4,8 @@
 Open your terminal and run the following command to download the project:
 
 ```bash
-git clone [https://github.com/YOUR_USER/YOUR_REPO.git](https://github.com/YOUR_USER/YOUR_REPO.git)
-cd YOUR_REPO
+git clone [https://github.com/YOUR_USER/YOUR_REPO.git](https://github.com/shiracs/Drive-Project.git)
+cd Drive-Project
 ```
 
 ## 2. Set Your IP Address (Important!)
