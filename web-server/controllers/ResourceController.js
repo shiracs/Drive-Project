@@ -206,41 +206,34 @@ try {
  * DELETE /api//files/permanent-delete/:id
  * Uses Flat Deletion logic for folders (using Path) to delete all descendants
  */
+/**
+ * DELETE /api/files/permanent-delete/:id
+ * מחיקה לצמיתות - מוחק פיזית ומה-DB.
+ */
 const deleteResource = async (req, res) => {
 try {
   const userId = req.userId;
   const { id } = req.params;
 
   const validUser = await UsersService.findById(userId);
-  if (!validUser) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  if (!validUser) return res.status(401).json({ error: "Unauthorized" });
 
   const resourceRecord = await ResourcesService.findById(id);
-  if (!resourceRecord) {
-      return res.status(404).json({ error: "Resource not found" });
-  }
+  if (!resourceRecord) return res.status(404).json({ error: "Resource not found" });
 
+  // בדיקת בעלות
   const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
   if (!checkPermission) { 
     return res.status(403).json({ error: "Forbidden: Only owners can delete" });
   }
 
   try {
-    // Get the resource to delete
     const targetResource = await ResourcesService.findById(id);
-    if (!targetResource) return res.status(404).json({ error: "Resource not found" });
-
-    // Get ALL its descendants - if its a file, this will be an empty array
     const descendants = await ResourcesService.getDescendants(id, true);
-
-    // Combine into one list to delete
     const allToDelete = [targetResource, ...descendants];
 
-    // Delete each one
     for (const resource of allToDelete) {
       const rId = resource._id || resource.id;
-      // If it's a file, delete from C++, otherwise skip
       if (resource.type === RESOURCE_TYPE.FILE) {
         try {
           await sendToCpp(`DELETE ${rId}`);
@@ -250,7 +243,8 @@ try {
       }
       await permissionsService.removeAllPermissionsOfResource(rId)
     }
-    await ResourcesService.softDeleteResource(id);
+    
+    await ResourcesService.removeResourceRecord(id);
 
     res.status(204).send();
   } catch (error) {
@@ -381,7 +375,7 @@ const getRecentResources = async (req, res) => {
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     const resources = await ResourcesService.getRecentResources(userId, parentId);
-    res.json(resources.map(r => r.toJSON() ? r.toJSON() : { id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam }));
+    res.json(resources);
 };
 
 const getStarredResources = async (req, res) => {
@@ -456,19 +450,9 @@ const softDeleteResource = async (req, res) => {
   }
 
   try {
-    const targetResource = await ResourcesService.findById(id);
-    const descendants = await ResourcesService.getDescendants(id, true);
-    const allToRemove = [targetResource, ...descendants];
+    const success = await ResourcesService.softDeleteResource(id, userId); 
 
-    for (const resource of allToRemove) {
-        const rId = resource._id || resource.id;
-
-        if (resource.type === RESOURCE_TYPE.FILE) {
-            await sendToCpp(`DELETE ${rId}`);
-        }
-        await permissionsService.removeAllPermissionsOfResource(rId);
-    }
-    await ResourcesService.softDeleteResource(id, userId); 
+    if (!success) return res.status(404).json({ error: "Action failed" });
 
     res.status(204).send();
   } catch (error) {
@@ -494,7 +478,9 @@ const getSpamResources = async (req, res) => {
 
 const toggleSpam = async (req, res) => {
     const { id } = req.params;
-    const updated = await ResourcesService.toggleSpam(id);
+    const userId = req.userId;
+
+    const updated = await ResourcesService.toggleSpam(id, userId);
     if (!updated) return res.status(404).json({ error: "Resource not found" });
     res.json(updated);
 };
