@@ -1,5 +1,5 @@
 import ResourcesService from "../services/ResourcesService.js";
-import UserModel from "../models/UserModel.js";
+import UsersService from "../services/UsersService.js";
 import permissionsService from "../services/PermissionsService.js";
 import { sendToCpp } from "../services/cppService.js";
 import { ROLES } from "../enums/Roles.js";
@@ -14,7 +14,8 @@ const getUserResourcesInDir = async (req, res) => {
     const userId = req.userId;
     const parentId = req.query.parentId || null;
 
-    if (!UserModel.isValidId(userId))
+    const validUser = await UsersService.findById(userId);
+    if (!validUser)
       return res.status(401).json({ error: "Unauthorized" });
 
     // Get resources only for this specific level (right now we use null for root)
@@ -50,7 +51,8 @@ const uploadResource = async (req, res) => {
     } = req.body;
 
     // --- VALIDATIONS --- //
-    if (!UserModel.isValidId(userId)) {
+    const validUser = await UsersService.findById(userId);
+    if (!validUser) {
       return res.status(401).json({ error: "Unauthorized" });
     }
     // Validate Resource Type
@@ -104,7 +106,8 @@ try {
   const userId = req.userId;
   const { id } = req.params;
 
-  if (!UserModel.isValidId(userId)) {
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -149,7 +152,8 @@ try {
   const { id } = req.params;
   const { name, content } = req.body;
 
-  if (!UserModel.isValidId(userId)) {
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -212,7 +216,8 @@ try {
   const userId = req.userId;
   const { id } = req.params;
 
-  if (!UserModel.isValidId(userId)) {
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -271,7 +276,8 @@ try {
   const { query } = req.params;
 
   // check user authorization - every user must be authorized
-  if (!UserModel.isValidId(userId)) {
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -345,7 +351,8 @@ const getSharedResources = async (req, res) => {
   const userId = req.userId;
   const parentId = req.query.parentId || null;
 
-  if (!UserModel.isValidId(userId))
+  const validUser = await UsersService.findById(userId);
+  if (!validUser)
     return res.status(401).json({ error: "Unauthorized" });
 
   // Get resources only for this specific level (right now we use null for root)
@@ -369,7 +376,8 @@ const getOwnedResources = async (req, res) => {
   const userId = req.userId;
   const parentId = req.query.parentId || null;
 
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) return res.status(401).json({ error: "Unauthorized" });
 
   const resources = await ResourcesService.getOwnedResources(userId, parentId);
   res.json(resources.map(r => r.toJSON() ? r.toJSON() : { id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam }));
@@ -396,7 +404,8 @@ const getStarredResources = async (req, res) => {
         const userId = req.userId;
         const parentId = req.query.parentId || null;
 
-        if (!UserModel.isValidId(userId)) {
+        const validUser = await UsersService.findById(userId);  
+        if (!validUser) {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
@@ -428,7 +437,8 @@ export const getTrashResources = async (req, res) => {
         const userId = req.userId;
         const parentId = req.query.parentId || null;
 
-        if (!UserModel.isValidId(userId)) {
+        const validUser = await UsersService.findById(userId);
+        if (!validUser) {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
@@ -464,7 +474,8 @@ const softDeleteResource = async (req, res) => {
   const userId = req.userId;
   const { id } = req.params;
 
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) return res.status(401).json({ error: "Unauthorized" });
 
   const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
   if (!checkPermission) {
@@ -497,7 +508,8 @@ const getSpamResources = async (req, res) => {
         const userId = req.userId;
         const parentId = req.query.parentId || null;
 
-         if (!UserModel.isValidId(userId)) {
+        const validUser = await UsersService.findById(userId);
+        if (!validUser) {
             return res.status(401).json({ error: "Unauthorized" });
         }
         const resources = await ResourcesService.getSpamResources(userId, parentId);
@@ -521,7 +533,8 @@ const moveResource = async (req, res) => {
   const { id } = req.params;
   const { newParentId } = req.body;
 
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) return res.status(401).json({ error: "Unauthorized" });
 
   // moving is only allowed for owners
   const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);

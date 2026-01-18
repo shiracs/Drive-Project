@@ -1,21 +1,4 @@
-import { v4 as uuid } from "uuid";
-// !Volatile user storage for now
-const USERS = [
-  {
-    id: "1",
-    username: "admin",
-    password: "111",
-    fullName: "admino ll",
-    profilePic: "hh",
-  },
-  {
-    id: "2",
-    username: "b",
-    password: "111",
-    fullName: "bebe ll",
-    profilePic: "bbb",
-  },
-];
+import User from "../models/User.js";
 
 /**
  * Create and store a new user
@@ -23,12 +6,9 @@ const USERS = [
  * @return the created user data
  */
 const create = (userData) => {
-  const newUser = {
-    id: uuid(),
-    ...userData,
-  };
-  USERS.push(newUser);
-  return newUser;
+    const user = new User(userData);
+    user.save();
+    return user;
 };
 
 /**
@@ -37,7 +17,7 @@ const create = (userData) => {
  * @returns the user data or null if not found
  */
 const findById = (id) => {
-  return USERS.find((u) => u.id === id);
+  return User.findById(id);
 };
 
 /**
@@ -46,7 +26,7 @@ const findById = (id) => {
  * @returns the user data or null if not found
  */
 const findByUsername = (username) => {
-  return USERS.find((u) => u.username === username);
+  return User.findOne({ username });
 };
 
 /**

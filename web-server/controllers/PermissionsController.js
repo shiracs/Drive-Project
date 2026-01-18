@@ -1,4 +1,4 @@
-import UserModel from "../models/UserModel.js";
+import UsersService from "../services/UsersService.js";
 import permissionsService from "../services/PermissionsService.js";
 import ResourcesService from "../services/ResourcesService.js";
 import { ROLES } from "../enums/Roles.js";
@@ -11,7 +11,8 @@ const getResourcePermissions = async (req, res) => {
   const userId = req.userId;
   const { id: resourceId } = req.params;
 
-  if (!UserModel.isValidId(userId)) {
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -35,19 +36,23 @@ const grantPermission = async (req, res) => {
   const { username, targetUserId, role } = req.body;
 
   // Validations
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
   
   let finalTargetUserId = targetUserId;
   
   // If username provided, look up the user ID
   if (username && !targetUserId) {
-    const targetUser = UserModel.findByUsername(username);
+    const targetUser = await UsersService.findByUsername(username);
     if (!targetUser) return res.status(404).json({ error: "משתמש לא נמצא" });
     finalTargetUserId = targetUser.id;
   }
   
   if (!finalTargetUserId || !role) return res.status(400).json({ error: "Missing fields" });
-  if (!UserModel.isValidId(finalTargetUserId)) return res.status(404).json({ error: "Target user not found" });
+  const targetUser = await UsersService.findById(finalTargetUserId);
+  if (!targetUser) return res.status(404).json({ error: "User not found" });
 
   // Only the OWNER of the file can grant new permissions
   const hasOwnerPermission = await permissionsService.checkPermission(
@@ -85,7 +90,10 @@ const updatePermission = async (req, res) => {
   const { id: fileId , permissionId } = req.params;
   const { role: newRole } = req.body;
 
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
   if (!newRole) return res.status(400).json({ error: "Missing new role" });
   if (!Object.values(ROLES).includes(newRole)) return res.status(400).json({ error: "Invalid role" });
 
@@ -136,7 +144,10 @@ const deletePermission = async (req, res) => {
   const userId = req.userId;
   const { id: fileId , permissionId : permissionId } = req.params;
 
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   const isOwner = await permissionsService.checkPermission(
     userId, 
@@ -188,7 +199,8 @@ const getMyRoleOnResource = async (req, res) => {
   const userId = req.userId; 
   const { id: resourceId } = req.params;
 
-  if (!UserModel.isValidId(userId)) {
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
