@@ -1,20 +1,18 @@
-FROM node:18-alpine
+FROM node:20-bullseye
 
-WORKDIR /app
+WORKDIR /opt/react_native_app
 
-# העתקת הגדרות החבילות והתקנה
+# Install Expo CLI globally
+RUN npm install -g expo-cli
+
+# Copy package.json and install dependencies
 COPY package*.json ./
 RUN npm install
 
-# העתקת שאר הקבצים
+# Copy app source
 COPY . .
 
-# הגדרת משתני סביבה כדי ש-Expo יעבוד מתוך דוקר
-ENV EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
-ENV CI=1
+EXPOSE 19000 19001 19002
 
-# חשיפת הפורט של Expo
-EXPOSE 8081
-
-# הרצה במצב LAN כדי שטלפונים יוכלו להתחבר
+# Start Expo in LAN mode ONLY
 CMD ["npx", "expo", "start", "--lan"]

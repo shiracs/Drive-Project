@@ -1,10 +1,14 @@
 import { Platform } from 'react-native';
 
-const EMULATOR_URL = Platform.OS === 'android' 
-  ? "http://10.0.2.2:5000/api" 
-  : "http://localhost:5000/api";
+// const EMULATOR_URL = Platform.OS === 'android' 
+//   ? "http://10.0.2.2:5000/api" 
+//   : "http://localhost:5000/api";
 
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || EMULATOR_URL;
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
+  "http://localhost:5000/api";
+
+
 
 export const USER_API_URL = `${API_BASE_URL}/users`;
 export const LOGIN_API_URL = `${API_BASE_URL}/tokens`;
