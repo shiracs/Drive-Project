@@ -1,34 +1,71 @@
-# Drive-Project (Client-Server Architecture)
-Message to the Checker:
- - all the code from the second excercise is in the ex3 branch:
+# Drive Project - Setup and Run Instructions
+
+This project includes:
+- **Server** (C++)
+- **Web Server** (Node.js / Express)
+- **Client React** (React / Web)
+- **Client Mobile** (React Native / Expo)
+- **MongoDB**
+
+---
+
+## 1. Prerequisites
+
+- Docker & Docker Compose installed
+- Node.js **not required** (everything runs inside Docker)
+- Windows / WSL2 or Mac/Linux
+- Mobile device or emulator connected to the **same local network (LAN)**
+
+---
+
+## 2. Native App Client - Preparation
+
+### Prerequisites
+Install the **Expo Go** app on your physical phone or emulator.
+
+### Option A: Running on an Emulator
+1. Open the emulator **before** running the docker-compose command
+2. Ensure **Expo Go** is installed on the emulator
+
+### Option B: Running on Physical Device
+1. Ensure the device is connected to the **same Wi-Fi** as your computer
+2. Make sure **Windows Firewall** allows connections to Docker on port 19000
+
+---
+
+## 3. Building and Running Containers
+
+From the root of the project, run:
 ```bash
- git checkout ex3
- ```
-
-## How to Run (with Docker Compose)
-We use Docker Compose to manage the multi-container setup. This ensures the Web Server and the C++ Server run as separate processes but can communicate over a virtual bridge network.
-
-from the root directory (/Drive-Project), run:
-
-### 1. Build and Start the System
-This command builds the images and runs everything.
-```bash
-docker-compose up --build
+HOST_IP=192.168.X.X docker-compose up --build
 ```
+> *HOST_IP should be your computer's IP address !*
 
-### 2. Access the App
-The App is exposed on `http://localhost:3000`. 
+The containers include:
+- **server** → port 8080
+- **web-server** → port 5000
+- **client-react** → port 3000
+- **client-mobile** → ports 19000, 19001, 19002
+- **mongo** → port 27017
 
+---
 
-### 3. Run the Unit Tests
-To run the automated test suite (Google Test) in an isolated container:
-```bash
-docker-compose run --rm tests
-```
+## 4. Accessing the Applications
 
-### 4. Stop and Clean Up
-To stop the server and remove the containers:
+### React Web Client
+Available at: http://localhost:3000
+
+### Mobile Client (Expo Go)
+1. In the `client-mobile` logs, find: `Metro Bundler ready exp://192.168.X.X:19000`
+2. Open **Expo Go** → "Enter URL manually" → enter the URL from the log
+3. Alternatively, scan the QR code displayed in the logs
+
+---
+
+## 5. Cleanup
+
+To stop and remove all containers:
+
 ```bash
 docker-compose down
 ```
-
