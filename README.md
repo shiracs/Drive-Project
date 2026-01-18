@@ -36,10 +36,10 @@ Install the **Expo Go** app on your physical phone or emulator.
 ## 3. Building and Running Containers
 
 From the root of the project, run:
-
 ```bash
-docker-compose up --build
+HOST_IP=192.168.X.X docker-compose up --build
 ```
+> *HOST_IP should be your computer's IP address !*
 
 The containers include:
 - **server** → port 8080
