@@ -206,10 +206,6 @@ try {
  * DELETE /api//files/permanent-delete/:id
  * Uses Flat Deletion logic for folders (using Path) to delete all descendants
  */
-/**
- * DELETE /api/files/permanent-delete/:id
- * מחיקה לצמיתות - מוחק פיזית ומה-DB.
- */
 const deleteResource = async (req, res) => {
 try {
   const userId = req.userId;
@@ -221,7 +217,6 @@ try {
   const resourceRecord = await ResourcesService.findById(id);
   if (!resourceRecord) return res.status(404).json({ error: "Resource not found" });
 
-  // בדיקת בעלות
   const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
   if (!checkPermission) { 
     return res.status(403).json({ error: "Forbidden: Only owners can delete" });
@@ -378,6 +373,12 @@ const getRecentResources = async (req, res) => {
     res.json(resources);
 };
 
+/**
+ * GET /api/starred
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 const getStarredResources = async (req, res) => {
     try {
         const userId = req.userId;
@@ -396,6 +397,8 @@ const getStarredResources = async (req, res) => {
     }
 };
 
+/** * POST /api/files/toggle-starred/:id
+ */
 const toggleStarred = async (req, res) => {
     const { id } = req.params;
     const updated = await ResourcesService.toggleStarred(id, req.userId);
@@ -403,8 +406,13 @@ const toggleStarred = async (req, res) => {
     res.json(updated);
 };
 
-
-export const getTrashResources = async (req, res) => {
+/**
+ * GET /api/trash
+ * @param {`*`} req 
+ * @param {*} res 
+ * @returns 
+ */
+const getTrashResources = async (req, res) => {
     try {
         const userId = req.userId;
         const parentId = req.query.parentId || null;
@@ -421,10 +429,29 @@ export const getTrashResources = async (req, res) => {
     }
 };
 
+/**
+ * POST /api/files/restore/:id
+ * @param {`*`} req 
+ * @param {*} res 
+ * @returns 
+ */
 export const restoreResource = async (req, res) => {
     try {
         const { id } = req.params;
-        const success = await ResourcesService.restoreResource(id, req.userId);
+        const userId = req.userId;
+
+        const validUser = await UsersService.findById(userId);
+        if (!validUser) return res.status(401).json({ error: "Unauthorized" });
+
+        // only owners can restore
+
+        const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
+        if (!checkPermission) {
+             return res.status(403).json({ error: "Forbidden: Only owners can restore resources" });
+        }
+
+        const success = await ResourcesService.restoreResource(id, userId);
+
         if (!success) return res.status(404).json({ error: "Resource not found" });
         res.json({ message: "Resource restored" });
     } catch (err) {
@@ -433,7 +460,6 @@ export const restoreResource = async (req, res) => {
 };
 
 
-// todo:
 /**
  * DELETE /api/files/:id
  */
@@ -460,6 +486,9 @@ const softDeleteResource = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/spam
+ */
 const getSpamResources = async (req, res) => {
     try {
         const userId = req.userId;
@@ -476,6 +505,9 @@ const getSpamResources = async (req, res) => {
     }
 };
 
+/**
+ * POST /api/files/toggle-spam/:id
+ */
 const toggleSpam = async (req, res) => {
     const { id } = req.params;
     const userId = req.userId;
@@ -485,6 +517,9 @@ const toggleSpam = async (req, res) => {
     res.json(updated);
 };
 
+/**
+ *  POST /api/files/move/:id
+ */
 const moveResource = async (req, res) => {
   const userId = req.userId;
   const { id } = req.params;

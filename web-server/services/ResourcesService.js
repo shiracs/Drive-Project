@@ -122,7 +122,6 @@ const renameResource = async (id, newName) => {
   }
 };
 
-// --- כאן התיקונים הקריטיים ל"באנרים" ---
 
 const getSharedResourcesByUserId = async (userId, parentId = null) => {
   const permittedIds = await PermissionsService.getPermittedResourcesOfUser(userId, false, false);
@@ -139,7 +138,6 @@ const getSharedResourcesByUserId = async (userId, parentId = null) => {
   }
 
   const resources = await Resource.find(query);
-  // הוספת המיזוג כדי שהפרונט יקבל את המידע המלא
   return await _mergeWithPermissions(resources, userId);
 };
 
@@ -163,7 +161,6 @@ const getOwnedResources = async (userId, parentId = null) => {
   
   const finalResources = resources.filter(r => filteredResourcesBySpam.includes(r._id.toString()));
   
-  // הוספת המיזוג
   return await _mergeWithPermissions(finalResources, userId);
 };
 
@@ -180,7 +177,6 @@ const getRecentResources = async (userId, parentId = null) => {
     .sort({ updatedAt: -1 })
     .limit(10);
     
-  // הוספת המיזוג - קריטי כדי שהכוכבים יופיעו ב"אחרונים"
   return await _mergeWithPermissions(resources, userId);
 };
 
@@ -199,7 +195,6 @@ const getStarredResources = async (userId, parentId = null) => {
   if (parentId) query.parentId = parentId;
 
   const resources = await Resource.find(query);
-  // הוספת המיזוג
   return await _mergeWithPermissions(resources, userId);
 };
 
@@ -233,7 +228,6 @@ const getTrashResources = async (userId, parentId = null) => {
     });
   }
   
-  // הוספת המיזוג
   return await _mergeWithPermissions(resources, userId);
 };
 
@@ -267,18 +261,15 @@ const getSpamResources = async (userId, parentId = null) => {
     });
   }
   
-  // הוספת המיזוג
   return await _mergeWithPermissions(resources, userId);
 };
 
-// --- פונקציות טוגל ומחיקה ---
 
 const toggleStarred = async (id, userId) => {
   const currentStatus = await PermissionsService.getResourceStatus(userId, id);
   if (!currentStatus) return null;
 
   await PermissionsService.toggleStarredStatus(id, !currentStatus.isStarred, userId);
-  // לא חובה לעדכן Timestamp בשינוי כוכב
   
   const resource = await findById(id);
   const merged = await _mergeWithPermissions([resource], userId);
@@ -378,7 +369,6 @@ const moveResource = async (id, newParentId) => {
     return true;
 };
 
-// --- Helpers ---
 
 const normalizeResource = (r, perm) => {
     const rObj = r.toJSON ? r.toJSON() : r;
