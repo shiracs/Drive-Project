@@ -390,6 +390,13 @@ const styles = StyleSheet.create({
     color: '#202124',
     textAlign: 'right', 
     writingDirection: 'rtl',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+    backgroundColor: '#fafafa',
   },
   confirmInput: {
     borderWidth: 1,
