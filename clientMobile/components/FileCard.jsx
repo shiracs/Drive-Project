@@ -351,13 +351,23 @@ const FileCard = ({ file, onNavigate, onOpenImage, onRefresh }) => {
                           <TouchableOpacity
                             style={styles.menuItem}
                             onPress={handleRestore}
+                            disabled={!isOwner}
+                            activeOpacity={isOwner ? 0.7 : 1}
                           >
                             <MaterialCommunityIcons
                               name="restore"
                               size={20}
-                              color="#5f6368"
+                              color={isOwner ? "#5f6368" : "#d0d0d0"}
                             />
-                            <Text style={styles.menuItemText}>שחזור</Text>
+                            <Text style={[styles.menuItemText,
+                            !isOwner && styles.disabledText]}>שחזור</Text>
+                            {!isOwner && (
+                              <MaterialCommunityIcons
+                                name="lock-outline"
+                                size={16}
+                                color="#d0d0d0"
+                              />
+                            )}
                           </TouchableOpacity>
 
                           <View style={styles.menuDivider} />
