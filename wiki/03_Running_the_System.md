@@ -1,26 +1,8 @@
 # Drive Project - Setup and Run Instructions
 
-This project includes:
-- **Server** (C++)
-- **Web Server** (Node.js / Express)
-- **Client React** (React / Web)
-- **Client Mobile** (React Native / Expo)
-- **MongoDB**
+## Native App Client - Preparation
 
----
-
-## 1. Prerequisites
-
-- Docker & Docker Compose installed
-- Node.js **not required** (everything runs inside Docker)
-- Windows / WSL2 or Mac/Linux
-- Mobile device or emulator connected to the **same local network (LAN)**
-
----
-
-## 2. Native App Client - Preparation
-
-### Prerequisites
+### 0. Prerequisites
 Install the **Expo Go** app on your physical phone or emulator.
 
 ### Option A: Running on an Emulator
@@ -33,24 +15,17 @@ Install the **Expo Go** app on your physical phone or emulator.
 
 ---
 
-## 3. Building and Running Containers
+## 1. Building and Running Containers
 
 From the root of the project, run:
 ```bash
 HOST_IP=192.168.X.X docker-compose up --build
 ```
-> *HOST_IP should be your computer's IP address !*
-
-The containers include:
-- **server** → port 8080
-- **web-server** → port 5000
-- **client-react** → port 3000
-- **client-mobile** → ports 19000, 19001, 19002
-- **mongo** → port 27017
+> *HOST_IP should be your computer's IP address!(the instructions to get it are in the previous page)*
 
 ---
 
-## 4. Accessing the Applications
+## 2. Accessing the Applications
 
 ### React Web Client
 Available at: http://localhost:3000
@@ -62,7 +37,7 @@ Available at: http://localhost:3000
 
 ---
 
-## 5. Cleanup
+## 3. Cleanup
 
 To stop and remove all containers:
 
