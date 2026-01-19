@@ -11,8 +11,6 @@ const PORT =  process.env.PORT || 5000;
 const mongoURI = process.env.CONNECTION_STRING;
 
 mongoose.connect(mongoURI)
-    .then(() => console.log('Successfully connected to MongoDB'))
-    .catch((err) => {console.error('MongoDB connection error:', err); process.exit(1);});
 
 app.use(cors({
     origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
@@ -27,8 +25,6 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use('/api', apiRoutes);
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Web Server is listening on port ${PORT}`);
-});
+app.listen(PORT, '0.0.0.0');
 
 export default app;

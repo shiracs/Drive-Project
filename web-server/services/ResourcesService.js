@@ -257,7 +257,9 @@ const getSpamResources = async (userId, parentId = null) => {
     resources = spamResources.filter(r => {
       if (!r.parentId) return true;
       const parent = parentsMap.get(r.parentId.toString());
-      return !parent;
+      if (!parent) return true;
+      if (!permittedIds.includes(parent._id.toString())) return true;
+      return false;
     });
   }
   
