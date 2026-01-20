@@ -47,8 +47,10 @@ const checkPermission = async (userId, resourceId, requiredRole) => {
  * @param {string} userId - ID of the user
  * @returns {Array} List of authorized resource objects
  */
-const getPermittedResourcesOfUser = async (userId) => {
-    const permissions = await Permission.find({ userId })
+const getPermittedResourcesOfUser = async (userId, isDeleted = false, isSpam = false) => {
+    const permissions = await Permission.find({ userId, isDeleted, isSpam });
+    if (!permissions) return [];
+
     return permissions.map(p => p.resourceId);
 };
 
@@ -138,6 +140,98 @@ const getUserIdFromPermissionId = async (pId) => {
     return permission ? permission.userId : null;
 };
 
+const isDeletedResources = async (resources, isDeleted, userId) => {
+    const permissions = await Permission.find({
+        resourceId: { $in: resources },
+        isDeleted,
+        userId
+    });
+
+    return permissions.map(p => p.resourceId);
+};
+
+const isSpamResources = async (resources, isSpam, userId) => {
+    const permissions = await Permission.find({
+        resourceId: { $in: resources },
+        isSpam,
+        userId
+    });
+
+    return permissions.map(p => p.resourceId);
+};
+
+const isStarredResources = async (resources, isStarred, userId) => {
+    const permissions = await Permission.find({
+        resourceId: { $in: resources },
+        isStarred,
+        userId
+    });
+
+    return permissions.map(p => p.resourceId);
+};
+
+const setDeletedStatus = async (resourceIds, isDeleted, userId) => {
+    await Permission.updateMany(
+        { resourceId: { $in: resourceIds }, userId },
+        { $set: { isDeleted } }
+    );
+};
+
+const setSpamStatus = async (resourceIds, isSpam, userId) => {
+     await Permission.updateMany(
+        { resourceId: { $in: resourceIds }, userId },
+        { $set: { isSpam } }
+    );
+};
+
+const toggleStarredStatus = async (resourceId, isStarred, userId) => {
+     await Permission.updateOne(
+        { resourceId, userId },
+        { $set: { isStarred } }
+    );
+};
+
+const toggleSpamStatus = async (resourceId, isSpam, userId) => {
+     await Permission.updateOne(
+        { resourceId, userId },
+        { $set: { isSpam } }
+    );
+};
+
+const toggleStarredStatusForMany = async (resourcesId, isStarred, userId) => {
+      await Permission.updateMany(
+        { resourceId: { $in: resourcesId }, userId },
+        { $set: { isStarred } }
+    );
+};
+
+const toggleSpamStatusForMany = async (resourcesId, isSpam, userId) => {
+      await Permission.updateMany(
+        { resourceId: { $in: resourcesId }, userId },
+        { $set: { isSpam } }
+    );
+};
+
+const getResourceStatus = async (userId, resourceId) => {
+    return await Permission.findOne({ userId, resourceId });
+};
+
+const setDeletedStatusForManyUsers = async (resourceIds, isDeleted) => {
+    await Permission.updateMany(
+        { resourceId: { $in: resourceIds } },
+        { $set: { isDeleted } }
+    );
+};
+
+
+const getPermissionsByUserAndResourceIds = async (userId, resourceIds) => {
+    return await Permission.find({
+        userId,
+        resourceId: { $in: resourceIds }
+    });
+};
+
+
 
 
 export default {
@@ -155,5 +249,17 @@ export default {
   createPermissionsBulk,
   getPermissionById,
   getUserIdFromPermissionId,
+  isDeletedResources,
+  isSpamResources,
+  isStarredResources,
+  setDeletedStatus,
+  setSpamStatus,
+  toggleSpamStatus,
+  toggleStarredStatusForMany,
+  toggleSpamStatusForMany,
+  toggleStarredStatus,
+  getResourceStatus,
+  setDeletedStatusForManyUsers,
+  getPermissionsByUserAndResourceIds,
 };
 

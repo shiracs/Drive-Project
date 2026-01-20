@@ -1,4 +1,4 @@
-import { View, Text, TextInput, StyleSheet, Alert, ScrollView, Image, Pressable } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, ScrollView, Image, Pressable, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, Link } from 'expo-router';
 import { useState } from 'react';
@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { saveAuthData } from '../utils/auth';
 import { USER_API_URL } from '../consts/Urls';
 import AppButton from '../components/MainButton';
+import { Ionicons } from '@expo/vector-icons';
 
 const REGISTER = {
   ERROR_NOT_STRONG_PASSWORD: "הסיסמה חייבת להכיל בין 8 ל-16 תווים, לפחות אות קטנה, אות גדולה ומספר אחד",
@@ -37,6 +38,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showImageOptions, setShowImageOptions] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -177,21 +179,29 @@ export default function Register() {
             onChangeText={(value) => handleChange("username", value)}
           />
 
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.inputInContainer}
+              placeholder={REGISTER.PASSWORD}
+              secureTextEntry={!showPassword}
+              value={formData.password}
+              onChangeText={(value) => handleChange("password", value)}
+              textAlign="right" 
+              autoCapitalize="none"
+            />
+            
+          </View>
           <TextInput
-            style={styles.input}
-            placeholder={REGISTER.PASSWORD}
-            secureTextEntry
-            value={formData.password}
-            onChangeText={(value) => handleChange("password", value)}
-          />
-
-          <TextInput
-            style={styles.input}
+            style={styles.confirmInput}
             placeholder={REGISTER.PASSWORD_CONFIRM}
-            secureTextEntry
+            secureTextEntry={false} 
             value={formData.passwordConfirm}
             onChangeText={(value) => handleChange("passwordConfirm", value)}
+            textAlign="right" 
+            autoCapitalize="none"
+            autoComplete="off"
           />
+
 
           <Text style={styles.passwordHint}>{REGISTER.ERROR_NOT_STRONG_PASSWORD}</Text>
 
@@ -287,6 +297,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
     backgroundColor: '#fafafa',
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   passwordHint: {
     color: '#999',
@@ -370,5 +382,33 @@ const styles = StyleSheet.create({
     color: '#1a73e8',
     fontSize: 14,
     fontWeight: '500',
+  },
+  inputInContainer: {
+    flex: 1,
+    padding: 12,
+    fontSize: 16,
+    color: '#202124',
+    textAlign: 'right', 
+    writingDirection: 'rtl',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+    backgroundColor: '#fafafa',
+  },
+  confirmInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+    backgroundColor: '#fafafa',
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    WebkitTextSecurity: 'disc', 
+    textSecurity: 'disc',
   },
 });

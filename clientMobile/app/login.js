@@ -147,6 +147,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
     backgroundColor: '#fafafa',
+    textAlign: 'right',      
+    writingDirection: 'rtl',
   },
   errorText: {
     color: '#d32f2f',

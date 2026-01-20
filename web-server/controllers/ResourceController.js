@@ -1,5 +1,5 @@
-import ResourceModel from "../models/ResourceModel.js";
-import UserModel from "../models/UserModel.js";
+import ResourcesService from "../services/ResourcesService.js";
+import UsersService from "../services/UsersService.js";
 import permissionsService from "../services/PermissionsService.js";
 import { sendToCpp } from "../services/cppService.js";
 import { ROLES } from "../enums/Roles.js";
@@ -10,25 +10,22 @@ import { RESOURCE_TYPE, isValidResourceType } from "../enums/ResourceType.js";
  * Returns a list of resources the user has permission to view in the specified folder (or root if none specified)
  */
 const getUserResourcesInDir = async (req, res) => {
-  const userId = req.userId;
-  const parentId = req.query.parentId || null;
+  try{
+    const userId = req.userId;
+    const parentId = req.query.parentId || null;
 
-  if (!UserModel.isValidId(userId))
-    return res.status(401).json({ error: "Unauthorized" });
+    const validUser = await UsersService.findById(userId);
+    if (!validUser)
+      return res.status(401).json({ error: "Unauthorized" });
 
-  // Get resources only for this specific level (right now we use null for root)
-  const userResources = await ResourceModel.getResourcesByUserId(userId, parentId);
-    
-    // Return list with types so client knows if it's a folder or file
-  res.json(userResources.map((r) => ({ 
-      id: r.id || r.id, 
-      name: r.name, 
-      type: r.type,
-      isStarred: r.isStarred,
-      isDeleted: r.isDeleted,
-      isSpam: r.isSpam,
-      ownerId: r.ownerId
-  })));
+    // Get resources only for this specific level (right now we use null for root)
+    const userResources = await ResourcesService.getResourcesByUserId(userId, parentId);
+
+    res.json(userResources);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 /**
@@ -36,70 +33,60 @@ const getUserResourcesInDir = async (req, res) => {
  * Creates records of the resource here and sends file content to C++ server
  */
 const uploadResource = async (req, res) => {
-  const userId = req.userId;
-  const {
-    name,
-    content = "",
-    type = RESOURCE_TYPE.FILE,
-    parentId = null,
-  } = req.body;
-
-  // --- VALIDATIONS --- //
-  if (!UserModel.isValidId(userId)) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  // Validate Resource Type
-  if (!isValidResourceType(type)) {
-    return res.status(400).json({ error: `Invalid type.` });
-  }
-
-  // Validate Parent Id
-  const parentCheck = await ResourceModel.validateParent(parentId);
-  if (!parentCheck.valid) {
-    return res.status(parentCheck.status).json({ error: parentCheck.error });
-  }
-
-  // Validate Content vs Type
-  if (!name) {
-    return res.status(400).json({ error: "Name is required" });
-  }
-
-  // --- CREATION LOGIC --- //
   try {
-    // Create resource record and create OWNER permission to uploader
-    const resourceRecord = await ResourceModel.createResourceRecord(
-      userId,
+    const userId = req.userId;
+    const {
       name,
-      type,
-      parentId
-    );
-    
+      content = "",
+      type = RESOURCE_TYPE.FILE,
+      parentId = null,
+    } = req.body;
+
+    // --- VALIDATIONS --- //
+    const validUser = await UsersService.findById(userId);
+    if (!validUser) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    // Validate Resource Type
+    if (!isValidResourceType(type)) {
+      return res.status(400).json({ error: `Invalid type.` });
+    }
+    // Name is required
+    if (!name) {
+      return res.status(400).json({ error: "Name is required" });
+  }
+    // Validate Parent Id
+    const parentCheck = await ResourcesService.validateParent(parentId);
+    if (!parentCheck.valid) {
+      return res.status(parentCheck.status).json({ error: parentCheck.error });
+    }
+
+    const resourceRecord = await ResourcesService.createResourceRecord(userId, name, type, parentId);
     await permissionsService.createResourcePermission(resourceRecord.id, userId, ROLES.OWNER);
 
     const resourceUrl = `/api/files/${resourceRecord.id}`;
 
-    // HANDLE FOLDERS: folders are virtual, no C++ storage needed
+      // HANDLE FOLDERS: folders are virtual, no C++ storage needed
     if (type === RESOURCE_TYPE.FOLDER) {
-      return res.status(201).location(resourceUrl).json(resourceRecord);
+        return res.status(201).location(resourceUrl).json(resourceRecord.toJSON());
     } 
-    // HANDLE FILES: send content to C++
+      // HANDLE FILES: send content to C++
     else {
       const cppResponse = await sendToCpp(`POST ${resourceRecord.id} ${content}`);
 
       if (cppResponse.includes("201 Created")) {
-        return res.status(201).location(resourceUrl).json(resourceRecord);
+        return res.status(201).location(resourceUrl).json(resourceRecord.toJSON());
       }
 
       // Rollback records if C++ storage fails
-      ResourceModel.removeResourceRecord(resourceRecord.id);
+      await ResourcesService.removeResourceRecord(resourceRecord.id);
       await permissionsService.removeAllPermissionsOfResource(resourceRecord.id);
       res.status(500).json({ error: "Storage error", detail: cppResponse });
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 
 /**
  * GET /api/files/:id
@@ -107,59 +94,72 @@ const uploadResource = async (req, res) => {
  * IF FOLDER: Returns array of its children.
  */
 const getResourceContent = async (req, res) => {
+try {
   const userId = req.userId;
   const { id } = req.params;
 
-  if (!UserModel.isValidId(userId)) {
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const resource = ResourceModel.findById(id);
+  const resource =  await ResourcesService.findById(id);
   if (!resource) return res.status(404).json({ error: "File not found" });
 
   // Check permission in storage here before going to C++ server
-  if (!await permissionsService.checkPermission(userId, id, ROLES.READER)) {
+  const hasPermission = await permissionsService.checkPermission(userId, id, ROLES.READER);
+  if (!hasPermission) {
     return res.status(403).json({ error: "Forbidden: No read access" });
   }
+
+  const enrichedList = await ResourcesService.enrichResources([resource], userId);
+  const enrichedResource = enrichedList[0];
 
   // HANDLE FOLDER: Return list of children names
   if (resource && resource.type === RESOURCE_TYPE.FOLDER) {
     // We use the existing function, passing the current folder ID as the parentId
-    const children = ResourceModel.getResourcesByUserId(userId, id);
-    return res.status(200).json(children.map(c => ({ id: c.id, name: c.name, type: c.type })));
+    const children = await ResourcesService.getResourcesByUserId(userId, id);
+    return res.status(200).json(children.map(c => c.toJSON() ? c.toJSON() : c));
   }
 
   // HANDLE FILE: Fetch content from C++
   try {
     const cppResponse = await sendToCpp(`GET ${id}`);
     const content = cppResponse.split("\n\n")[1] || "";
-    res.status(200).json({...resource, content: content });
+    res.status(200).json({...enrichedResource, content: content });
   } catch (error) {
     console.error(`[ResourceController] Error getting resource ${id}:`, error);
     res.status(500).json({ error: error.message });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
+
 
 /**
  * PATCH /api/files/:id
  * Updates existing resource's name and/or content
  */
 const updateResource = async (req, res) => {
+try {
   const userId = req.userId;
   const { id } = req.params;
   const { name, content } = req.body;
 
-  if (!UserModel.isValidId(userId)) {
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const resourceRecord = ResourceModel.findById(id);
+  const resourceRecord = await ResourcesService.findById(id);
   if (!resourceRecord) {
       return res.status(404).json({ error: "Resource not found" });
   }
 
   // Check permission in storage here before going to C++ server
-  if (!await permissionsService.checkPermission(userId, id, ROLES.WRITER)) {
+  const hasPermission = await permissionsService.checkPermission(userId, id, ROLES.WRITER);
+  if (!hasPermission) {
     return res.status(403).json({ error: "Forbidden: No write access" });
   }
 
@@ -168,7 +168,7 @@ const updateResource = async (req, res) => {
 
     // Rename if needed
     if (name && name !== resourceRecord.name) {
-      ResourceModel.renameResource(id, name);
+      await ResourcesService.renameResource(id, name);
       isChanged = true;
     }
     // C++ server AddCommand prevents overwriting, so we delete first, then post the new version
@@ -189,7 +189,7 @@ const updateResource = async (req, res) => {
     }
 
     if (isChanged) {
-      ResourceModel.updateTimestamp(id); 
+      await ResourcesService.updateTimestamp(id); 
     }
 
     return res.status(204).send();
@@ -197,6 +197,9 @@ const updateResource = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+} catch (error) {
+  res.status(500).json({ error: error.message }); 
+}
 };
 
 /**
@@ -204,47 +207,47 @@ const updateResource = async (req, res) => {
  * Uses Flat Deletion logic for folders (using Path) to delete all descendants
  */
 const deleteResource = async (req, res) => {
+try {
   const userId = req.userId;
   const { id } = req.params;
 
-  if (!UserModel.isValidId(userId)) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) return res.status(401).json({ error: "Unauthorized" });
 
-  if (!await permissionsService.checkPermission(userId, id, ROLES.OWNER)) {
+  const resourceRecord = await ResourcesService.findById(id);
+  if (!resourceRecord) return res.status(404).json({ error: "Resource not found" });
+
+  const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
+  if (!checkPermission) { 
     return res.status(403).json({ error: "Forbidden: Only owners can delete" });
   }
 
   try {
-    // Get the resource to delete
-    const targetResource = ResourceModel.findById(id);
-    if (!targetResource) return res.status(404).json({ error: "Resource not found" });
-
-    // Get ALL its descendants - if its a file, this will be an empty array
-    const descendants = ResourceModel.getDescendants(id, true);
-
-    // Combine into one list to delete
+    const targetResource = await ResourcesService.findById(id);
+    const descendants = await ResourcesService.getDescendants(id, true);
     const allToDelete = [targetResource, ...descendants];
 
-    // Delete each one
     for (const resource of allToDelete) {
-      // If it's a file, delete from C++, otherwise skip
+      const rId = resource._id || resource.id;
       if (resource.type === RESOURCE_TYPE.FILE) {
         try {
-          await sendToCpp(`DELETE ${resource.id}`);
+          await sendToCpp(`DELETE ${rId}`);
         } catch (e) {
-          console.error(`Failed to delete physical file ${resource.id}`, e.message);
+          console.error(`Failed to delete physical file ${rId}`, e.message);
         }
       }
-      // Remove Metadata & Permissions
-      ResourceModel.removeResourceRecord(resource.id);
-      await permissionsService.removeAllPermissionsOfResource(resource.id);
+      await permissionsService.removeAllPermissionsOfResource(rId)
     }
+    
+    await ResourcesService.removeResourceRecord(id);
 
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+} catch (error) {
+  res.status(500).json({ error: error.message }); 
+}
 };
 
 /** 
@@ -252,11 +255,13 @@ const deleteResource = async (req, res) => {
  * Searches resources by name or content containing the query string 
  */
 const searchResourcesByQuery = async (req, res) => {
+try {
   const userId = req.userId;
   const { query } = req.params;
 
   // check user authorization - every user must be authorized
-  if (!UserModel.isValidId(userId)) {
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -265,43 +270,51 @@ const searchResourcesByQuery = async (req, res) => {
     return res.status(400).json({ error: "Missing search query" });
   }
 
-  try {
-    // First, get the user's permitted files
-    const allUsersResources = await ResourceModel.getAllResourcesByUser(userId);
-    const lowerQuery = query.toLowerCase();
-
-    const searchPromises = allUsersResources.map(async (file) => {
-      if (file.name.toLowerCase().includes(lowerQuery)) {
-        return file;
-      }
-
-      if (file.type === RESOURCE_TYPE.FILE) {
+  const lowerQuery = query.toLowerCase();
+  const { nameMatches, potentialFiles } = await ResourcesService.getSearchCandidates(userId, query);
+  const fetchContentForFile = async (file) => {
+        if (file.type === RESOURCE_TYPE.FOLDER) return file; // לתיקיות אין תוכן
         try {
-          const cppResponse = await sendToCpp(`GET ${file.id}`);
-          const base64Content = cppResponse.split("\n\n")[1] || "";
-                    const decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');
-          
-          if (decodedContent.toLowerCase().includes(lowerQuery)) {
-            return file;
-        } }catch (err) {
-          console.error(`Error fetching content for ${file.id}:`, err.message);
+            const cppResponse = await sendToCpp(`GET ${file._id}`);
+            if (!cppResponse || !cppResponse.includes("\n\n")) return { ...file, content: "" };
+            
+            const base64Content = cppResponse.split("\n\n")[1] || "";
+            const decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');
+            return { ...file, content: decodedContent };
+        } catch (e) {
+            return { ...file, content: "" };
         }
-      }
-      return null;
-    });
+    };
 
-    const results = await Promise.all(searchPromises);
+    const nameResults = await Promise.all(nameMatches.map(fetchContentForFile));
+
+    const contentResultsPromises = potentialFiles.map(async (file) => {
+        const fileWithContent = await fetchContentForFile(file);
+        if (fileWithContent.content && fileWithContent.content.toLowerCase().includes(lowerQuery)) {
+            return fileWithContent;
+        }
+        return null;
+    });
     
-    const finalResponse = results
-      .filter(f => f !== null)
-      .map(f => ({
-        id: f.id,
-        name: f.name,
-        type: f.type,
-        isStarred: f.isStarred,
-        isDeleted: f.isDeleted,
-        isSpam: f.isSpam
-      }));
+    const contentResults = (await Promise.all(contentResultsPromises)).filter(r => r !== null);
+
+    const allMatches = [...nameResults, ...contentResults];
+
+    const enrichedResults = await ResourcesService.enrichResources(allMatches, userId);
+
+    const finalResponse = enrichedResults.map(r => ({
+        id: r.id || r._id.toString(),
+        name: r.name,
+        type: r.type,
+        content: r.content,
+        ownerId: r.ownerId,
+        parentId: r.parentId,
+        updatedAt: r.updatedAt,
+        isStarred: !!r.isStarred,
+        isDeleted: !!r.isDeleted,
+        isSpam: !!r.isSpam,
+        role: r.role
+    }));
 
     return res.status(200).json(finalResponse);
 
@@ -309,7 +322,7 @@ const searchResourcesByQuery = async (req, res) => {
     console.error("Search Error:", error);
     return res.status(500).json({ error: "Search failed", detail: error.message });
   }
-}
+};
 
 /**
  * GET /api/shared
@@ -319,21 +332,14 @@ const getSharedResources = async (req, res) => {
   const userId = req.userId;
   const parentId = req.query.parentId || null;
 
-
-  if (!UserModel.isValidId(userId))
+  const validUser = await UsersService.findById(userId);
+  if (!validUser)
     return res.status(401).json({ error: "Unauthorized" });
 
   // Get resources only for this specific level (right now we use null for root)
-  const sharedResources = await ResourceModel.getSharedResourcesByUserId(userId, parentId);
+  const sharedResources = await ResourcesService.getSharedResourcesByUserId(userId, parentId);
   
-  res.json(sharedResources.map((r) => ({ 
-      id: r.id, 
-      name: r.name, 
-      type: r.type,
-      isStarred: r.isStarred,
-      isDeleted: r.isDeleted,
-      isSpam: r.isSpam
-  })));
+  res.json(sharedResources);
 };
 
 /**
@@ -344,10 +350,11 @@ const getOwnedResources = async (req, res) => {
   const userId = req.userId;
   const parentId = req.query.parentId || null;
 
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) return res.status(401).json({ error: "Unauthorized" });
 
-  const resources = await ResourceModel.getOwnedResources(userId, parentId);
-  res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
+  const resources = await ResourcesService.getOwnedResources(userId, parentId);
+  res.json(resources);
 };
 
 /**
@@ -362,75 +369,96 @@ const getRecentResources = async (req, res) => {
 
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    const resources = ResourceModel.getRecentResources(userId, parentId);
-    res.json(resources.map(r => ({ id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam })));
+    const resources = await ResourcesService.getRecentResources(userId, parentId);
+    res.json(resources);
 };
 
+/**
+ * GET /api/starred
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 const getStarredResources = async (req, res) => {
     try {
         const userId = req.userId;
         const parentId = req.query.parentId || null;
 
-        if (!UserModel.isValidId(userId)) {
+        const validUser = await UsersService.findById(userId);  
+        if (!validUser) {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const resources = await ResourceModel.getStarredResources(userId, parentId);
+        const resources = await ResourcesService.getStarredResources(userId, parentId);
 
-        res.json(resources.map(r => ({ 
-            id: r.id, 
-            name: r.name, 
-            type: r.type, 
-            isStarred: r.isStarred,
-            isDeleted: r.isDeleted, 
-            isSpam: r.isSpam
-        })));
+        res.json(resources).status(200);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
+/** * POST /api/files/toggle-starred/:id
+ */
 const toggleStarred = async (req, res) => {
     const { id } = req.params;
-    const updated = await ResourceModel.toggleStarred(id);
+    const updated = await ResourcesService.toggleStarred(id, req.userId);
     if (!updated) return res.status(404).json({ error: "Not found" });
     res.json(updated);
 };
 
-
-export const getTrashResources = async (req, res) => {
+/**
+ * GET /api/trash
+ * @param {`*`} req 
+ * @param {*} res 
+ * @returns 
+ */
+const getTrashResources = async (req, res) => {
     try {
         const userId = req.userId;
         const parentId = req.query.parentId || null;
 
-        if (!UserModel.isValidId(userId)) {
+        const validUser = await UsersService.findById(userId);
+        if (!validUser) {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const resources = ResourceModel.getTrashResources(userId, parentId);
-        res.json(resources.map(r => ({ 
-            id: r.id, 
-            name: r.name, 
-            type: r.type, 
-            isStarred: r.isStarred,
-            isDeleted: r.isDeleted, 
-            isSpam: r.isSpam
-        })));
+        const resources = await ResourcesService.getTrashResources(userId, parentId);
+        res.json(resources);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
+/**
+ * POST /api/files/restore/:id
+ * @param {`*`} req 
+ * @param {*} res 
+ * @returns 
+ */
 export const restoreResource = async (req, res) => {
     try {
         const { id } = req.params;
-        const success = ResourceModel.restoreResource(id);
+        const userId = req.userId;
+
+        const validUser = await UsersService.findById(userId);
+        if (!validUser) return res.status(401).json({ error: "Unauthorized" });
+
+        // only owners can restore
+
+        const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
+        if (!checkPermission) {
+             return res.status(403).json({ error: "Forbidden: Only owners can restore resources" });
+        }
+
+        const success = await ResourcesService.restoreResource(id, userId);
+
         if (!success) return res.status(404).json({ error: "Resource not found" });
         res.json({ message: "Resource restored" });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 /**
  * DELETE /api/files/:id
@@ -439,22 +467,18 @@ const softDeleteResource = async (req, res) => {
   const userId = req.userId;
   const { id } = req.params;
 
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) return res.status(401).json({ error: "Unauthorized" });
 
-  if (!await permissionsService.checkPermission(userId, id, ROLES.OWNER)) {
+  const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
+  if (!checkPermission) {
     return res.status(403).json({ error: "Forbidden: Only owners can delete" });
   }
 
   try {
-    const targetResource = ResourceModel.findById(id);
-    if (!targetResource) return res.status(404).json({ error: "Resource not found" });
+    const success = await ResourcesService.softDeleteResource(id, userId); 
 
-    const descendants = ResourceModel.getDescendants(id);
-    const allToTrash = [targetResource, ...descendants];
-
-    for (const resource of allToTrash) {
-      ResourceModel.softDeleteResource(resource.id);
-    }
+    if (!success) return res.status(404).json({ error: "Action failed" });
 
     res.status(204).send();
   } catch (error) {
@@ -462,43 +486,55 @@ const softDeleteResource = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/spam
+ */
 const getSpamResources = async (req, res) => {
     try {
         const userId = req.userId;
         const parentId = req.query.parentId || null;
 
-         if (!UserModel.isValidId(userId)) {
+        const validUser = await UsersService.findById(userId);
+        if (!validUser) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        const resources = ResourceModel.getSpamResources(userId, parentId);
-        res.json(resources.map(r => ({ 
-            id: r.id, name: r.name, type: r.type, isStarred: r.isStarred, isDeleted: r.isDeleted, isSpam: r.isSpam
-        })));
+        const resources = await ResourcesService.getSpamResources(userId, parentId);
+        res.json(resources);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
+/**
+ * POST /api/files/toggle-spam/:id
+ */
 const toggleSpam = async (req, res) => {
     const { id } = req.params;
-    const updated = ResourceModel.toggleSpam(id);
+    const userId = req.userId;
+
+    const updated = await ResourcesService.toggleSpam(id, userId);
     if (!updated) return res.status(404).json({ error: "Resource not found" });
     res.json(updated);
 };
 
+/**
+ *  POST /api/files/move/:id
+ */
 const moveResource = async (req, res) => {
   const userId = req.userId;
   const { id } = req.params;
   const { newParentId } = req.body;
 
-  if (!UserModel.isValidId(userId)) return res.status(401).json({ error: "Unauthorized" });
+  const validUser = await UsersService.findById(userId);
+  if (!validUser) return res.status(401).json({ error: "Unauthorized" });
 
   // moving is only allowed for owners
-  if (!await permissionsService.checkPermission(userId, id, ROLES.OWNER)) {
+  const checkPermission = await permissionsService.checkPermission(userId, id, ROLES.OWNER);
+  if (!checkPermission) {
     return res.status(403).json({ error: "Forbidden: No owner access" });
   }
 
-  const success = ResourceModel.moveResource(id, newParentId);
+  const success = await ResourcesService.moveResource(id, newParentId);
   if (!success) return res.status(400).json({ error: "Move failed" });
 
   res.status(200).json({ message: "Moved successfully" });
