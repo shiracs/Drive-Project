@@ -216,7 +216,7 @@ const PermissionsPage = ({ resourceId, resourceName }) => {
                   <Text style={styles.userId}>
                     {permission.role === "OWNER"
                       ? "בעלים"
-                      : permission.userId || ""}
+                      :  ""}
                   </Text>
                 </View>
               </View>
