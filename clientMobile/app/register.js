@@ -194,7 +194,7 @@ export default function Register() {
           <TextInput
             style={styles.confirmInput}
             placeholder={REGISTER.PASSWORD_CONFIRM}
-            secureTextEntry={false} 
+            secureTextEntry={true} 
             value={formData.passwordConfirm}
             onChangeText={(value) => handleChange("passwordConfirm", value)}
             textAlign="right" 
