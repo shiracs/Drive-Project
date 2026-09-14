@@ -1,4 +1,46 @@
-# Drive Project - Setup and Run Instructions
+# ☁️ Drive — Distributed File Storage System
+
+> **Advanced System Programming Course** | Bar-Ilan University  
+> **Final Grade:** 100 / 100
+
+A distributed file storage system enabling users to upload, manage, and access files seamlessly across both web and mobile clients. The architecture couples a high-performance C++ core backend with a Node.js/Express API layer, modern frontends (React & React Native/Expo), and MongoDB for persistent storage, fully orchestrated via Docker Compose.
+
+---
+
+## 🧩 System Components
+
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| 🖥️ **Core Server** | C++ | Low-level backend processing and file handling |
+| 🌐 **API Gateway** | Node.js · Express | Web API layer and inter-service communication |
+| 💻 **Web Client** | React | Browser-based user interface |
+| 📱 **Mobile Client** | React Native · Expo | Cross-platform mobile application |
+| 🗄️ **Database** | MongoDB | Metadata and persistent application state |
+| 🐳 **Orchestration** | Docker · Docker Compose | Multi-container networking and service lifecycle |
+
+---
+
+## 🛠️ Tech Stack
+
+* **Languages & Core:** C++, JavaScript, TypeScript
+* **Backend:** Node.js, Express.js
+* **Frontend:** React, React Native, Expo
+* **Database:** MongoDB
+* **DevOps & Infrastructure:** Docker, Docker Compose, Linux / WSL2
+
+---
+
+## ⭐ Key Highlights
+
+* **Distributed Architecture:** Designed an end-to-end multi-tier system with clear separation of concerns.
+* **Low-Level Systems Programming:** Built core server functionality and efficient client-server protocols using C++.
+* **Cross-Platform Access:** Unified user access across both web (React) and mobile (React Native/Expo).
+* **Containerized Deployment:** Entire ecosystem launches via Docker Compose with zero local toolchain dependencies.
+* **Inter-Service Networking:** Established clean network communication channels between decoupled microservices.
+
+---
+
+## 🚀 Setup & Run Instructions
 
 This project includes:
 - **Server** (C++)
